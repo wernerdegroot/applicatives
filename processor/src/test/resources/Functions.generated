@@ -1,0 +1,42 @@
+package nl.wernerdegroot.applicatives;
+
+interface FunctionsMixin<P> {
+
+    <P1, P2, R> java.util.function.Function<P, R> compose(java.util.function.Function<P, P1> first, java.util.function.Function<P, P2> second, java.util.function.BiFunction<? super P1, ? super P2, ? extends R> fn);
+
+    default <P1, P2, P3, R> java.util.function.Function<P, R> compose(java.util.function.Function<P, P1> first, java.util.function.Function<P, P2> second, java.util.function.Function<P, P3> third, nl.wernerdegroot.applicatives.runtime.Function3<? super P1, ? super P2, ? super P3, ? extends R> fn) {
+        return this.compose(nl.wernerdegroot.applicatives.FunctionsMixin.Tuples.<P1, P2, P3, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, P>tuple(this, first, second, 3), third, fn::apply);
+    }
+
+    default <P1, P2, P3, P4, R> java.util.function.Function<P, R> compose(java.util.function.Function<P, P1> first, java.util.function.Function<P, P2> second, java.util.function.Function<P, P3> third, java.util.function.Function<P, P4> fourth, nl.wernerdegroot.applicatives.runtime.Function4<? super P1, ? super P2, ? super P3, ? super P4, ? extends R> fn) {
+        return this.compose(nl.wernerdegroot.applicatives.FunctionsMixin.Tuples.<P1, P2, P3, P4, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, P>tuple(this, first, second, third, 4), fourth, fn::apply);
+    }
+
+    default <P1, P2, R> java.util.function.BiFunction<? super java.util.function.Function<P, P1>, ? super java.util.function.Function<P, P2>, ? extends java.util.function.Function<P, R>> lift(java.util.function.BiFunction<? super P1, ? super P2, ? extends R> fn) {
+        return (first, second) ->
+                this.compose(first, second, fn);
+    }
+
+    default <P1, P2, P3, R> nl.wernerdegroot.applicatives.runtime.Function3<? super java.util.function.Function<P, P1>, ? super java.util.function.Function<P, P2>, ? super java.util.function.Function<P, P3>, ? extends java.util.function.Function<P, R>> lift(nl.wernerdegroot.applicatives.runtime.Function3<? super P1, ? super P2, ? super P3, ? extends R> fn) {
+        return (first, second, third) ->
+                this.compose(first, second, third, fn);
+    }
+
+    default <P1, P2, P3, P4, R> nl.wernerdegroot.applicatives.runtime.Function4<? super java.util.function.Function<P, P1>, ? super java.util.function.Function<P, P2>, ? super java.util.function.Function<P, P3>, ? super java.util.function.Function<P, P4>, ? extends java.util.function.Function<P, R>> lift(nl.wernerdegroot.applicatives.runtime.Function4<? super P1, ? super P2, ? super P3, ? super P4, ? extends R> fn) {
+        return (first, second, third, fourth) ->
+                this.compose(first, second, third, fourth, fn);
+    }
+
+    class Tuples {
+
+        public static <P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26, P> java.util.function.Function<P, nl.wernerdegroot.applicatives.runtime.FastTuple<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26>> tuple(nl.wernerdegroot.applicatives.FunctionsMixin<P> self, java.util.function.Function<P, P1> first, java.util.function.Function<P, P2> second, int maxSize) {
+            return self.compose(first, second, nl.wernerdegroot.applicatives.runtime.FastTuple.withMaxSize(maxSize));
+        }
+
+        public static <P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26, P> java.util.function.Function<P, nl.wernerdegroot.applicatives.runtime.FastTuple<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26>> tuple(nl.wernerdegroot.applicatives.FunctionsMixin<P> self, java.util.function.Function<P, P1> first, java.util.function.Function<P, P2> second, java.util.function.Function<P, P3> third, int maxSize) {
+            return self.compose(nl.wernerdegroot.applicatives.FunctionsMixin.Tuples.<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26, P>tuple(self, first, second, maxSize), third, nl.wernerdegroot.applicatives.runtime.FastTuple::withThird);
+        }
+
+    }
+
+}

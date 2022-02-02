@@ -1,0 +1,20 @@
+package nl.wernerdegroot.applicatives;
+
+interface OptionalsMixin {
+
+    <P1, P2, R> java.util.Optional<R> compose(java.util.Optional<? extends P1> first, java.util.Optional<? extends P2> second, java.util.function.BiFunction<? super P1, ? super P2, ? extends R> fn);
+
+    default <P1, P2, R> java.util.function.BiFunction<? super java.util.Optional<? extends P1>, ? super java.util.Optional<? extends P2>, ? extends java.util.Optional<R>> lift(java.util.function.BiFunction<? super P1, ? super P2, ? extends R> fn) {
+        return (first, second) ->
+                this.compose(first, second, fn);
+    }
+
+    class Tuples {
+
+        public static <P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26> java.util.Optional<? extends nl.wernerdegroot.applicatives.runtime.FastTuple<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26>> tuple(nl.wernerdegroot.applicatives.OptionalsMixin self, java.util.Optional<? extends P1> first, java.util.Optional<? extends P2> second, int maxSize) {
+            return self.compose(first, second, nl.wernerdegroot.applicatives.runtime.FastTuple.withMaxSize(maxSize));
+        }
+
+    }
+
+}
