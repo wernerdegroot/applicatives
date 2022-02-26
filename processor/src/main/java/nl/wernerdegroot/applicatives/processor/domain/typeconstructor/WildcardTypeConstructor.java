@@ -4,6 +4,7 @@ import nl.wernerdegroot.applicatives.processor.domain.BoundType;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import nl.wernerdegroot.applicatives.processor.domain.type.WildcardType;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Map;
 import java.util.Objects;
@@ -28,9 +29,31 @@ public class WildcardTypeConstructor implements TypeConstructor {
     }
 
     @Override
-    public boolean canAcceptValueOfType(TypeConstructor that) {
-        // If `this` is equal to `that` or some covariant/contravariant version of `that` we return `true`:
-        return Objects.equals(this, that) || bound.canAcceptValueOfType(that);
+    public boolean canAcceptValueOfType(TypeConstructor typeConstructor) {
+        if (typeConstructor instanceof WildcardTypeConstructor) {
+            WildcardTypeConstructor that = (WildcardTypeConstructor) typeConstructor;
+            if (this.type == that.type) {
+                // If both are of the same bound type, we ignore the wildcard on the right.
+                return this.canAcceptValueOfType(that.bound);
+            } else {
+                // If both are of a different bound type, there is no way that they are compatible.
+                return false;
+            }
+        } else {
+            switch (type) {
+                case EXTENDS:
+                    // Since we don't check for subclasses, we will return `true` if
+                    // the bound can accept a value of the type represented by `typeConstructor`.
+                    return bound.canAcceptValueOfType(typeConstructor);
+                case SUPER:
+                    // In case of a contravariant wildcard type, we need to swap the order
+                    // of comparison. Can `? super Dog` accept a value of type `Animal`?
+                    // Only if `? extends Animal` can accept a value of type `Dog`!
+                    return typeConstructor.canAcceptValueOfType(bound);
+                default:
+                    throw new NotImplementedException();
+            }
+        }
     }
 
     @Override
