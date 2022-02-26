@@ -344,6 +344,33 @@ public class MethodValidatorTest {
     }
 
     @Test
+    public void shouldReturnValidWhenResultTypeConstructorIsAssignableToParameterTypeConstructor() {
+        Method toValidate = Method.of(
+                modifiers(PUBLIC),
+                asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter(), P.asTypeParameter()),
+                Optional.of(FUNCTION.of(P, V)),
+                "myFunction",
+                asList(
+                        Parameter.of(FUNCTION.of(SUPER.type(P), EXTENDS.type(T)), "left"),
+                        Parameter.of(FUNCTION.of(SUPER.type(P), EXTENDS.type(U)), "right"),
+                        Parameter.of(BI_FUNCTION.of(SUPER.type(T), SUPER.type(U), EXTENDS.type(V)), "compose")
+                ),
+                ContainingClass.withoutTypeParameters(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Functions"))
+        );
+
+        ValidatedMethod expected = ValidatedMethod.valid(
+                asList(P.asTypeParameter()),
+                emptyList(),
+                FUNCTION.of(SUPER.type(P).asTypeConstructor(), EXTENDS.type(placeholder())),
+                FUNCTION.of(P.asTypeConstructor(), placeholder()),
+                emptyList()
+        );
+        ValidatedMethod toVerify = MethodValidator.validate(toValidate);
+
+        assertEquals(expected, toVerify);
+    }
+
+    @Test
     public void shouldReturnInvalidWhenTheContainingClassIsANonStaticInnerClass() {
         Method toValidate = Method.of(
                 modifiers(PUBLIC),

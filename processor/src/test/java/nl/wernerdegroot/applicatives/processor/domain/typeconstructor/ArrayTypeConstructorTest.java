@@ -4,14 +4,15 @@ import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
 import nl.wernerdegroot.applicatives.processor.domain.type.ArrayType;
 import nl.wernerdegroot.applicatives.processor.domain.type.ConcreteType;
-import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static java.util.Collections.emptyList;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static nl.wernerdegroot.applicatives.processor.domain.BoundType.EXTENDS;
+import static nl.wernerdegroot.applicatives.processor.domain.BoundType.SUPER;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ArrayTypeConstructorTest {
 
@@ -23,10 +24,8 @@ public class ArrayTypeConstructorTest {
 
     private final ConcreteType STRING_TYPE = new ConcreteType(FullyQualifiedName.of("java.lang.String"), emptyList());
     private final ConcreteTypeConstructor STRING_TYPE_CONSTRUCTOR = new ConcreteTypeConstructor(FullyQualifiedName.of("java.lang.String"), emptyList());
-
-    private final TypeConstructor NEEDLE_TYPE_CONSTRUCTOR = new ConcreteTypeConstructor(new FullyQualifiedName("nl.wernerdegroot.Needle"), emptyList());
-    private final Type REPLACEMENT_TYPE = new ConcreteType(new FullyQualifiedName("nl.wernerdegroot.Replacement"), emptyList());
-    private final TypeConstructor REPLACEMENT_TYPE_CONSTRUCTOR = new ConcreteTypeConstructor(new FullyQualifiedName("nl.wernerdegroot.Replacement"), emptyList());
+    private final ConcreteType INTEGER_TYPE = new ConcreteType(FullyQualifiedName.of("java.lang.Integer"), emptyList());
+    private final ConcreteTypeConstructor INTEGER_TYPE_CONSTRUCTOR = new ConcreteTypeConstructor(FullyQualifiedName.of("java.lang.Integer"), emptyList());
 
     @Test
     public void of() {
@@ -61,41 +60,82 @@ public class ArrayTypeConstructorTest {
     }
 
     @Test
-    public void replaceAllGivenNeedleThatMatchesTypeConstructorCompletely() {
-        TypeConstructor expected = REPLACEMENT_TYPE_CONSTRUCTOR;
-        TypeConstructor toVerify = new ArrayTypeConstructor(new GenericTypeConstructor(T)).replaceAll(new ArrayTypeConstructor(new GenericTypeConstructor(T)), REPLACEMENT_TYPE_CONSTRUCTOR);
-
-        assertEquals(expected, toVerify);
+    public void invariantArrayTypeConstructorCanAcceptValueOfTypeGivenConcreteTypeConstructor() {
+        assertFalse(new ArrayTypeConstructor(STRING_TYPE_CONSTRUCTOR).canAcceptValueOfType(STRING_TYPE_CONSTRUCTOR));
     }
 
     @Test
-    public void replaceAllGivenNeedleThatMatchesElementTypeConstructor() {
-        TypeConstructor expected = new ArrayTypeConstructor(REPLACEMENT_TYPE_CONSTRUCTOR);
-        TypeConstructor toVerify = new ArrayTypeConstructor(new GenericTypeConstructor(T)).replaceAll(new GenericTypeConstructor(T), REPLACEMENT_TYPE_CONSTRUCTOR);
-
-        assertEquals(expected, toVerify);
+    public void invariantArrayTypeConstructorCanAcceptValueOfTypeGivenDifferentInvariantArrayTypeConstructor() {
+        assertFalse(new ArrayTypeConstructor(STRING_TYPE_CONSTRUCTOR).canAcceptValueOfType(new ArrayTypeConstructor(INTEGER_TYPE_CONSTRUCTOR)));
     }
 
     @Test
-    public void replaceAllGivenNeedleThatDoesNotMatch() {
-        TypeConstructor expected = new ArrayTypeConstructor(new GenericTypeConstructor(T));
-        TypeConstructor toVerify = new ArrayTypeConstructor(new GenericTypeConstructor(T)).replaceAll(NEEDLE_TYPE_CONSTRUCTOR, REPLACEMENT_TYPE_CONSTRUCTOR);
+    public void invariantArrayTypeConstructorCanAcceptValueOfTypeGivenEquivalentInvariantArrayTypeConstructor() {
+        assertTrue(new ArrayTypeConstructor(STRING_TYPE_CONSTRUCTOR).canAcceptValueOfType(new ArrayTypeConstructor(STRING_TYPE_CONSTRUCTOR)));
+    }
 
-        assertEquals(expected, toVerify);
+    @Test
+    public void invariantArrayTypeConstructorCanAcceptValueOfTypeGivenEquivalentCovariantArrayTypeConstructor() {
+        assertFalse(new ArrayTypeConstructor(STRING_TYPE_CONSTRUCTOR).canAcceptValueOfType(new ArrayTypeConstructor(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR))));
+    }
+
+    @Test
+    public void invariantArrayTypeConstructorCanAcceptValueOfTypeGivenEquivalentContravariantArrayTypeConstructor() {
+        assertFalse(new ArrayTypeConstructor(STRING_TYPE_CONSTRUCTOR).canAcceptValueOfType(new ArrayTypeConstructor(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR))));
+    }
+
+    @Test
+    public void covariantArrayTypeConstructorCanAcceptValueOfTypeGivenDifferentCovariantArrayTypeConstructor() {
+        assertFalse(new ArrayTypeConstructor(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR)).canAcceptValueOfType(new ArrayTypeConstructor(new WildcardTypeConstructor(EXTENDS, INTEGER_TYPE_CONSTRUCTOR))));
+    }
+
+    @Test
+    public void covariantArrayTypeConstructorCanAcceptValueOfTypeGivenEquivalentInvariantArrayTypeConstructor() {
+        assertTrue(new ArrayTypeConstructor(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR)).canAcceptValueOfType(new ArrayTypeConstructor(STRING_TYPE_CONSTRUCTOR)));
+    }
+
+    @Test
+    public void covariantArrayTypeConstructorCanAcceptValueOfTypeGivenEquivalentCovariantArrayTypeConstructor() {
+        assertTrue(new ArrayTypeConstructor(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR)).canAcceptValueOfType(new ArrayTypeConstructor(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR))));
+    }
+
+    @Test
+    public void covariantArrayTypeConstructorCanAcceptValueOfTypeGivenEquivalentContravariantArrayTypeConstructor() {
+        assertFalse(new ArrayTypeConstructor(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR)).canAcceptValueOfType(new ArrayTypeConstructor(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR))));
+    }
+
+    @Test
+    public void contravariantArrayTypeConstructorCanAcceptValueOfTypeGivenDifferentContravariantArrayTypeConstructor() {
+        assertFalse(new ArrayTypeConstructor(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR)).canAcceptValueOfType(new ArrayTypeConstructor(new WildcardTypeConstructor(SUPER, INTEGER_TYPE_CONSTRUCTOR))));
+    }
+
+    @Test
+    public void contravariantArrayTypeConstructorCanAcceptValueOfTypeGivenEquivalentInvariantArrayTypeConstructor() {
+        assertTrue(new ArrayTypeConstructor(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR)).canAcceptValueOfType(new ArrayTypeConstructor(STRING_TYPE_CONSTRUCTOR)));
+    }
+
+    @Test
+    public void contravariantArrayTypeConstructorCanAcceptValueOfTypeGivenEquivalentCovariantArrayTypeConstructor() {
+        assertFalse(new ArrayTypeConstructor(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR)).canAcceptValueOfType(new ArrayTypeConstructor(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR))));
+    }
+
+    @Test
+    public void contravariantArrayTypeConstructorCanAcceptValueOfTypeGivenEquivalentContravariantArrayTypeConstructor() {
+        assertTrue(new ArrayTypeConstructor(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR)).canAcceptValueOfType(new ArrayTypeConstructor(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR))));
     }
 
     @Test
     public void applyGivenTypeConstructorWithoutPlaceholder() {
         ArrayType expected = new ArrayType(STRING_TYPE);
-        ArrayType toVerify = new ArrayTypeConstructor(STRING_TYPE_CONSTRUCTOR).apply(REPLACEMENT_TYPE);
+        ArrayType toVerify = new ArrayTypeConstructor(STRING_TYPE_CONSTRUCTOR).apply(INTEGER_TYPE);
 
         assertEquals(expected, toVerify);
     }
 
     @Test
     public void applyGivenTypeConstructorWithPlaceholder() {
-        ArrayType expected = new ArrayType(REPLACEMENT_TYPE);
-        ArrayType toVerify = new ArrayTypeConstructor(new PlaceholderTypeConstructor()).apply(REPLACEMENT_TYPE);
+        ArrayType expected = new ArrayType(STRING_TYPE);
+        ArrayType toVerify = new ArrayTypeConstructor(new PlaceholderTypeConstructor()).apply(STRING_TYPE);
 
         assertEquals(expected, toVerify);
     }

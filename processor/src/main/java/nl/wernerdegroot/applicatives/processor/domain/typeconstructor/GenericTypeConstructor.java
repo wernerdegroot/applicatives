@@ -25,12 +25,10 @@ public class GenericTypeConstructor implements TypeConstructor {
     }
 
     @Override
-    public TypeConstructor replaceAll(TypeConstructor needle, TypeConstructor replacement) {
-        if (Objects.equals(this, needle)) {
-            return replacement;
-        }
-
-        return this;
+    public boolean canAcceptValueOfType(TypeConstructor that) {
+        // `WildcardTypeConstructor` does the heavy lifting, so we just need
+        // to check for equality here:
+        return this.equals(that);
     }
 
     @Override

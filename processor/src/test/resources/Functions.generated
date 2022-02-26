@@ -1,6 +1,6 @@
 package nl.wernerdegroot.applicatives;
 
-interface FunctionsMixin<P> {
+public interface FunctionsMixin<P> {
 
     <P1, P2, R> java.util.function.Function<P, R> compose(java.util.function.Function<P, P1> first, java.util.function.Function<P, P2> second, java.util.function.BiFunction<? super P1, ? super P2, ? extends R> fn);
 

@@ -36,7 +36,15 @@ public interface TypeConstructor {
 
     TypeConstructor replaceAllTypeParameterNames(Map<TypeParameterName, TypeParameterName> replacement);
 
-    TypeConstructor replaceAll(TypeConstructor needle, TypeConstructor replacement);
+    /**
+     * Checks whether a value of type {@code that} is assignable to a variable of type {@code this}. Returns true
+     * if {@code this} is equal to {@code that} or some covariant or contravariant version of {@code that} (or
+     * even a mix).
+     *
+     * @param that
+     * @return
+     */
+    boolean canAcceptValueOfType(TypeConstructor that);
 
     /**
      * Provide a {@link Type Type} and get a {@link Type Type} in return.

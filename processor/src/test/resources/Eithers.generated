@@ -1,6 +1,6 @@
 package nl.wernerdegroot.applicatives;
 
-interface EithersMixin {
+public interface EithersMixin {
 
     <P1, P2, R, P> nl.wernerdegroot.applicatives.Either<P, R> compose(nl.wernerdegroot.applicatives.Either<P, P1> first, nl.wernerdegroot.applicatives.Either<P, P2> second, java.util.function.BiFunction<? super P1, ? super P2, ? extends R> fn, java.util.function.BiFunction<? super P, ? super P, ? extends P> composeLeft);
 

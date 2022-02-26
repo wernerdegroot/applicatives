@@ -3,7 +3,6 @@ package nl.wernerdegroot.applicatives.processor.domain.typeconstructor;
 import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
 import nl.wernerdegroot.applicatives.processor.domain.type.ConcreteType;
-import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import nl.wernerdegroot.applicatives.processor.domain.type.WildcardType;
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +12,7 @@ import java.util.Map;
 import static java.util.Collections.emptyList;
 import static nl.wernerdegroot.applicatives.processor.domain.BoundType.EXTENDS;
 import static nl.wernerdegroot.applicatives.processor.domain.BoundType.SUPER;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class WildcardTypeConstructorTest {
 
@@ -25,10 +24,8 @@ public class WildcardTypeConstructorTest {
 
     private final ConcreteType STRING_TYPE = new ConcreteType(FullyQualifiedName.of("java.lang.String"), emptyList());
     private final ConcreteTypeConstructor STRING_TYPE_CONSTRUCTOR = new ConcreteTypeConstructor(FullyQualifiedName.of("java.lang.String"), emptyList());
-
-    private final TypeConstructor NEEDLE_TYPE_CONSTRUCTOR = new ConcreteTypeConstructor(new FullyQualifiedName("nl.wernerdegroot.Needle"), emptyList());
-    private final Type REPLACEMENT_TYPE = new ConcreteType(new FullyQualifiedName("nl.wernerdegroot.Replacement"), emptyList());
-    private final TypeConstructor REPLACEMENT_TYPE_CONSTRUCTOR = new ConcreteTypeConstructor(new FullyQualifiedName("nl.wernerdegroot.Replacement"), emptyList());
+    private final ConcreteType INTEGER_TYPE = new ConcreteType(FullyQualifiedName.of("java.lang.Integer"), emptyList());
+    private final ConcreteTypeConstructor INTEGER_TYPE_CONSTRUCTOR = new ConcreteTypeConstructor(FullyQualifiedName.of("java.lang.Integer"), emptyList());
 
     @Test
     public void of() {
@@ -63,41 +60,57 @@ public class WildcardTypeConstructorTest {
     }
 
     @Test
-    public void replaceAllGivenNeedleThatMatchesTypeConstructorCompletely() {
-        TypeConstructor expected = REPLACEMENT_TYPE_CONSTRUCTOR;
-        TypeConstructor toVerify = new WildcardTypeConstructor(EXTENDS, new GenericTypeConstructor(T)).replaceAll(new WildcardTypeConstructor(EXTENDS, new GenericTypeConstructor(T)), REPLACEMENT_TYPE_CONSTRUCTOR);
-
-        assertEquals(expected, toVerify);
+    public void covariantWildcardTypeConstructorCanAcceptValueOfTypeGivenEquivalentInvariantTypeConstructor() {
+        assertTrue(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR).canAcceptValueOfType(STRING_TYPE_CONSTRUCTOR));
     }
 
     @Test
-    public void replaceAllGivenNeedleThatMatchesBoundTypeConstructor() {
-        TypeConstructor expected = new WildcardTypeConstructor(SUPER, REPLACEMENT_TYPE_CONSTRUCTOR);
-        TypeConstructor toVerify = new WildcardTypeConstructor(SUPER, new GenericTypeConstructor(T)).replaceAll(new GenericTypeConstructor(T), REPLACEMENT_TYPE_CONSTRUCTOR);
-
-        assertEquals(expected, toVerify);
+    public void covariantWildcardTypeConstructorCanAcceptValueOfTypeGivenDifferentInvariantTypeConstructor() {
+        assertFalse(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR).canAcceptValueOfType(INTEGER_TYPE_CONSTRUCTOR));
     }
 
     @Test
-    public void replaceAllGivenNeedleThatDoesNotMatch() {
-        TypeConstructor expected = new WildcardTypeConstructor(EXTENDS, new GenericTypeConstructor(T));
-        TypeConstructor toVerify = new WildcardTypeConstructor(EXTENDS, new GenericTypeConstructor(T)).replaceAll(NEEDLE_TYPE_CONSTRUCTOR, REPLACEMENT_TYPE_CONSTRUCTOR);
+    public void covariantWildcardTypeConstructorCanAcceptValueOfTypeGivenEquivalentCovariantTypeConstructor() {
+        assertTrue(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR).canAcceptValueOfType(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR)));
+    }
 
-        assertEquals(expected, toVerify);
+    @Test
+    public void covariantWildcardTypeConstructorCanAcceptValueOfTypeGivenEquivalentContravariantTypeConstructor() {
+        assertFalse(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR).canAcceptValueOfType(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR)));
+    }
+
+    @Test
+    public void contravariantWildcardTypeConstructorCanAcceptValueOfTypeGivenEquivalentInvariantTypeConstructor() {
+        assertTrue(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR).canAcceptValueOfType(STRING_TYPE_CONSTRUCTOR));
+    }
+
+    @Test
+    public void contravariantWildcardTypeConstructorCanAcceptValueOfTypeGivenDifferentInvariantTypeConstructor() {
+        assertFalse(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR).canAcceptValueOfType(INTEGER_TYPE_CONSTRUCTOR));
+    }
+
+    @Test
+    public void contravariantWildcardTypeConstructorCanAcceptValueOfTypeGivenEquivalentCovariantTypeConstructor() {
+        assertFalse(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR).canAcceptValueOfType(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR)));
+    }
+
+    @Test
+    public void contravariantWildcardTypeConstructorCanAcceptValueOfTypeGivenEquivalentContravariantTypeConstructor() {
+        assertTrue(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR).canAcceptValueOfType(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR)));
     }
 
     @Test
     public void applyGivenTypeConstructorWithoutPlaceholder() {
-        WildcardType expected = new WildcardType(SUPER, STRING_TYPE);
-        WildcardType toVerify = new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR).apply(REPLACEMENT_TYPE);
+        WildcardType expected = new WildcardType(SUPER, INTEGER_TYPE);
+        WildcardType toVerify = new WildcardTypeConstructor(SUPER, INTEGER_TYPE_CONSTRUCTOR).apply(STRING_TYPE);
 
         assertEquals(expected, toVerify);
     }
 
     @Test
     public void applyGivenTypeConstructorWithPlaceholder() {
-        WildcardType expected = new WildcardType(EXTENDS, REPLACEMENT_TYPE);
-        WildcardType toVerify = new WildcardTypeConstructor(EXTENDS, new PlaceholderTypeConstructor()).apply(REPLACEMENT_TYPE);
+        WildcardType expected = new WildcardType(EXTENDS, STRING_TYPE);
+        WildcardType toVerify = new WildcardTypeConstructor(EXTENDS, new PlaceholderTypeConstructor()).apply(STRING_TYPE);
 
         assertEquals(expected, toVerify);
     }

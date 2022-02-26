@@ -5,12 +5,14 @@
     <parent>
         <artifactId>parent</artifactId>
         <groupId>nl.wernerdegroot.applicatives</groupId>
-        <version>1.0.1</version>
+        <version>1.0.2</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>runtime</artifactId>
+
+    <name>Applicatives | runtime</name>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>

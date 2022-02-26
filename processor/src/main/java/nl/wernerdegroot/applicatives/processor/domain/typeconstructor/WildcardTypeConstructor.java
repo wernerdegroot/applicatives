@@ -28,12 +28,9 @@ public class WildcardTypeConstructor implements TypeConstructor {
     }
 
     @Override
-    public TypeConstructor replaceAll(TypeConstructor needle, TypeConstructor replacement) {
-        if (Objects.equals(this, needle)) {
-            return replacement;
-        }
-
-        return TypeConstructor.wildcard(type, bound.replaceAll(needle, replacement));
+    public boolean canAcceptValueOfType(TypeConstructor that) {
+        // If `this` is equal to `that` or some covariant/contravariant version of `that` we return `true`:
+        return Objects.equals(this, that) || bound.canAcceptValueOfType(that);
     }
 
     @Override

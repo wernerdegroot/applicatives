@@ -2,6 +2,7 @@
 /target
 /runtime/target
 /processor/target
+/prelude/target
 
 # IntelliJ
 /.idea

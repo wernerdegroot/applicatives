@@ -4,7 +4,6 @@ import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 
 import java.util.Map;
-import java.util.Objects;
 
 public class PlaceholderTypeConstructor implements TypeConstructor {
 
@@ -14,12 +13,10 @@ public class PlaceholderTypeConstructor implements TypeConstructor {
     }
 
     @Override
-    public TypeConstructor replaceAll(TypeConstructor needle, TypeConstructor replacement) {
-        if (Objects.equals(this, needle)) {
-            return replacement;
-        }
-
-        return this;
+    public boolean canAcceptValueOfType(TypeConstructor that) {
+        // `WildcardTypeConstructor` does the heavy lifting, so we just need
+        // to check for equality here:
+        return this.equals(that);
     }
 
     @Override

@@ -96,7 +96,7 @@ public class MethodValidator {
         // argument itself. This is the case when the parameter type is some covariant version of the
         // result type.
         TypeConstructor resultTypeConstructor = resultType.asTypeConstructorWithPlaceholderFor(resultTypeParameter.getName());
-        if (!Objects.equals(resultTypeConstructor, parameterTypeConstructor) && !Objects.equals(resultTypeConstructor, parameterTypeConstructor.replaceAll(EXTENDS.type(placeholder()), placeholder()))) {
+        if (!parameterTypeConstructor.canAcceptValueOfType(resultTypeConstructor)) {
             return ValidatedMethod.invalid("No shared type constructor between parameters (" + generateFrom(leftParameter.getType()) + " and " + generateFrom(rightParameter.getType()) + ") and result (" + generateFrom(resultType) + ")");
         }
 

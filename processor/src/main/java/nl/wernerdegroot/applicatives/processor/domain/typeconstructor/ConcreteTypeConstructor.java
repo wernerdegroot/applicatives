@@ -36,17 +36,38 @@ public class ConcreteTypeConstructor implements TypeConstructor {
     }
 
     @Override
-    public TypeConstructor replaceAll(TypeConstructor needle, TypeConstructor replacement) {
-        if (Objects.equals(this, needle)) {
-            return replacement;
+    public boolean canAcceptValueOfType(TypeConstructor typeConstructor) {
+        // `WildcardTypeConstructor` does much of the heavy lifting, so we just need
+        // to check for equality of the `FullyQualifiedName` and assignability of
+        // the type arguments:
+        if (typeConstructor instanceof ConcreteTypeConstructor) {
+            ConcreteTypeConstructor that = (ConcreteTypeConstructor) typeConstructor;
+
+            return this.fullyQualifiedNameEqualToThatOf(that) && this.typeArgumentsAssignableToThatOf(that);
+        } else {
+            return false;
+        }
+    }
+
+    private boolean fullyQualifiedNameEqualToThatOf(ConcreteTypeConstructor that) {
+        return Objects.equals(this.fullyQualifiedName, that.fullyQualifiedName);
+    }
+
+    private boolean typeArgumentsAssignableToThatOf(ConcreteTypeConstructor that) {
+        if (this.typeArguments.size() != that.typeArguments.size()) {
+            return false;
         }
 
-        List<TypeConstructor> replacedTypeArguments = typeArguments
-                .stream()
-                .map(typeArgument -> typeArgument.replaceAll(needle, replacement))
-                .collect(toList());
+        for (int i = 0; i < typeArguments.size(); ++i) {
+            TypeConstructor fromThis = this.typeArguments.get(i);
+            TypeConstructor fromThat = that.typeArguments.get(i);
 
-        return TypeConstructor.concrete(fullyQualifiedName, replacedTypeArguments);
+            if (!fromThis.canAcceptValueOfType(fromThat)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     @Override

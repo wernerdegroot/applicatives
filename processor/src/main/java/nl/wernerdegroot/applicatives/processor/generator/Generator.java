@@ -193,6 +193,7 @@ public class Generator {
 
         classOrInterface()
                 .asInterface()
+                .withModifiers(PUBLIC)
                 .withName(classNameToGenerate)
                 .withTypeParameters(classTypeParameters)
                 .withBody(composeMethods())

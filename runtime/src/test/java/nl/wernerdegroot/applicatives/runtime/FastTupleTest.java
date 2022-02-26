@@ -7,6 +7,13 @@ import static org.junit.jupiter.api.Assertions.*;
 public class FastTupleTest {
 
     @Test
+    public void shouldConstructFastTupleWithRightMaxSizeAndCorrectElementsInitialized() {
+        FastTuple<String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String> original = new FastTuple<>(new Object[]{"alpha", "bravo", "charlie"});
+        FastTuple<String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String> copied = original.withThird("-.-.");
+        assertNotSame(copied, original);
+    }
+
+    @Test
     public void shouldUseMutationWhenPossibleButMakeCopiesWhenNecessary() {
         FastTuple<String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String> original = new FastTuple<>("alpha", "bravo", 26);
         FastTuple<String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String> mutated = original
@@ -33,7 +40,8 @@ public class FastTupleTest {
                 .withTwentyThird("whiskey")
                 .withTwentyFourth("x-ray")
                 .withTwentyFifth("yankee")
-                .withTwentySixth("zulu");;
+                .withTwentySixth("zulu");
+        ;
 
         assertSame(original, mutated);
         assertEquals("alpha", mutated.getFirst());

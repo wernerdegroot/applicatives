@@ -10,19 +10,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static java.util.Collections.emptyList;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PlaceholderTypeConstructorTest {
 
     private final TypeParameterName T = TypeParameterName.of("T");
     private final TypeParameterName U = TypeParameterName.of("U");
-    private final TypeParameterName V = TypeParameterName.of("V");
     private final TypeParameterName A = TypeParameterName.of("A");
     private final TypeParameterName B = TypeParameterName.of("B");
 
-    private final TypeConstructor NEEDLE_TYPE_CONSTRUCTOR = new ConcreteTypeConstructor(new FullyQualifiedName("nl.wernerdegroot.Needle"), emptyList());
-    private final Type REPLACEMENT_TYPE = new ConcreteType(new FullyQualifiedName("nl.wernerdegroot.Replacement"), emptyList());
-    private final TypeConstructor REPLACEMENT_TYPE_CONSTRUCTOR = new ConcreteTypeConstructor(new FullyQualifiedName("nl.wernerdegroot.Replacement"), emptyList());
+    private final ConcreteType STRING_TYPE = new ConcreteType(FullyQualifiedName.of("java.lang.String"), emptyList());
+    private final ConcreteTypeConstructor STRING_TYPE_CONSTRUCTOR = new ConcreteTypeConstructor(FullyQualifiedName.of("java.lang.String"), emptyList());
 
     @Test
     public void replaceAllTypeParameterNames() {
@@ -37,25 +35,19 @@ public class PlaceholderTypeConstructorTest {
     }
 
     @Test
-    public void replaceAllGivenNeedleThatMatchesTypeConstructorCompletely() {
-        TypeConstructor expected = REPLACEMENT_TYPE_CONSTRUCTOR;
-        TypeConstructor toVerify = new PlaceholderTypeConstructor().replaceAll(new PlaceholderTypeConstructor(), REPLACEMENT_TYPE_CONSTRUCTOR);
-
-        assertEquals(expected, toVerify);
+    public void placeholderTypeConstructorCanAcceptValueOfTypeGivenArrayTypeConstructor() {
+        assertFalse(new PlaceholderTypeConstructor().canAcceptValueOfType(new ArrayTypeConstructor(STRING_TYPE_CONSTRUCTOR)));
     }
 
     @Test
-    public void replaceAllGivenNeedleThatDoesNotMatch() {
-        TypeConstructor expected = new PlaceholderTypeConstructor();
-        TypeConstructor toVerify = new PlaceholderTypeConstructor().replaceAll(NEEDLE_TYPE_CONSTRUCTOR, REPLACEMENT_TYPE_CONSTRUCTOR);
-
-        assertEquals(expected, toVerify);
+    public void placeholderTypeConstructorCanAcceptValueOfTypeGivenPlaceholderTypeConstructor() {
+        assertTrue(new PlaceholderTypeConstructor().canAcceptValueOfType(new PlaceholderTypeConstructor()));
     }
 
     @Test
     public void apply() {
-        Type expected = REPLACEMENT_TYPE;
-        Type toVerify = new PlaceholderTypeConstructor().apply(REPLACEMENT_TYPE);
+        Type expected = STRING_TYPE;
+        Type toVerify = new PlaceholderTypeConstructor().apply(STRING_TYPE);
 
         assertEquals(expected, toVerify);
     }
