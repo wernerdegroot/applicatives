@@ -7,10 +7,16 @@ import nl.wernerdegroot.applicatives.processor.domain.type.GenericType;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+import java.util.function.Consumer;
+
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static nl.wernerdegroot.applicatives.processor.domain.BoundType.EXTENDS;
 import static nl.wernerdegroot.applicatives.processor.domain.BoundType.SUPER;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static nl.wernerdegroot.applicatives.processor.domain.type.Type.LIST;
+import static nl.wernerdegroot.applicatives.processor.domain.type.Type.STRING;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TypeConstructorTest {
 
@@ -19,6 +25,8 @@ public class TypeConstructorTest {
     private final FullyQualifiedName ERUDITE = new FullyQualifiedName("nl.wernerdegroot.Erudite");
     private final ConcreteTypeConstructor STRING_TYPE_CONSTRUCTOR = new ConcreteTypeConstructor(FullyQualifiedName.of("java.lang.String"), emptyList());
     private final ConcreteTypeConstructor INTEGER_TYPE_CONSTRUCTOR = new ConcreteTypeConstructor(FullyQualifiedName.of("java.lang.Integer"), emptyList());
+
+    private final PlaceholderTypeConstructor placeholder = TypeConstructor.placeholder();
 
     @Test
     public void apply() {
@@ -90,5 +98,57 @@ public class TypeConstructorTest {
         PlaceholderTypeConstructor toVerify = TypeConstructor.placeholder();
 
         assertEquals(expected, toVerify);
+    }
+
+    @Test
+    public void canAcceptValueOfType() {
+
+        // This test covers some interesting test cases that are not easily covered by
+        // a test in one of the subclasses of `TypeConstructor`. These test cases check
+        // if the subclasses work well together, and perform their function as expected.
+
+        assertNotCompatible(
+                LIST.of(SUPER.type(LIST.of(EXTENDS.type(placeholder)))),
+                LIST.of(LIST.of(placeholder)),
+                "Assign List<List<*>> to List<? super List<? extends *>>"
+        );
+
+        assertCompatible(
+                LIST.of(EXTENDS.type(LIST.of(EXTENDS.type(placeholder)))),
+                LIST.of(LIST.of(placeholder)),
+                "Assign List<List<*>> to List<? extends List<? extends *>>"
+        );
+
+        assertNotCompatible(
+                LIST.of(SUPER.type(LIST.of(SUPER.type(placeholder)))),
+                LIST.of(LIST.of(placeholder)),
+                "Assign List<List<*>> to List<? super List<? super *>>"
+        );
+
+        assertCompatible(
+                LIST.of(SUPER.type(LIST.of(placeholder))),
+                LIST.of(LIST.of(EXTENDS.type(placeholder))),
+                "Assign List<List<? extends *>> to List<? super List<*>>"
+        );
+
+        assertNotCompatible(
+                LIST.of(SUPER.type(LIST.of(EXTENDS.type(placeholder)))),
+                LIST.of(LIST.of(SUPER.type(placeholder))),
+                "Assign List<List<? super *>> to List<? super List<? extends *>>"
+        );
+
+        assertCompatible(
+                LIST.of(SUPER.type(LIST.of(SUPER.type(placeholder)))),
+                LIST.of(LIST.of(SUPER.type(placeholder))),
+                "Assign List<List<? super *>> to List<? super List<? super *>>"
+        );
+    }
+
+    private void assertNotCompatible(TypeConstructor left, TypeConstructor right, String message) {
+        assertFalse(left.canAcceptValueOfType(right), message);
+    }
+
+    private void assertCompatible(TypeConstructor left, TypeConstructor right, String message) {
+        assertTrue(left.canAcceptValueOfType(right), message);
     }
 }
