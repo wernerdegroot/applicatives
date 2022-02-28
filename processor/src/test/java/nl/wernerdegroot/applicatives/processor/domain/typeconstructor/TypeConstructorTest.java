@@ -116,7 +116,12 @@ public class TypeConstructorTest {
         // a test in one of the subclasses of `TypeConstructor`. These test cases check
         // if the subclasses work well together, and perform their function as expected.
 
-        List<TypeConstructor> sources = withList(withWildcards(withList(withWildcards(placeholders())))).collect(toList());
+        List<TypeConstructor> sources = Stream.of(
+                withList(withWildcards(withList(withWildcards(placeholders())))),
+                withList(withWildcards(withArray(placeholders()))),
+                withArray(withList(withWildcards(placeholders())))
+        ).reduce(Stream.empty(), Stream::concat).collect(toList());
+
         List<TypeConstructor> targets = sources;
 
         for (TypeConstructor source : sources) {
@@ -136,6 +141,10 @@ public class TypeConstructorTest {
 
     private Stream<TypeConstructor> withList(Stream<TypeConstructor> s) {
         return s.map(typeConstructor -> LIST.of(typeConstructor));
+    }
+
+    private Stream<TypeConstructor> withArray(Stream<TypeConstructor> s) {
+        return s.map(typeConstructor -> typeConstructor.array());
     }
 
     private void verify(TypeConstructor target, TypeConstructor source) {
