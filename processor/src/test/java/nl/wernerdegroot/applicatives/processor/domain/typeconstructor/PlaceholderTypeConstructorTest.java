@@ -35,13 +35,13 @@ public class PlaceholderTypeConstructorTest {
     }
 
     @Test
-    public void placeholderTypeConstructorCanAcceptValueOfTypeGivenArrayTypeConstructor() {
-        assertFalse(new PlaceholderTypeConstructor().canAcceptValueOfType(new ArrayTypeConstructor(STRING_TYPE_CONSTRUCTOR)));
+    public void placeholderTypeConstructorCanAcceptGivenArrayTypeConstructor() {
+        assertFalse(new PlaceholderTypeConstructor().canAccept(new ArrayTypeConstructor(STRING_TYPE_CONSTRUCTOR)));
     }
 
     @Test
-    public void placeholderTypeConstructorCanAcceptValueOfTypeGivenPlaceholderTypeConstructor() {
-        assertTrue(new PlaceholderTypeConstructor().canAcceptValueOfType(new PlaceholderTypeConstructor()));
+    public void placeholderTypeConstructorCanAcceptGivenPlaceholderTypeConstructor() {
+        assertTrue(new PlaceholderTypeConstructor().canAccept(new PlaceholderTypeConstructor()));
     }
 
     @Test

@@ -44,7 +44,7 @@ public interface TypeConstructor {
      * @param that
      * @return
      */
-    boolean canAcceptValueOfType(TypeConstructor that);
+    boolean canAccept(TypeConstructor that);
 
     /**
      * Provide a {@link Type Type} and get a {@link Type Type} in return.

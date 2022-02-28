@@ -1,17 +1,26 @@
 package nl.wernerdegroot.applicatives.processor.domain.typeconstructor;
 
+import com.google.testing.compile.Compilation;
+import com.google.testing.compile.Compiler;
+import com.google.testing.compile.JavaFileObjects;
 import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
 import nl.wernerdegroot.applicatives.processor.domain.type.ArrayType;
 import nl.wernerdegroot.applicatives.processor.domain.type.GenericType;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
+import nl.wernerdegroot.applicatives.processor.generator.TypeGenerator;
 import org.junit.jupiter.api.Test;
 
+import javax.tools.*;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 import static nl.wernerdegroot.applicatives.processor.domain.BoundType.EXTENDS;
 import static nl.wernerdegroot.applicatives.processor.domain.BoundType.SUPER;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.LIST;
@@ -101,54 +110,55 @@ public class TypeConstructorTest {
     }
 
     @Test
-    public void canAcceptValueOfType() {
+    public void canAccept() {
 
         // This test covers some interesting test cases that are not easily covered by
         // a test in one of the subclasses of `TypeConstructor`. These test cases check
         // if the subclasses work well together, and perform their function as expected.
 
-        assertNotCompatible(
-                LIST.of(SUPER.type(LIST.of(EXTENDS.type(placeholder)))),
-                LIST.of(LIST.of(placeholder)),
-                "Assign List<List<*>> to List<? super List<? extends *>>"
-        );
+        List<TypeConstructor> sources = withList(withWildcards(withList(withWildcards(placeholders())))).collect(toList());
+        List<TypeConstructor> targets = sources;
 
-        assertCompatible(
-                LIST.of(EXTENDS.type(LIST.of(EXTENDS.type(placeholder)))),
-                LIST.of(LIST.of(placeholder)),
-                "Assign List<List<*>> to List<? extends List<? extends *>>"
-        );
-
-        assertNotCompatible(
-                LIST.of(SUPER.type(LIST.of(SUPER.type(placeholder)))),
-                LIST.of(LIST.of(placeholder)),
-                "Assign List<List<*>> to List<? super List<? super *>>"
-        );
-
-        assertCompatible(
-                LIST.of(SUPER.type(LIST.of(placeholder))),
-                LIST.of(LIST.of(EXTENDS.type(placeholder))),
-                "Assign List<List<? extends *>> to List<? super List<*>>"
-        );
-
-        assertNotCompatible(
-                LIST.of(SUPER.type(LIST.of(EXTENDS.type(placeholder)))),
-                LIST.of(LIST.of(SUPER.type(placeholder))),
-                "Assign List<List<? super *>> to List<? super List<? extends *>>"
-        );
-
-        assertCompatible(
-                LIST.of(SUPER.type(LIST.of(SUPER.type(placeholder)))),
-                LIST.of(LIST.of(SUPER.type(placeholder))),
-                "Assign List<List<? super *>> to List<? super List<? super *>>"
-        );
+        for (TypeConstructor source : sources) {
+            for (TypeConstructor target : targets) {
+                verify(target, source);
+            }
+        }
     }
 
-    private void assertNotCompatible(TypeConstructor left, TypeConstructor right, String message) {
-        assertFalse(left.canAcceptValueOfType(right), message);
+    private Stream<TypeConstructor> placeholders() {
+        return Stream.of(TypeConstructor.placeholder());
     }
 
-    private void assertCompatible(TypeConstructor left, TypeConstructor right, String message) {
-        assertTrue(left.canAcceptValueOfType(right), message);
+    private Stream<TypeConstructor> withWildcards(Stream<TypeConstructor> s) {
+        return s.flatMap(typeConstructor -> Stream.of(typeConstructor, EXTENDS.type(typeConstructor), SUPER.type(typeConstructor)));
+    }
+
+    private Stream<TypeConstructor> withList(Stream<TypeConstructor> s) {
+        return s.map(typeConstructor -> LIST.of(typeConstructor));
+    }
+
+    private void verify(TypeConstructor target, TypeConstructor source) {
+        StringWriter writer = new StringWriter();
+        PrintWriter out = new PrintWriter(writer);
+        out.println("class Testing {");
+        out.println("  void testing() {");
+        out.println("    " + TypeGenerator.generateFrom(source.apply(STRING)) + " source = null;");
+        out.println("    " + TypeGenerator.generateFrom(target.apply(STRING)) + " target = source;");
+        out.println("  }");
+        out.println("}");
+        String classBody = writer.toString();
+
+        JavaFileObject javaFileObject = JavaFileObjects.forSourceString("Testing", classBody);
+        Compilation result = Compiler.javac().compile(javaFileObject);
+        boolean compiles = result.status() == Compilation.Status.SUCCESS;
+        boolean canAccept = target.canAccept(source);
+        assertEquals(compiles, canAccept, String.format("Assign %s to %s", typeConstructorToString(source), typeConstructorToString(target)));
+    }
+
+    private String typeConstructorToString(TypeConstructor typeConstructor) {
+        Type substituteForPlaceholder = FullyQualifiedName.of("*").asType();
+        Type typeConstructorAsType = typeConstructor.apply(substituteForPlaceholder);
+        return TypeGenerator.generateFrom(typeConstructorAsType);
     }
 }

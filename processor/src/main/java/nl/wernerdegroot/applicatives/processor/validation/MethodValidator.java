@@ -17,7 +17,6 @@ import static nl.wernerdegroot.applicatives.processor.domain.Modifier.PRIVATE;
 import static nl.wernerdegroot.applicatives.processor.domain.Modifier.STATIC;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.BI_FUNCTION;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.OBJECT;
-import static nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor.placeholder;
 import static nl.wernerdegroot.applicatives.processor.generator.TypeGenerator.generateFrom;
 
 public class MethodValidator {
@@ -96,7 +95,7 @@ public class MethodValidator {
         // argument itself. This is the case when the parameter type is some covariant version of the
         // result type.
         TypeConstructor resultTypeConstructor = resultType.asTypeConstructorWithPlaceholderFor(resultTypeParameter.getName());
-        if (!parameterTypeConstructor.canAcceptValueOfType(resultTypeConstructor)) {
+        if (!parameterTypeConstructor.canAccept(resultTypeConstructor)) {
             return ValidatedMethod.invalid("No shared type constructor between parameters (" + generateFrom(leftParameter.getType()) + " and " + generateFrom(rightParameter.getType()) + ") and result (" + generateFrom(resultType) + ")");
         }
 

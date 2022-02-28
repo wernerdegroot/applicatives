@@ -36,14 +36,11 @@ public class ConcreteTypeConstructor implements TypeConstructor {
     }
 
     @Override
-    public boolean canAcceptValueOfType(TypeConstructor typeConstructor) {
-        // `WildcardTypeConstructor` does much of the heavy lifting, so we just need
-        // to check for equality of the `FullyQualifiedName` and assignability of
-        // the type arguments:
+    public boolean canAccept(TypeConstructor typeConstructor) {
         if (typeConstructor instanceof ConcreteTypeConstructor) {
             ConcreteTypeConstructor that = (ConcreteTypeConstructor) typeConstructor;
 
-            return this.fullyQualifiedNameEqualToThatOf(that) && this.typeArgumentsAssignableToThatOf(that);
+            return this.fullyQualifiedNameEqualToThatOf(that) && this.typeArgumentsCanAccept(that);
         } else {
             return false;
         }
@@ -53,7 +50,7 @@ public class ConcreteTypeConstructor implements TypeConstructor {
         return Objects.equals(this.fullyQualifiedName, that.fullyQualifiedName);
     }
 
-    private boolean typeArgumentsAssignableToThatOf(ConcreteTypeConstructor that) {
+    private boolean typeArgumentsCanAccept(ConcreteTypeConstructor that) {
         if (this.typeArguments.size() != that.typeArguments.size()) {
             return false;
         }
@@ -62,9 +59,16 @@ public class ConcreteTypeConstructor implements TypeConstructor {
             TypeConstructor fromThis = this.typeArguments.get(i);
             TypeConstructor fromThat = that.typeArguments.get(i);
 
-            if (!fromThis.canAcceptValueOfType(fromThat)) {
-                return false;
+            if (fromThis instanceof WildcardTypeConstructor) {
+                if (!fromThis.canAccept(fromThat)) {
+                    return false;
+                }
+            } else {
+                if (!fromThis.equals(fromThat)) {
+                    return false;
+                }
             }
+
         }
 
         return true;

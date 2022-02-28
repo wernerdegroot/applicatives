@@ -60,43 +60,43 @@ public class WildcardTypeConstructorTest {
     }
 
     @Test
-    public void covariantWildcardTypeConstructorCanAcceptValueOfTypeGivenEquivalentInvariantTypeConstructor() {
-        assertTrue(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR).canAcceptValueOfType(STRING_TYPE_CONSTRUCTOR));
+    public void covariantWildcardTypeConstructorCanAcceptGivenEquivalentInvariantTypeConstructor() {
+        assertTrue(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR).canAccept(STRING_TYPE_CONSTRUCTOR));
     }
 
     @Test
-    public void covariantWildcardTypeConstructorCanAcceptValueOfTypeGivenDifferentInvariantTypeConstructor() {
-        assertFalse(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR).canAcceptValueOfType(INTEGER_TYPE_CONSTRUCTOR));
+    public void covariantWildcardTypeConstructorCanAcceptGivenDifferentInvariantTypeConstructor() {
+        assertFalse(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR).canAccept(INTEGER_TYPE_CONSTRUCTOR));
     }
 
     @Test
-    public void covariantWildcardTypeConstructorCanAcceptValueOfTypeGivenEquivalentCovariantTypeConstructor() {
-        assertTrue(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR).canAcceptValueOfType(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR)));
+    public void covariantWildcardTypeConstructorCanAcceptGivenEquivalentCovariantTypeConstructor() {
+        assertTrue(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR).canAccept(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR)));
     }
 
     @Test
-    public void covariantWildcardTypeConstructorCanAcceptValueOfTypeGivenEquivalentContravariantTypeConstructor() {
-        assertFalse(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR).canAcceptValueOfType(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR)));
+    public void covariantWildcardTypeConstructorCanAcceptGivenEquivalentContravariantTypeConstructor() {
+        assertFalse(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR).canAccept(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR)));
     }
 
     @Test
-    public void contravariantWildcardTypeConstructorCanAcceptValueOfTypeGivenEquivalentInvariantTypeConstructor() {
-        assertTrue(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR).canAcceptValueOfType(STRING_TYPE_CONSTRUCTOR));
+    public void contravariantWildcardTypeConstructorCanAcceptGivenEquivalentInvariantTypeConstructor() {
+        assertTrue(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR).canAccept(STRING_TYPE_CONSTRUCTOR));
     }
 
     @Test
-    public void contravariantWildcardTypeConstructorCanAcceptValueOfTypeGivenDifferentInvariantTypeConstructor() {
-        assertFalse(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR).canAcceptValueOfType(INTEGER_TYPE_CONSTRUCTOR));
+    public void contravariantWildcardTypeConstructorCanAcceptGivenDifferentInvariantTypeConstructor() {
+        assertFalse(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR).canAccept(INTEGER_TYPE_CONSTRUCTOR));
     }
 
     @Test
-    public void contravariantWildcardTypeConstructorCanAcceptValueOfTypeGivenEquivalentCovariantTypeConstructor() {
-        assertFalse(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR).canAcceptValueOfType(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR)));
+    public void contravariantWildcardTypeConstructorCanAcceptGivenEquivalentCovariantTypeConstructor() {
+        assertFalse(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR).canAccept(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR)));
     }
 
     @Test
-    public void contravariantWildcardTypeConstructorCanAcceptValueOfTypeGivenEquivalentContravariantTypeConstructor() {
-        assertTrue(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR).canAcceptValueOfType(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR)));
+    public void contravariantWildcardTypeConstructorCanAcceptGivenEquivalentContravariantTypeConstructor() {
+        assertTrue(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR).canAccept(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR)));
     }
 
     @Test
