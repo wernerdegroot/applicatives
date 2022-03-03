@@ -23,7 +23,7 @@ public class TypeParameterGeneratorTest {
 
     @Test
     public void withUpperBound() {
-        TypeParameter typeParameter = T.extending(COMPARABLE.of(T));
+        TypeParameter typeParameter = T.extending(COMPARABLE.with(T));
         String toVerify = typeParameter(typeParameter).generate();
         String expected = "T extends java.lang.Comparable<T>";
         assertEquals(expected, toVerify);
@@ -31,7 +31,7 @@ public class TypeParameterGeneratorTest {
 
     @Test
     public void withMultipleUpperBounds() {
-        TypeParameter typeParameter = T.extending(COMPARABLE.of(T), SERIALIZABLE);
+        TypeParameter typeParameter = T.extending(COMPARABLE.with(T), SERIALIZABLE);
         String toVerify = typeParameter(typeParameter).generate();
         String expected = "T extends java.lang.Comparable<T> & java.io.Serializable";
         assertEquals(expected, toVerify);

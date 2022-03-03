@@ -3,17 +3,18 @@ package nl.wernerdegroot.applicatives.processor.converters;
 import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
+import nl.wernerdegroot.applicatives.processor.domain.type.TypeArgument;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.*;
 import javax.lang.model.util.AbstractTypeVisitor8;
+import javax.lang.model.util.SimpleTypeVisitor8;
 import java.util.List;
 import java.util.Objects;
 
 import static java.util.stream.Collectors.toList;
-import static nl.wernerdegroot.applicatives.processor.domain.BoundType.EXTENDS;
-import static nl.wernerdegroot.applicatives.processor.domain.BoundType.SUPER;
+import static nl.wernerdegroot.applicatives.processor.domain.Variance.*;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.OBJECT;
 
 public class TypeConverter {
@@ -38,7 +39,6 @@ public class TypeConverter {
      * issue with a small code example.
      *
      * @param type A type
-     *
      * @return {@link Type Type}
      */
     public static Type toDomain(TypeMirror type) {
@@ -81,9 +81,33 @@ public class TypeConverter {
                         Element element = declaredType.asElement();
                         TypeElement typeElement = (TypeElement) element;
                         FullyQualifiedName fullyQualifiedName = FullyQualifiedName.of(typeElement.getQualifiedName().toString());
-                        List<Type> typeArguments = declaredType.getTypeArguments()
+                        List<TypeArgument> typeArguments = declaredType.getTypeArguments()
                                 .stream()
-                                .map(TypeConverter::toDomain)
+                                .map(typeArgument ->
+                                        typeArgument.accept(
+                                                new SimpleTypeVisitor8<TypeArgument, Void>() {
+
+                                                    @Override
+                                                    public TypeArgument visitWildcard(WildcardType wildcardType, Void unused) {
+                                                        if (wildcardType.getExtendsBound() != null && wildcardType.getSuperBound() != null) {
+                                                            throw new IllegalArgumentException(String.format("Unexpected wildcard type %s with both lower bound %s and upper bound %s", wildcardType, wildcardType.getSuperBound(), wildcardType.getExtendsBound()));
+                                                        } else if (wildcardType.getExtendsBound() != null) {
+                                                            return TypeArgument.of(COVARIANT, toDomain(wildcardType.getExtendsBound()));
+                                                        } else if (wildcardType.getSuperBound() != null) {
+                                                            return TypeArgument.of(CONTRAVARIANT, toDomain(wildcardType.getSuperBound()));
+                                                        } else {
+                                                            return TypeArgument.of(COVARIANT, OBJECT);
+                                                        }
+                                                    }
+
+                                                    @Override
+                                                    protected TypeArgument defaultAction(TypeMirror type, Void unused) {
+                                                        return TypeArgument.of(INVARIANT, toDomain(type));
+                                                    }
+                                                },
+                                                null
+                                        )
+                                )
                                 .collect(toList());
                         return Type.concrete(fullyQualifiedName, typeArguments);
                     }
@@ -102,15 +126,10 @@ public class TypeConverter {
 
                     @Override
                     public Type visitWildcard(WildcardType wildcardType, Void unused) {
-                        if (wildcardType.getExtendsBound() != null && wildcardType.getSuperBound() != null) {
-                            throw new IllegalArgumentException(String.format("Unexpected wildcard type %s with both lower bound %s and upper bound %s", wildcardType, wildcardType.getSuperBound(), wildcardType.getExtendsBound()));
-                        } else if (wildcardType.getExtendsBound() != null) {
-                            return Type.wildcard(EXTENDS, toDomain(wildcardType.getExtendsBound()));
-                        } else if (wildcardType.getSuperBound() != null) {
-                            return Type.wildcard(SUPER, toDomain(wildcardType.getSuperBound()));
-                        } else {
-                            return Type.wildcard(EXTENDS, OBJECT);
-                        }
+                        // A `WilcardType` can only appear as type argument to a `DeclaredType`.
+                        // The `WilcardType` is handled there. Consequently, we  never expect
+                        // this method to be called.
+                        throw new IllegalArgumentException(String.format("Unexpected wildcard type %s", wildcardType));
                     }
 
                     @Override

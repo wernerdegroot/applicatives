@@ -55,18 +55,18 @@ public class GenericTypeConstructorTest {
     }
 
     @Test
-    public void genericTypeConstructorCanAcceptValueOfTypeGivenPlaceholderTypeConstructor() {
-        assertFalse(new GenericTypeConstructor(T).canAcceptValueOfType(new PlaceholderTypeConstructor()));
+    public void genericTypeConstructorCanAcceptGivenPlaceholderTypeConstructor() {
+        assertFalse(new GenericTypeConstructor(T).canAccept(new PlaceholderTypeConstructor()));
     }
 
     @Test
-    public void genericTypeConstructorCanAcceptValueOfTypeGivenEquivalentGenericTypeConstructor() {
-        assertTrue(new GenericTypeConstructor(T).canAcceptValueOfType(new GenericTypeConstructor(T)));
+    public void genericTypeConstructorCanAcceptGivenEquivalentGenericTypeConstructor() {
+        assertTrue(new GenericTypeConstructor(T).canAccept(new GenericTypeConstructor(T)));
     }
 
     @Test
-    public void genericTypeConstructorCanAcceptValueOfTypeGivenDifferentGenericTypeConstructor() {
-        assertFalse(new GenericTypeConstructor(T).canAcceptValueOfType(new GenericTypeConstructor(U)));
+    public void genericTypeConstructorCanAcceptGivenDifferentGenericTypeConstructor() {
+        assertFalse(new GenericTypeConstructor(T).canAccept(new GenericTypeConstructor(U)));
     }
 
     @Test

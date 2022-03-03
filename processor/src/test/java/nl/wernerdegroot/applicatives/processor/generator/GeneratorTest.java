@@ -16,8 +16,6 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.joining;
 import static nl.wernerdegroot.applicatives.processor.conflicts.Conflicts.*;
-import static nl.wernerdegroot.applicatives.processor.domain.BoundType.EXTENDS;
-import static nl.wernerdegroot.applicatives.processor.domain.BoundType.SUPER;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.*;
 import static nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor.placeholder;
 import static nl.wernerdegroot.applicatives.processor.generator.Generator.generator;
@@ -59,8 +57,8 @@ public class GeneratorTest {
                 .withSelfParameterName(SELF_PARAMETER_NAME)
                 .withCombinatorParameterName(COMBINATOR_PARAMETER_NAME)
                 .withMaxTupleSizeParameterName(MAX_TUPLE_SIZE_PARAMETER_NAME)
-                .withParameterTypeConstructor(OPTIONAL.of(EXTENDS.type(placeholder())))
-                .withResultTypeConstructor(OPTIONAL.of(placeholder()))
+                .withParameterTypeConstructor(OPTIONAL.with(placeholder().covariant()))
+                .withResultTypeConstructor(OPTIONAL.with(placeholder().invariant()))
                 .withLiftMethodName("lift")
                 .withMaxArity(2)
                 .generate();
@@ -86,8 +84,8 @@ public class GeneratorTest {
                 .withSelfParameterName(SELF_PARAMETER_NAME)
                 .withCombinatorParameterName(COMBINATOR_PARAMETER_NAME)
                 .withMaxTupleSizeParameterName(MAX_TUPLE_SIZE_PARAMETER_NAME)
-                .withParameterTypeConstructor(FUNCTION.of(P.asTypeConstructor(), placeholder()))
-                .withResultTypeConstructor(FUNCTION.of(P.asTypeConstructor(), placeholder()))
+                .withParameterTypeConstructor(FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()))
+                .withResultTypeConstructor(FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()))
                 .withLiftMethodName("lift")
                 .withMaxArity(4)
                 .generate();
@@ -100,8 +98,8 @@ public class GeneratorTest {
         TypeParameterName P = TypeParameterName.of("P");
         TypeConstructor EITHER = TypeConstructor.concrete(
                 FullyQualifiedName.of("nl.wernerdegroot.applicatives.Either"),
-                P.asTypeConstructor(),
-                placeholder()
+                P.asTypeConstructor().invariant(),
+                placeholder().invariant()
         );
 
         String expected = getResourceFileAsString("/Eithers.generated");
@@ -114,7 +112,7 @@ public class GeneratorTest {
                 .withSecondaryMethodTypeParameters(asList(P.extending(OBJECT)))
                 .withMethodName("compose")
                 .withPrimaryParameterNames(PRIMARY_PARAMETER_NAMES)
-                .withSecondaryParameters(asList(Parameter.of(BI_FUNCTION.of(SUPER.type(P), SUPER.type(P), EXTENDS.type(P)), "composeLeft")))
+                .withSecondaryParameters(asList(Parameter.of(BI_FUNCTION.with(P.asType().contravariant(), P.asType().contravariant(), P.asType().covariant()), "composeLeft")))
                 .withSelfParameterName(SELF_PARAMETER_NAME)
                 .withCombinatorParameterName(COMBINATOR_PARAMETER_NAME)
                 .withMaxTupleSizeParameterName(MAX_TUPLE_SIZE_PARAMETER_NAME)

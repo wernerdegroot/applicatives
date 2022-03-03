@@ -4,7 +4,6 @@ import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.ConcreteTypeConstructor;
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.GenericTypeConstructor;
-import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.PlaceholderTypeConstructor;
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor;
 import org.junit.jupiter.api.Test;
 
@@ -37,8 +36,8 @@ public class ConcreteTypeTest {
 
     @Test
     public void of() {
-        ConcreteType expected = new ConcreteType(ERUDITE, asList(STRING_TYPE, T_TYPE, INTEGER_TYPE));
-        ConcreteType toVerify = ConcreteType.of(ERUDITE, asList(STRING_TYPE, T_TYPE, INTEGER_TYPE));
+        ConcreteType expected = new ConcreteType(ERUDITE, asList(STRING_TYPE.invariant(), T_TYPE.covariant(), INTEGER_TYPE.contravariant()));
+        ConcreteType toVerify = ConcreteType.of(ERUDITE, asList(STRING_TYPE.invariant(), T_TYPE.covariant(), INTEGER_TYPE.contravariant()));
 
         assertEquals(expected, toVerify);
     }
@@ -47,36 +46,36 @@ public class ConcreteTypeTest {
 
     @Test
     public void asTypeConstructor() {
-        ConcreteTypeConstructor expected = new ConcreteTypeConstructor(ERUDITE, asList(STRING_TYPE_CONSTRUCTOR, T_TYPE_CONSTRUCTOR, INTEGER_TYPE_CONSTRUCTOR));
-        ConcreteTypeConstructor toVerify = new ConcreteType(ERUDITE, asList(STRING_TYPE, T_TYPE, INTEGER_TYPE)).asTypeConstructor();
+        ConcreteTypeConstructor expected = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.invariant(), T_TYPE_CONSTRUCTOR.covariant(), INTEGER_TYPE_CONSTRUCTOR.contravariant());
+        ConcreteTypeConstructor toVerify = Type.concrete(ERUDITE, STRING_TYPE.invariant(), T_TYPE.covariant(), INTEGER_TYPE.contravariant()).asTypeConstructor();
 
         assertEquals(expected, toVerify);
     }
 
     @Test
     public void asTypeConstructorWithPlaceHolderForGivenNeedleThatMatchesOneOfTheTypeArguments() {
-        TypeConstructor expected = new ConcreteTypeConstructor(ERUDITE, asList(STRING_TYPE_CONSTRUCTOR, new PlaceholderTypeConstructor(), INTEGER_TYPE_CONSTRUCTOR));
-        TypeConstructor toVerify = new ConcreteType(ERUDITE, asList(STRING_TYPE, T_TYPE, INTEGER_TYPE)).asTypeConstructorWithPlaceholderFor(T);
+        TypeConstructor expected = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.invariant(), TypeConstructor.placeholder().covariant(), INTEGER_TYPE_CONSTRUCTOR.contravariant());
+        TypeConstructor toVerify = Type.concrete(ERUDITE, STRING_TYPE.invariant(), T_TYPE.covariant(), INTEGER_TYPE.contravariant()).asTypeConstructorWithPlaceholderFor(T);
 
         assertEquals(expected, toVerify);
     }
 
     @Test
     public void asTypeConstructorWithPlaceHolderForGivenNeedleThatDoesNotMatchAnyOfTheTypeArguments() {
-        TypeConstructor expected = new ConcreteTypeConstructor(ERUDITE, asList(STRING_TYPE_CONSTRUCTOR, U_TYPE_CONSTRUCTOR, INTEGER_TYPE_CONSTRUCTOR));
-        TypeConstructor toVerify = new ConcreteType(ERUDITE, asList(STRING_TYPE, U_TYPE, INTEGER_TYPE)).asTypeConstructorWithPlaceholderFor(T);
+        TypeConstructor expected = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.invariant(), U_TYPE_CONSTRUCTOR.covariant(), INTEGER_TYPE_CONSTRUCTOR.contravariant());
+        TypeConstructor toVerify = Type.concrete(ERUDITE, STRING_TYPE.invariant(), U_TYPE.covariant(), INTEGER_TYPE.contravariant()).asTypeConstructorWithPlaceholderFor(T);
 
         assertEquals(expected, toVerify);
     }
 
     @Test
     public void containsGivenNeedleThatMatchesOneOfTheTypeArguments() {
-        assertTrue(new ConcreteType(ERUDITE, asList(STRING_TYPE, T_TYPE, INTEGER_TYPE)).contains(T));
+        assertTrue(Type.concrete(ERUDITE, STRING_TYPE.invariant(), T_TYPE.covariant(), INTEGER_TYPE.contravariant()).contains(T));
     }
 
     @Test
     public void containsGivenNeedleThatDoesNotMatchAnyOfTheTypeArguments() {
-        assertFalse(new ConcreteType(ERUDITE, asList(STRING_TYPE, U_TYPE, INTEGER_TYPE)).contains(T));
+        assertFalse(Type.concrete(ERUDITE, STRING_TYPE.invariant(), U_TYPE.covariant(), INTEGER_TYPE.contravariant()).contains(T));
     }
 
     @Test
@@ -85,8 +84,8 @@ public class ConcreteTypeTest {
         mapping.put(T, A);
         mapping.put(U, B);
 
-        ConcreteType expected = new ConcreteType(ERUDITE, asList(STRING_TYPE, A_TYPE, INTEGER_TYPE));
-        ConcreteType toVerify = new ConcreteType(ERUDITE, asList(STRING_TYPE, T_TYPE, INTEGER_TYPE)).replaceAllTypeParameterNames(mapping);
+        ConcreteType expected = Type.concrete(ERUDITE, STRING_TYPE.invariant(), A_TYPE.covariant(), INTEGER_TYPE.contravariant());
+        ConcreteType toVerify = Type.concrete(ERUDITE, STRING_TYPE.invariant(), T_TYPE.covariant(), INTEGER_TYPE.contravariant()).replaceAllTypeParameterNames(mapping);
 
         assertEquals(expected, toVerify);
     }
@@ -97,8 +96,8 @@ public class ConcreteTypeTest {
         mapping.put(T, A);
         mapping.put(U, B);
 
-        ConcreteType expected = new ConcreteType(ERUDITE, asList(STRING_TYPE, V_TYPE, INTEGER_TYPE));
-        ConcreteType toVerify = new ConcreteType(ERUDITE, asList(STRING_TYPE, V_TYPE, INTEGER_TYPE)).replaceAllTypeParameterNames(mapping);
+        ConcreteType expected = Type.concrete(ERUDITE, STRING_TYPE.invariant(), V_TYPE.covariant(), INTEGER_TYPE.contravariant());
+        ConcreteType toVerify = Type.concrete(ERUDITE, STRING_TYPE.invariant(), V_TYPE.covariant(), INTEGER_TYPE.contravariant()).replaceAllTypeParameterNames(mapping);
 
         assertEquals(expected, toVerify);
     }

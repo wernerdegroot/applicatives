@@ -13,9 +13,7 @@ public class PlaceholderTypeConstructor implements TypeConstructor {
     }
 
     @Override
-    public boolean canAcceptValueOfType(TypeConstructor that) {
-        // `WildcardTypeConstructor` does the heavy lifting, so we just need
-        // to check for equality here:
+    public boolean canAccept(TypeConstructor that) {
         return this.equals(that);
     }
 

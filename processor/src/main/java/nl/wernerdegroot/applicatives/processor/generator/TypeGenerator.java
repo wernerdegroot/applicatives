@@ -1,6 +1,7 @@
 package nl.wernerdegroot.applicatives.processor.generator;
 
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
+import nl.wernerdegroot.applicatives.processor.domain.type.TypeArgument;
 
 import java.util.List;
 
@@ -28,15 +29,13 @@ public class TypeGenerator {
                 generic -> generic.getName().raw(),
 
                 concrete -> {
-                    List<Type> typeParameters = concrete.getTypeArguments();
-                    if (typeParameters.isEmpty()) {
+                    List<TypeArgument> typeArguments = concrete.getTypeArguments();
+                    if (typeArguments.isEmpty()) {
                         return concrete.getFullyQualifiedName().raw();
                     } else {
-                        return concrete.getFullyQualifiedName().raw() + OPEN_ANGULAR_BRACKET + typeParameters.stream().map(TypeGenerator::type).map(TypeGenerator::generate).collect(joining(SEPARATOR)) + CLOSE_ANGULAR_BRACKET;
+                        return concrete.getFullyQualifiedName().raw() + OPEN_ANGULAR_BRACKET + typeArguments.stream().map(TypeArgumentGenerator::generateFrom).collect(joining(SEPARATOR)) + CLOSE_ANGULAR_BRACKET;
                     }
                 },
-
-                wildcard -> String.join(" ", "?", wildcard.getType().toString(), type(wildcard.getBound()).generate()),
 
                 array -> type(array.getType()).generate() + "[]"
         );

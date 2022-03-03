@@ -25,12 +25,10 @@ public class ArrayTypeConstructor implements TypeConstructor {
     }
 
     @Override
-    public boolean canAcceptValueOfType(TypeConstructor typeConstructor) {
-        // `WildcardTypeConstructor` does much of the heavy lifting, so we just need
-        // to check if the element type of `that` is assignable to that of `this`:
+    public boolean canAccept(TypeConstructor typeConstructor) {
         if (typeConstructor instanceof ArrayTypeConstructor) {
             ArrayTypeConstructor that = (ArrayTypeConstructor) typeConstructor;
-            return this.type.canAcceptValueOfType(that.type);
+            return this.type.canAccept(that.type);
         } else {
             return false;
         }

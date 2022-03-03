@@ -10,8 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static java.util.Collections.emptyList;
-import static nl.wernerdegroot.applicatives.processor.domain.BoundType.EXTENDS;
-import static nl.wernerdegroot.applicatives.processor.domain.BoundType.SUPER;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ArrayTypeConstructorTest {
@@ -60,68 +58,18 @@ public class ArrayTypeConstructorTest {
     }
 
     @Test
-    public void invariantArrayTypeConstructorCanAcceptValueOfTypeGivenConcreteTypeConstructor() {
-        assertFalse(new ArrayTypeConstructor(STRING_TYPE_CONSTRUCTOR).canAcceptValueOfType(STRING_TYPE_CONSTRUCTOR));
+    public void canAcceptGivenConcreteTypeConstructor() {
+        assertFalse(new ArrayTypeConstructor(STRING_TYPE_CONSTRUCTOR).canAccept(STRING_TYPE_CONSTRUCTOR));
     }
 
     @Test
-    public void invariantArrayTypeConstructorCanAcceptValueOfTypeGivenDifferentInvariantArrayTypeConstructor() {
-        assertFalse(new ArrayTypeConstructor(STRING_TYPE_CONSTRUCTOR).canAcceptValueOfType(new ArrayTypeConstructor(INTEGER_TYPE_CONSTRUCTOR)));
+    public void canAcceptGivenDifferentArrayTypeConstructor() {
+        assertFalse(new ArrayTypeConstructor(STRING_TYPE_CONSTRUCTOR).canAccept(new ArrayTypeConstructor(INTEGER_TYPE_CONSTRUCTOR)));
     }
 
     @Test
-    public void invariantArrayTypeConstructorCanAcceptValueOfTypeGivenEquivalentInvariantArrayTypeConstructor() {
-        assertTrue(new ArrayTypeConstructor(STRING_TYPE_CONSTRUCTOR).canAcceptValueOfType(new ArrayTypeConstructor(STRING_TYPE_CONSTRUCTOR)));
-    }
-
-    @Test
-    public void invariantArrayTypeConstructorCanAcceptValueOfTypeGivenEquivalentCovariantArrayTypeConstructor() {
-        assertFalse(new ArrayTypeConstructor(STRING_TYPE_CONSTRUCTOR).canAcceptValueOfType(new ArrayTypeConstructor(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR))));
-    }
-
-    @Test
-    public void invariantArrayTypeConstructorCanAcceptValueOfTypeGivenEquivalentContravariantArrayTypeConstructor() {
-        assertFalse(new ArrayTypeConstructor(STRING_TYPE_CONSTRUCTOR).canAcceptValueOfType(new ArrayTypeConstructor(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR))));
-    }
-
-    @Test
-    public void covariantArrayTypeConstructorCanAcceptValueOfTypeGivenDifferentCovariantArrayTypeConstructor() {
-        assertFalse(new ArrayTypeConstructor(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR)).canAcceptValueOfType(new ArrayTypeConstructor(new WildcardTypeConstructor(EXTENDS, INTEGER_TYPE_CONSTRUCTOR))));
-    }
-
-    @Test
-    public void covariantArrayTypeConstructorCanAcceptValueOfTypeGivenEquivalentInvariantArrayTypeConstructor() {
-        assertTrue(new ArrayTypeConstructor(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR)).canAcceptValueOfType(new ArrayTypeConstructor(STRING_TYPE_CONSTRUCTOR)));
-    }
-
-    @Test
-    public void covariantArrayTypeConstructorCanAcceptValueOfTypeGivenEquivalentCovariantArrayTypeConstructor() {
-        assertTrue(new ArrayTypeConstructor(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR)).canAcceptValueOfType(new ArrayTypeConstructor(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR))));
-    }
-
-    @Test
-    public void covariantArrayTypeConstructorCanAcceptValueOfTypeGivenEquivalentContravariantArrayTypeConstructor() {
-        assertFalse(new ArrayTypeConstructor(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR)).canAcceptValueOfType(new ArrayTypeConstructor(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR))));
-    }
-
-    @Test
-    public void contravariantArrayTypeConstructorCanAcceptValueOfTypeGivenDifferentContravariantArrayTypeConstructor() {
-        assertFalse(new ArrayTypeConstructor(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR)).canAcceptValueOfType(new ArrayTypeConstructor(new WildcardTypeConstructor(SUPER, INTEGER_TYPE_CONSTRUCTOR))));
-    }
-
-    @Test
-    public void contravariantArrayTypeConstructorCanAcceptValueOfTypeGivenEquivalentInvariantArrayTypeConstructor() {
-        assertTrue(new ArrayTypeConstructor(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR)).canAcceptValueOfType(new ArrayTypeConstructor(STRING_TYPE_CONSTRUCTOR)));
-    }
-
-    @Test
-    public void contravariantArrayTypeConstructorCanAcceptValueOfTypeGivenEquivalentCovariantArrayTypeConstructor() {
-        assertFalse(new ArrayTypeConstructor(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR)).canAcceptValueOfType(new ArrayTypeConstructor(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR))));
-    }
-
-    @Test
-    public void contravariantArrayTypeConstructorCanAcceptValueOfTypeGivenEquivalentContravariantArrayTypeConstructor() {
-        assertTrue(new ArrayTypeConstructor(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR)).canAcceptValueOfType(new ArrayTypeConstructor(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR))));
+    public void canAcceptGivenEquivalentArrayTypeConstructor() {
+        assertTrue(new ArrayTypeConstructor(STRING_TYPE_CONSTRUCTOR).canAccept(new ArrayTypeConstructor(STRING_TYPE_CONSTRUCTOR)));
     }
 
     @Test

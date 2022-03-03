@@ -6,6 +6,7 @@ import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import java.util.List;
 
 import static java.util.stream.Collectors.joining;
+import static nl.wernerdegroot.applicatives.processor.generator.Constants.EXTENDS;
 
 public class TypeParameterGenerator {
 
@@ -28,7 +29,7 @@ public class TypeParameterGenerator {
         if (upperBounds.isEmpty()) {
             return typeParameter.getName().raw();
         } else {
-            return String.join(" ", typeParameter.getName().raw(), "extends", upperBounds.stream().map(TypeGenerator::type).map(TypeGenerator::generate).collect(joining(" & ")));
+            return String.join(" ", typeParameter.getName().raw(), EXTENDS, upperBounds.stream().map(TypeGenerator::type).map(TypeGenerator::generate).collect(joining(" & ")));
         }
     }
 }

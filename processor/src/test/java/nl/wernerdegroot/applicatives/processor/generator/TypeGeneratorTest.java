@@ -4,8 +4,6 @@ import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import org.junit.jupiter.api.Test;
 
-import static nl.wernerdegroot.applicatives.processor.domain.BoundType.EXTENDS;
-import static nl.wernerdegroot.applicatives.processor.domain.BoundType.SUPER;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.*;
 import static nl.wernerdegroot.applicatives.processor.generator.TypeGenerator.type;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -32,28 +30,12 @@ public class TypeGeneratorTest {
 
     @Test
     public void givenConcreteTypeWithTypeParameters() {
-        Type type = FUNCTION.of(
-                SUPER.type(STRING),
-                EXTENDS.type(OBJECT)
+        Type type = FUNCTION.with(
+                STRING.contravariant(),
+                OBJECT.covariant()
         );
         String toVerify = type(type).generate();
         String expected = "java.util.function.Function<? super java.lang.String, ? extends java.lang.Object>";
-        assertEquals(expected, toVerify);
-    }
-
-    @Test
-    public void givenWildcardTypeWithUpperBound() {
-        Type type = EXTENDS.type(OBJECT);
-        String toVerify = type(type).generate();
-        String expected = "? extends java.lang.Object";
-        assertEquals(expected, toVerify);
-    }
-
-    @Test
-    public void givenWildcardTypeWithLowerBound() {
-        Type type = SUPER.type(OBJECT);
-        String toVerify = type(type).generate();
-        String expected = "? super java.lang.Object";
         assertEquals(expected, toVerify);
     }
 

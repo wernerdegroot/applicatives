@@ -1,6 +1,6 @@
 package nl.wernerdegroot.applicatives.processor.generator;
 
-import nl.wernerdegroot.applicatives.processor.domain.type.Type;
+import nl.wernerdegroot.applicatives.processor.domain.type.TypeArgument;
 import nl.wernerdegroot.applicatives.processor.generator.ObjectPathOrTypeGenerator.HasObjectPathOrTypeGenerator;
 
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ import static nl.wernerdegroot.applicatives.processor.generator.Constants.*;
 public class MethodCallGenerator implements HasObjectPathOrTypeGenerator<MethodCallGenerator> {
 
     private ObjectPathOrTypeGenerator objectPathOrTypeGenerator = new ObjectPathOrTypeGenerator();
-    private List<Type> typeArguments = new ArrayList<>();
+    private List<TypeArgument> typeArguments = new ArrayList<>();
     private String methodName;
     private List<String> arguments = new ArrayList<>();
 
@@ -31,12 +31,12 @@ public class MethodCallGenerator implements HasObjectPathOrTypeGenerator<MethodC
         return this;
     }
 
-    public MethodCallGenerator withTypeArguments(List<Type> typeArguments) {
+    public MethodCallGenerator withTypeArguments(List<TypeArgument> typeArguments) {
         this.typeArguments.addAll(typeArguments);
         return this;
     }
 
-    public MethodCallGenerator withTypeArguments(Type... typeArguments) {
+    public MethodCallGenerator withTypeArguments(TypeArgument... typeArguments) {
         return withTypeArguments(asList(typeArguments));
     }
 
@@ -62,7 +62,7 @@ public class MethodCallGenerator implements HasObjectPathOrTypeGenerator<MethodC
         if (typeArguments.isEmpty()) {
             return "";
         } else {
-            return typeArguments.stream().map(TypeGenerator::generateFrom).collect(joining(SEPARATOR, OPEN_ANGULAR_BRACKET, CLOSE_ANGULAR_BRACKET));
+            return typeArguments.stream().map(TypeArgumentGenerator::generateFrom).collect(joining(SEPARATOR, OPEN_ANGULAR_BRACKET, CLOSE_ANGULAR_BRACKET));
         }
     }
 }

@@ -21,7 +21,7 @@ public class GenericType implements Type {
     }
 
     @Override
-    public <R> R match(Function<GenericType, R> matchGeneric, Function<ConcreteType, R> matchConcrete, Function<WildcardType, R> matchWildcard, Function<ArrayType, R> matchArray) {
+    public <R> R match(Function<GenericType, R> matchGeneric, Function<ConcreteType, R> matchConcrete, Function<ArrayType, R> matchArray) {
         return matchGeneric.apply(this);
     }
 

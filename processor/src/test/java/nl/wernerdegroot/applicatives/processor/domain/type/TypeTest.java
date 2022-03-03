@@ -5,13 +5,11 @@ import nl.wernerdegroot.applicatives.processor.domain.Parameter;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameter;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.ConcreteTypeConstructor;
-import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.PlaceholderTypeConstructor;
+import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor;
 import org.junit.jupiter.api.Test;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static nl.wernerdegroot.applicatives.processor.domain.BoundType.EXTENDS;
-import static nl.wernerdegroot.applicatives.processor.domain.BoundType.SUPER;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TypeTest {
@@ -37,30 +35,30 @@ public class TypeTest {
 
     @Test
     public void using() {
-        Type expected = new ConcreteType(ERUDITE, asList(STRING_TYPE, T_TYPE, INTEGER_TYPE));
-        Type toVerify = new GenericType(T).using(new ConcreteTypeConstructor(ERUDITE, asList(STRING_TYPE_CONSTRUCTOR, new PlaceholderTypeConstructor(), INTEGER_TYPE_CONSTRUCTOR)));
+        Type expected = Type.concrete(ERUDITE, STRING_TYPE.invariant(), T_TYPE.covariant(), INTEGER_TYPE.contravariant());
+        Type toVerify = Type.generic(T).using(TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.invariant(), TypeConstructor.placeholder().covariant(), INTEGER_TYPE_CONSTRUCTOR.contravariant()));
 
         assertEquals(expected, toVerify);
     }
 
     @Test
     public void containsGivenManyTypeParameterNamesWithOneThatMatches() {
-        assertTrue(new ConcreteType(ERUDITE, asList(STRING_TYPE, T_TYPE, INTEGER_TYPE)).contains(T, U, V));
+        assertTrue(Type.concrete(ERUDITE, STRING_TYPE.invariant(), T_TYPE.covariant(), INTEGER_TYPE.contravariant()).contains(T, U, V));
     }
 
     @Test
     public void containsGivenManyTypeParameterNamesWithNoneThatMatches() {
-        assertFalse(new ConcreteType(ERUDITE, asList(STRING_TYPE, W_TYPE, INTEGER_TYPE)).contains(T, U, V));
+        assertFalse(Type.concrete(ERUDITE, STRING_TYPE.invariant(), W_TYPE.covariant(), INTEGER_TYPE.contravariant()).contains(T, U, V));
     }
 
     @Test
     public void containsGivenManyTypeParametersWithOneThatMatches() {
-        assertTrue(new ConcreteType(ERUDITE, asList(STRING_TYPE, T_TYPE, INTEGER_TYPE)).contains(T_TYPE_PARAMETER, U_TYPE_PARAMETER, V_TYPE_PARAMETER));
+        assertTrue(Type.concrete(ERUDITE, STRING_TYPE.invariant(), T_TYPE.covariant(), INTEGER_TYPE.contravariant()).contains(T_TYPE_PARAMETER, U_TYPE_PARAMETER, V_TYPE_PARAMETER));
     }
 
     @Test
     public void containsGivenManyTypeParametersWithNoneThatMatches() {
-        assertFalse(new ConcreteType(ERUDITE, asList(STRING_TYPE, W_TYPE, INTEGER_TYPE)).contains(T_TYPE_PARAMETER, U_TYPE_PARAMETER, V_TYPE_PARAMETER));
+        assertFalse(Type.concrete(ERUDITE, STRING_TYPE.invariant(), W_TYPE.covariant(), INTEGER_TYPE.contravariant()).contains(T_TYPE_PARAMETER, U_TYPE_PARAMETER, V_TYPE_PARAMETER));
     }
 
     @Test
@@ -89,8 +87,8 @@ public class TypeTest {
 
     @Test
     public void concreteGivenFullyQualifiedNameAndTypeArguments() {
-        ConcreteType expected = new ConcreteType(ERUDITE, asList(STRING_TYPE, T_TYPE, INTEGER_TYPE));
-        ConcreteType toVerify = Type.concrete(ERUDITE, asList(STRING_TYPE, T_TYPE, INTEGER_TYPE));
+        ConcreteType expected = new ConcreteType(ERUDITE, asList(STRING_TYPE.invariant(), T_TYPE.covariant(), INTEGER_TYPE.contravariant()));
+        ConcreteType toVerify = Type.concrete(ERUDITE, STRING_TYPE.invariant(), T_TYPE.covariant(), INTEGER_TYPE.contravariant());
 
         assertEquals(expected, toVerify);
     }
@@ -99,22 +97,6 @@ public class TypeTest {
     public void concreteGivenFullyQualifiedName() {
         ConcreteType expected = new ConcreteType(ERUDITE, emptyList());
         ConcreteType toVerify = Type.concrete(ERUDITE);
-
-        assertEquals(expected, toVerify);
-    }
-
-    @Test
-    public void wildcardGivenBoundTypeAndBound() {
-        WildcardType expected = new WildcardType(SUPER, STRING_TYPE);
-        WildcardType toVerify = Type.wildcard(SUPER, STRING_TYPE);
-
-        assertEquals(expected, toVerify);
-    }
-
-    @Test
-    public void wildcard() {
-        WildcardType expected = new WildcardType(EXTENDS, OBJECT_TYPE);
-        WildcardType toVerify = Type.wildcard();
 
         assertEquals(expected, toVerify);
     }
