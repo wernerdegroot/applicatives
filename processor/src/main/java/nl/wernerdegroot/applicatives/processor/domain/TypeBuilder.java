@@ -1,7 +1,9 @@
 package nl.wernerdegroot.applicatives.processor.domain;
 
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
+import nl.wernerdegroot.applicatives.processor.domain.type.TypeArgument;
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor;
+import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructorArgument;
 
 import java.util.stream.Stream;
 
@@ -19,19 +21,19 @@ public class TypeBuilder {
         return fullyQualifiedName;
     }
 
-    public Type of(Type... typeArguments) {
+    public Type with(TypeArgument... typeArguments) {
         return Type.concrete(fullyQualifiedName, asList(typeArguments));
     }
 
-    public Type of(TypeParameterName... typeArguments) {
-        return Type.concrete(fullyQualifiedName, Stream.of(typeArguments).map(Type::generic).collect(toList()));
+    public Type with(TypeParameterName... typeArguments) {
+        return Type.concrete(fullyQualifiedName, Stream.of(typeArguments).map(Type::generic).map(Type::invariant).collect(toList()));
     }
 
     public TypeConstructor asTypeConstructor() {
-        return TypeConstructor.concrete(fullyQualifiedName, asList(TypeConstructor.placeholder()));
+        return TypeConstructor.concrete(fullyQualifiedName, asList(TypeConstructor.placeholder().invariant()));
     }
 
-    public TypeConstructor of(TypeConstructor... typeArguments) {
-        return TypeConstructor.concrete(fullyQualifiedName, asList(typeArguments));
+    public TypeConstructor with(TypeConstructorArgument... typeConstructorArguments) {
+        return TypeConstructor.concrete(fullyQualifiedName, asList(typeConstructorArguments));
     }
 }

@@ -1,6 +1,5 @@
 package nl.wernerdegroot.applicatives.processor.domain.typeconstructor;
 
-import nl.wernerdegroot.applicatives.processor.domain.BoundType;
 import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
@@ -9,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.Arrays.asList;
+import static nl.wernerdegroot.applicatives.processor.domain.Variance.*;
 
 /**
  * A type constructor is a construct that accepts a type to produce a type.
@@ -65,20 +65,28 @@ public interface TypeConstructor {
         return array(this);
     }
 
+    default TypeConstructorArgument invariant() {
+        return TypeConstructorArgument.of(INVARIANT, this);
+    }
+
+    default TypeConstructorArgument covariant() {
+        return TypeConstructorArgument.of(COVARIANT, this);
+    }
+
+    default TypeConstructorArgument contravariant() {
+        return TypeConstructorArgument.of(CONTRAVARIANT, this);
+    }
+
     static GenericTypeConstructor generic(TypeParameterName name) {
         return new GenericTypeConstructor(name);
     }
 
-    static ConcreteTypeConstructor concrete(FullyQualifiedName fullyQualifiedName, List<TypeConstructor> typeArguments) {
-        return new ConcreteTypeConstructor(fullyQualifiedName, typeArguments);
+    static ConcreteTypeConstructor concrete(FullyQualifiedName fullyQualifiedName, List<TypeConstructorArgument> typeConstructorArguments) {
+        return new ConcreteTypeConstructor(fullyQualifiedName, typeConstructorArguments);
     }
 
-    static ConcreteTypeConstructor concrete(FullyQualifiedName fullyQualifiedName, TypeConstructor... typeArguments) {
-        return new ConcreteTypeConstructor(fullyQualifiedName, asList(typeArguments));
-    }
-
-    static WildcardTypeConstructor wildcard(BoundType type, TypeConstructor bound) {
-        return new WildcardTypeConstructor(type, bound);
+    static ConcreteTypeConstructor concrete(FullyQualifiedName fullyQualifiedName, TypeConstructorArgument... typeConstructorArguments) {
+        return new ConcreteTypeConstructor(fullyQualifiedName, asList(typeConstructorArguments));
     }
 
     static ArrayTypeConstructor array(TypeConstructor type) {

@@ -4,6 +4,7 @@ import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
 import nl.wernerdegroot.applicatives.processor.domain.type.ConcreteType;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
+import nl.wernerdegroot.applicatives.processor.domain.type.TypeArgument;
 
 import java.util.List;
 import java.util.Map;
@@ -14,25 +15,25 @@ import static java.util.stream.Collectors.toList;
 public class ConcreteTypeConstructor implements TypeConstructor {
 
     private final FullyQualifiedName fullyQualifiedName;
-    private final List<TypeConstructor> typeArguments;
+    private final List<TypeConstructorArgument> typeConstructorArguments;
 
-    public ConcreteTypeConstructor(FullyQualifiedName fullyQualifiedName, List<TypeConstructor> typeArguments) {
+    public ConcreteTypeConstructor(FullyQualifiedName fullyQualifiedName, List<TypeConstructorArgument> typeConstructorArguments) {
         this.fullyQualifiedName = fullyQualifiedName;
-        this.typeArguments = typeArguments;
+        this.typeConstructorArguments = typeConstructorArguments;
     }
 
-    public static ConcreteTypeConstructor of(FullyQualifiedName fullyQualifiedName, List<TypeConstructor> typeArguments) {
-        return new ConcreteTypeConstructor(fullyQualifiedName, typeArguments);
+    public static ConcreteTypeConstructor of(FullyQualifiedName fullyQualifiedName, List<TypeConstructorArgument> typeConstructorArguments) {
+        return new ConcreteTypeConstructor(fullyQualifiedName, typeConstructorArguments);
     }
 
     @Override
     public ConcreteTypeConstructor replaceAllTypeParameterNames(Map<TypeParameterName, TypeParameterName> replacement) {
-        List<TypeConstructor> replacedTypeArguments = typeArguments
+        List<TypeConstructorArgument> replacedTypeConstructorArguments = typeConstructorArguments
                 .stream()
-                .map(typeArgument -> typeArgument.replaceAllTypeParameterNames(replacement))
+                .map(typeConstructorArgument -> typeConstructorArgument.replaceAllTypeParameterNames(replacement))
                 .collect(toList());
 
-        return TypeConstructor.concrete(fullyQualifiedName, replacedTypeArguments);
+        return TypeConstructor.concrete(fullyQualifiedName, replacedTypeConstructorArguments);
     }
 
     @Override
@@ -51,24 +52,17 @@ public class ConcreteTypeConstructor implements TypeConstructor {
     }
 
     private boolean typeArgumentsCanAccept(ConcreteTypeConstructor that) {
-        if (this.typeArguments.size() != that.typeArguments.size()) {
+        if (this.typeConstructorArguments.size() != that.typeConstructorArguments.size()) {
             return false;
         }
 
-        for (int i = 0; i < typeArguments.size(); ++i) {
-            TypeConstructor fromThis = this.typeArguments.get(i);
-            TypeConstructor fromThat = that.typeArguments.get(i);
+        for (int i = 0; i < typeConstructorArguments.size(); ++i) {
+            TypeConstructorArgument fromThis = this.typeConstructorArguments.get(i);
+            TypeConstructorArgument fromThat = that.typeConstructorArguments.get(i);
 
-            if (fromThis instanceof WildcardTypeConstructor) {
-                if (!fromThis.canAccept(fromThat)) {
-                    return false;
-                }
-            } else {
-                if (!fromThis.equals(fromThat)) {
-                    return false;
-                }
+            if (!fromThis.canAccept(fromThat)) {
+                return false;
             }
-
         }
 
         return true;
@@ -76,20 +70,20 @@ public class ConcreteTypeConstructor implements TypeConstructor {
 
     @Override
     public ConcreteType apply(Type toApplyTo) {
-        List<Type> appliedTypeArguments = typeArguments
+        List<TypeArgument> typeArguments = typeConstructorArguments
                 .stream()
                 .map(typeArgument -> typeArgument.apply(toApplyTo))
                 .collect(toList());
 
-        return Type.concrete(fullyQualifiedName, appliedTypeArguments);
+        return Type.concrete(fullyQualifiedName, typeArguments);
     }
 
     public FullyQualifiedName getFullyQualifiedName() {
         return fullyQualifiedName;
     }
 
-    public List<TypeConstructor> getTypeArguments() {
-        return typeArguments;
+    public List<TypeConstructorArgument> getTypeConstructorArguments() {
+        return typeConstructorArguments;
     }
 
     @Override
@@ -97,19 +91,19 @@ public class ConcreteTypeConstructor implements TypeConstructor {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ConcreteTypeConstructor that = (ConcreteTypeConstructor) o;
-        return getFullyQualifiedName().equals(that.getFullyQualifiedName()) && getTypeArguments().equals(that.getTypeArguments());
+        return getFullyQualifiedName().equals(that.getFullyQualifiedName()) && getTypeConstructorArguments().equals(that.getTypeConstructorArguments());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getFullyQualifiedName(), getTypeArguments());
+        return Objects.hash(getFullyQualifiedName(), getTypeConstructorArguments());
     }
 
     @Override
     public String toString() {
         return "ConcreteTypeConstructor{" +
                 "fullyQualifiedName=" + fullyQualifiedName +
-                ", typeArguments=" + typeArguments +
+                ", typeConstructorArguments=" + typeConstructorArguments +
                 '}';
     }
 }

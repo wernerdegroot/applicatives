@@ -5,6 +5,7 @@ import com.google.testing.compile.Compiler;
 import com.google.testing.compile.JavaFileObjects;
 import nl.wernerdegroot.applicatives.processor.domain.*;
 import nl.wernerdegroot.applicatives.processor.domain.containing.ContainingClass;
+import nl.wernerdegroot.applicatives.processor.domain.type.TypeArgument;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.processing.*;
@@ -22,8 +23,6 @@ import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toSet;
-import static nl.wernerdegroot.applicatives.processor.domain.BoundType.EXTENDS;
-import static nl.wernerdegroot.applicatives.processor.domain.BoundType.SUPER;
 import static nl.wernerdegroot.applicatives.processor.domain.Modifier.*;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -57,7 +56,7 @@ public class MethodConverterTest {
             assertEquals(
                     asList(
                             A.extending(OBJECT),
-                            B.extending(NUMBER, COMPARABLE.of(A))
+                            B.extending(NUMBER, COMPARABLE.with(A))
                     ),
                     method.getTypeParameters()
             );
@@ -91,10 +90,10 @@ public class MethodConverterTest {
                             Parameter.of(INT, "primitive"),
                             Parameter.of(BOOLEAN, "object"),
                             Parameter.of(CHAR.array().array(), "twoDimensionalPrimitiveArray"),
-                            Parameter.of(LIST.of(wildcard()), "listOfWildcardsWithoutUpperOrLowerBound"),
-                            Parameter.of(SET.of(EXTENDS.type(SERIALIZABLE)), "setOfWildcardsWithUpperBound"),
-                            Parameter.of(COLLECTION.of(SUPER.type(NUMBER)), "collectionOfWildcardsWithLowerBound"),
-                            Parameter.of(StaticInnerClass.with(B.asType(), THREAD), "nestedClasses")
+                            Parameter.of(LIST.with(TypeArgument.wildcard()), "listOfWildcardsWithoutUpperOrLowerBound"),
+                            Parameter.of(SET.with(SERIALIZABLE.covariant()), "setOfWildcardsWithUpperBound"),
+                            Parameter.of(COLLECTION.with(NUMBER.contravariant()), "collectionOfWildcardsWithLowerBound"),
+                            Parameter.of(StaticInnerClass.with(B.asType().invariant(), THREAD.invariant()), "nestedClasses")
                     ),
                     method.getParameters()
             );

@@ -39,19 +39,19 @@ public class ConflictPreventionTest {
 
                 ConflictFree conflictFree = ConflictPrevention.preventConflicts(
                         // Secondary method type parameters:
-                        asList(I.extending(ARDUOUS.of(I, M, J, C)), M.asTypeParameter()),
+                        asList(I.extending(ARDUOUS.with(I, M, J, C)), M.asTypeParameter()),
 
                         // Class type parameters:
-                        asList(J.extending(PROFUSE.of(J, C)), C.asTypeParameter()),
+                        asList(J.extending(PROFUSE.with(J, C)), C.asTypeParameter()),
 
                         // Secondary parameters:
-                        asList(Parameter.of(SAPIENT.of(I, M, J, C), first), Parameter.of(BUOYANT.of(S), second)),
+                        asList(Parameter.of(SAPIENT.with(I, M, J, C), first), Parameter.of(BUOYANT.with(S), second)),
 
                         // Parameter type constructor:
-                        ERUDITE.of(I.asTypeConstructor(), M.asTypeConstructor(), placeholder(), J.asTypeConstructor(), C.asTypeConstructor()),
+                        ERUDITE.with(I.asTypeConstructor().invariant(), M.asTypeConstructor().covariant(), placeholder().contravariant(), J.asTypeConstructor().invariant(), C.asTypeConstructor().covariant()),
 
                         // Result type constructor:
-                        VOLUBLE.of(S.asTypeConstructor(), placeholder())
+                        VOLUBLE.with(S.asTypeConstructor().contravariant(), placeholder().invariant())
                 );
 
                 // Primary method type parameters:
@@ -61,22 +61,22 @@ public class ConflictPreventionTest {
                 assertEquals(RESULT_TYPE_PARAMETER, conflictFree.getResultTypeParameter());
 
                 // Secondary method type parameters:
-                assertEquals(asList(M1.extending(ARDUOUS.of(M1, M2, C1, C2)), M2.asTypeParameter()), conflictFree.getSecondaryMethodTypeParameters());
+                assertEquals(asList(M1.extending(ARDUOUS.with(M1, M2, C1, C2)), M2.asTypeParameter()), conflictFree.getSecondaryMethodTypeParameters());
 
                 // Class type parameters:
-                assertEquals(asList(C1.extending(PROFUSE.of(C1, C2)), C2.asTypeParameter()), conflictFree.getClassTypeParameters());
+                assertEquals(asList(C1.extending(PROFUSE.with(C1, C2)), C2.asTypeParameter()), conflictFree.getClassTypeParameters());
 
                 // Primary parameters:
                 assertEquals(EXPECTED_PRIMARY_METHOD_PARAMETER_NAMES, conflictFree.getPrimaryParameterNames());
 
                 // Secondary parameters:
-                assertEquals(asList(Parameter.of(SAPIENT.of(M1, M2, C1, C2), s1), Parameter.of(BUOYANT.of(S), s2)), conflictFree.getSecondaryParameters());
+                assertEquals(asList(Parameter.of(SAPIENT.with(M1, M2, C1, C2), s1), Parameter.of(BUOYANT.with(S), s2)), conflictFree.getSecondaryParameters());
 
                 // Parameter type constructor:
-                assertEquals(ERUDITE.of(M1.asTypeConstructor(), M2.asTypeConstructor(), placeholder(), C1.asTypeConstructor(), C2.asTypeConstructor()), conflictFree.getParameterTypeConstructor());
+                assertEquals(ERUDITE.with(M1.asTypeConstructor().invariant(), M2.asTypeConstructor().covariant(), placeholder().contravariant(), C1.asTypeConstructor().invariant(), C2.asTypeConstructor().covariant()), conflictFree.getParameterTypeConstructor());
 
                 // Result type constructor:
-                assertEquals(VOLUBLE.of(S.asTypeConstructor(), placeholder()), conflictFree.getResultTypeConstructor());
+                assertEquals(VOLUBLE.with(S.asTypeConstructor().contravariant(), placeholder().invariant()), conflictFree.getResultTypeConstructor());
             });
         });
     }

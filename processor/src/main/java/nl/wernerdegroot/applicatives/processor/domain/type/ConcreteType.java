@@ -15,19 +15,19 @@ import static java.util.stream.Collectors.toList;
 public class ConcreteType implements Type {
 
     private final FullyQualifiedName fullyQualifiedName;
-    private final List<Type> typeArguments;
+    private final List<TypeArgument> typeArguments;
 
-    public ConcreteType(FullyQualifiedName fullyQualifiedName, List<Type> typeArguments) {
+    public ConcreteType(FullyQualifiedName fullyQualifiedName, List<TypeArgument> typeArguments) {
         this.fullyQualifiedName = fullyQualifiedName;
         this.typeArguments = typeArguments;
     }
 
-    public static ConcreteType of(FullyQualifiedName fullyQualifiedName, List<Type> typeArguments) {
+    public static ConcreteType of(FullyQualifiedName fullyQualifiedName, List<TypeArgument> typeArguments) {
         return new ConcreteType(fullyQualifiedName, typeArguments);
     }
 
     @Override
-    public <R> R match(Function<GenericType, R> matchGeneric, Function<ConcreteType, R> matchConcrete, Function<WildcardType, R> matchWildcard, Function<ArrayType, R> matchArray) {
+    public <R> R match(Function<GenericType, R> matchGeneric, Function<ConcreteType, R> matchConcrete, Function<ArrayType, R> matchArray) {
         return matchConcrete.apply(this);
     }
 
@@ -35,7 +35,7 @@ public class ConcreteType implements Type {
     public ConcreteTypeConstructor asTypeConstructor() {
         return TypeConstructor.concrete(
                 fullyQualifiedName,
-                typeArguments.stream().map(Type::asTypeConstructor).collect(toList())
+                typeArguments.stream().map(TypeArgument::asTypeConstructorArgument).collect(toList())
         );
     }
 
@@ -43,7 +43,7 @@ public class ConcreteType implements Type {
     public TypeConstructor asTypeConstructorWithPlaceholderFor(TypeParameterName needle) {
         return TypeConstructor.concrete(
                 fullyQualifiedName,
-                typeArguments.stream().map(typeArgument -> typeArgument.asTypeConstructorWithPlaceholderFor(needle)).collect(toList())
+                typeArguments.stream().map(typeArgument -> typeArgument.asTypeConstructorArgumentWithPlaceholderFor(needle)).collect(toList())
         );
     }
 
@@ -54,7 +54,7 @@ public class ConcreteType implements Type {
 
     @Override
     public ConcreteType replaceAllTypeParameterNames(Map<TypeParameterName, TypeParameterName> replacement) {
-        List<Type> replacedTypeArguments = typeArguments
+        List<TypeArgument> replacedTypeArguments = typeArguments
                 .stream()
                 .map(typeArgument -> typeArgument.replaceAllTypeParameterNames(replacement))
                 .collect(toList());
@@ -66,7 +66,7 @@ public class ConcreteType implements Type {
         return fullyQualifiedName;
     }
 
-    public List<Type> getTypeArguments() {
+    public List<TypeArgument> getTypeArguments() {
         return typeArguments;
     }
 

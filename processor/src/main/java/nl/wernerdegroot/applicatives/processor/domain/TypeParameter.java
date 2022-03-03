@@ -1,6 +1,7 @@
 package nl.wernerdegroot.applicatives.processor.domain;
 
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
+import nl.wernerdegroot.applicatives.processor.domain.type.TypeArgument;
 
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,18 @@ public class TypeParameter {
 
     public Type asType() {
         return getName().asType();
+    }
+
+    public TypeArgument invariant() {
+        return asType().invariant();
+    }
+
+    public TypeArgument covariant() {
+        return asType().covariant();
+    }
+
+    public TypeArgument contravariant() {
+        return asType().contravariant();
     }
 
     public TypeParameter replaceAllTypeParameterNames(Map<TypeParameterName, TypeParameterName> replacement) {

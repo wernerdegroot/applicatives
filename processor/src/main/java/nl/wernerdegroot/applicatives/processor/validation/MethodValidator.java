@@ -11,8 +11,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static nl.wernerdegroot.applicatives.processor.domain.BoundType.EXTENDS;
-import static nl.wernerdegroot.applicatives.processor.domain.BoundType.SUPER;
 import static nl.wernerdegroot.applicatives.processor.domain.Modifier.PRIVATE;
 import static nl.wernerdegroot.applicatives.processor.domain.Modifier.STATIC;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.BI_FUNCTION;
@@ -65,7 +63,7 @@ public class MethodValidator {
         Parameter rightParameter = parameters.get(1);
         Parameter combineParameter = parameters.get(2);
         List<Parameter> secondaryParameters = parameters.subList(3, numberOfParameters);
-        Type expectedCombineParameter = BI_FUNCTION.of(SUPER.type(leftTypeParameter.asType()), SUPER.type(rightTypeParameter.asType()), EXTENDS.type(resultTypeParameter.asType()));
+        Type expectedCombineParameter = BI_FUNCTION.with(leftTypeParameter.contravariant(), rightTypeParameter.contravariant(), resultTypeParameter.covariant());
 
         if (!Objects.equals(combineParameter.getType(), expectedCombineParameter)) {
             return ValidatedMethod.invalid("Expected third argument to be a " + generateFrom(expectedCombineParameter) + " but was " + generateFrom(combineParameter.getType()));

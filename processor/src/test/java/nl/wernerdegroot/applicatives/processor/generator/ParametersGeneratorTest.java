@@ -17,7 +17,7 @@ public class ParametersGeneratorTest {
         String toVerify = toTest()
                 .withParameter(STRING, "s")
                 .withParameters(Parameter.of(BIG_DECIMAL, "bd"), Parameter.of(INTEGER, "i"))
-                .withParameterTypes(OPTIONAL.of(T), OPTIONAL.of(U))
+                .withParameterTypes(OPTIONAL.with(T), OPTIONAL.with(U))
                 .andParameterNames("t", "u")
                 .getParametersGenerator()
                 .generate();

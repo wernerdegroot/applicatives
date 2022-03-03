@@ -3,6 +3,7 @@ package nl.wernerdegroot.applicatives.processor.domain.typeconstructor;
 import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
 import nl.wernerdegroot.applicatives.processor.domain.type.ConcreteType;
+import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -10,8 +11,7 @@ import java.util.Map;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static nl.wernerdegroot.applicatives.processor.domain.BoundType.EXTENDS;
-import static nl.wernerdegroot.applicatives.processor.domain.BoundType.SUPER;
+import static nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor.placeholder;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ConcreteTypeConstructorTest {
@@ -33,8 +33,23 @@ public class ConcreteTypeConstructorTest {
 
     @Test
     public void of() {
-        ConcreteTypeConstructor expected = new ConcreteTypeConstructor(ERUDITE, asList(STRING_TYPE_CONSTRUCTOR, new PlaceholderTypeConstructor(), INTEGER_TYPE_CONSTRUCTOR));
-        ConcreteTypeConstructor toVerify = ConcreteTypeConstructor.of(ERUDITE, asList(STRING_TYPE_CONSTRUCTOR, new PlaceholderTypeConstructor(), INTEGER_TYPE_CONSTRUCTOR));
+        ConcreteTypeConstructor expected = new ConcreteTypeConstructor(
+                ERUDITE,
+                asList(
+                        STRING_TYPE_CONSTRUCTOR.invariant(),
+                        TypeConstructor.placeholder().covariant(),
+                        INTEGER_TYPE_CONSTRUCTOR.contravariant()
+                )
+        );
+
+        ConcreteTypeConstructor toVerify = ConcreteTypeConstructor.of(
+                ERUDITE,
+                asList(
+                        STRING_TYPE_CONSTRUCTOR.invariant(),
+                        TypeConstructor.placeholder().covariant(),
+                        INTEGER_TYPE_CONSTRUCTOR.contravariant()
+                )
+        );
 
         assertEquals(expected, toVerify);
     }
@@ -45,8 +60,23 @@ public class ConcreteTypeConstructorTest {
         mapping.put(T, A);
         mapping.put(U, B);
 
-        ConcreteTypeConstructor expected = new ConcreteTypeConstructor(ERUDITE, asList(STRING_TYPE_CONSTRUCTOR, new GenericTypeConstructor(A), INTEGER_TYPE_CONSTRUCTOR));
-        ConcreteTypeConstructor toVerify = new ConcreteTypeConstructor(ERUDITE, asList(STRING_TYPE_CONSTRUCTOR, new GenericTypeConstructor(T), INTEGER_TYPE_CONSTRUCTOR)).replaceAllTypeParameterNames(mapping);
+        ConcreteTypeConstructor expected = new ConcreteTypeConstructor(
+                ERUDITE,
+                asList(
+                        STRING_TYPE_CONSTRUCTOR.invariant(),
+                        TypeConstructor.generic(A).covariant(),
+                        INTEGER_TYPE_CONSTRUCTOR.contravariant()
+                )
+        );
+
+        ConcreteTypeConstructor toVerify = new ConcreteTypeConstructor(
+                ERUDITE,
+                asList(
+                        STRING_TYPE_CONSTRUCTOR.invariant(),
+                        TypeConstructor.generic(T).covariant(),
+                        INTEGER_TYPE_CONSTRUCTOR.contravariant()
+                )
+        ).replaceAllTypeParameterNames(mapping);
 
         assertEquals(expected, toVerify);
     }
@@ -57,104 +87,167 @@ public class ConcreteTypeConstructorTest {
         mapping.put(T, A);
         mapping.put(U, B);
 
-        ConcreteTypeConstructor expected = new ConcreteTypeConstructor(ERUDITE, asList(STRING_TYPE_CONSTRUCTOR, new GenericTypeConstructor(V), INTEGER_TYPE_CONSTRUCTOR));
-        ConcreteTypeConstructor toVerify = new ConcreteTypeConstructor(ERUDITE, asList(STRING_TYPE_CONSTRUCTOR, new GenericTypeConstructor(V), INTEGER_TYPE_CONSTRUCTOR)).replaceAllTypeParameterNames(mapping);
+        ConcreteTypeConstructor expected = new ConcreteTypeConstructor(
+                ERUDITE,
+                asList(
+                        STRING_TYPE_CONSTRUCTOR.invariant(),
+                        TypeConstructor.generic(V).covariant(),
+                        INTEGER_TYPE_CONSTRUCTOR.contravariant()
+                )
+        );
+
+        ConcreteTypeConstructor toVerify = new ConcreteTypeConstructor(
+                ERUDITE,
+                asList(
+                        STRING_TYPE_CONSTRUCTOR.invariant(),
+                        TypeConstructor.generic(V).covariant(),
+                        INTEGER_TYPE_CONSTRUCTOR.contravariant()
+                )
+        ).replaceAllTypeParameterNames(mapping);
 
         assertEquals(expected, toVerify);
     }
 
     @Test
     public void invariantConcreteTypeConstructorCanAcceptGivenGenericTypeConstructor() {
-        assertFalse(new ConcreteTypeConstructor(ERUDITE, asList(STRING_TYPE_CONSTRUCTOR)).canAccept(new GenericTypeConstructor(T)));
+        ConcreteTypeConstructor target = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.invariant());
+        GenericTypeConstructor source = TypeConstructor.generic(T);
+
+        assertFalse(target.canAccept(source));
     }
 
     @Test
     public void invariantConcreteTypeConstructorCanAcceptGivenSimilarInvariantConcreteTypeConstructorWithDifferentFullyQualifiedName() {
-        assertFalse(new ConcreteTypeConstructor(ERUDITE, asList(STRING_TYPE_CONSTRUCTOR)).canAccept(new ConcreteTypeConstructor(PROFUSE, asList(STRING_TYPE_CONSTRUCTOR))));
+        ConcreteTypeConstructor target = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.invariant());
+        ConcreteTypeConstructor source = TypeConstructor.concrete(PROFUSE, STRING_TYPE_CONSTRUCTOR.invariant());
+
+        assertFalse(target.canAccept(source));
     }
 
     @Test
     public void invariantConcreteTypeConstructorCanAcceptGivenSimilarInvariantConcreteTypeConstructorWithDifferentTypeParameter() {
-        assertFalse(new ConcreteTypeConstructor(ERUDITE, asList(STRING_TYPE_CONSTRUCTOR)).canAccept(new ConcreteTypeConstructor(ERUDITE, asList(INTEGER_TYPE_CONSTRUCTOR))));
+        ConcreteTypeConstructor target = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.invariant());
+        ConcreteTypeConstructor source = TypeConstructor.concrete(ERUDITE, INTEGER_TYPE_CONSTRUCTOR.invariant());
+
+        assertFalse(target.canAccept(source));
     }
 
     @Test
     public void invariantConcreteTypeConstructorCanAcceptGivenSimilarInvariantConcreteTypeConstructorWithDifferentNumberOfTypeParameters() {
-        assertFalse(new ConcreteTypeConstructor(ERUDITE, asList(STRING_TYPE_CONSTRUCTOR)).canAccept(new ConcreteTypeConstructor(ERUDITE, asList(STRING_TYPE_CONSTRUCTOR, INTEGER_TYPE_CONSTRUCTOR))));
+        ConcreteTypeConstructor target = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.invariant());
+        ConcreteTypeConstructor source = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.invariant(), INTEGER_TYPE_CONSTRUCTOR.covariant());
+
+        assertFalse(target.canAccept(source));
     }
 
     @Test
     public void invariantConcreteTypeConstructorCanAcceptGivenEquivalentInvariantConcreteTypeConstructor() {
-        assertTrue(new ConcreteTypeConstructor(ERUDITE, asList(STRING_TYPE_CONSTRUCTOR)).canAccept(new ConcreteTypeConstructor(ERUDITE, asList(STRING_TYPE_CONSTRUCTOR))));
+        ConcreteTypeConstructor target = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.invariant());
+        ConcreteTypeConstructor source = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.invariant());
+
+        assertTrue(target.canAccept(source));
     }
 
     @Test
     public void invariantConcreteTypeConstructorCanAcceptGivenEquivalentCovariantConcreteTypeConstructor() {
-        assertFalse(new ConcreteTypeConstructor(ERUDITE, asList(STRING_TYPE_CONSTRUCTOR)).canAccept(new ConcreteTypeConstructor(ERUDITE, asList(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR)))));
+        ConcreteTypeConstructor target = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.invariant());
+        ConcreteTypeConstructor source = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.covariant());
+
+        assertFalse(target.canAccept(source));
     }
 
     @Test
     public void invariantConcreteTypeConstructorCanAcceptGivenEquivalentContravariantConcreteTypeConstructor() {
-        assertFalse(new ConcreteTypeConstructor(ERUDITE, asList(STRING_TYPE_CONSTRUCTOR)).canAccept(new ConcreteTypeConstructor(ERUDITE, asList(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR)))));
+        ConcreteTypeConstructor target = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.invariant());
+        ConcreteTypeConstructor source = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.contravariant());
+
+        assertFalse(target.canAccept(source));
     }
 
     @Test
     public void covariantConcreteTypeConstructorCanAcceptGivenDifferentCovariantConcreteTypeConstructor() {
-        assertFalse(new ConcreteTypeConstructor(ERUDITE, asList(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR))).canAccept(new ConcreteTypeConstructor(ERUDITE, asList(new WildcardTypeConstructor(EXTENDS, INTEGER_TYPE_CONSTRUCTOR)))));
+        ConcreteTypeConstructor target = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.covariant());
+        ConcreteTypeConstructor source = TypeConstructor.concrete(ERUDITE, INTEGER_TYPE_CONSTRUCTOR.covariant());
+
+        assertFalse(target.canAccept(source));
     }
 
     @Test
     public void covariantConcreteTypeConstructorCanAcceptGivenEquivalentInvariantConcreteTypeConstructor() {
-        assertTrue(new ConcreteTypeConstructor(ERUDITE, asList(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR))).canAccept(new ConcreteTypeConstructor(ERUDITE, asList(STRING_TYPE_CONSTRUCTOR))));
+        ConcreteTypeConstructor target = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.covariant());
+        ConcreteTypeConstructor source = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.invariant());
+
+        assertTrue(target.canAccept(source));
     }
 
     @Test
     public void covariantConcreteTypeConstructorCanAcceptGivenEquivalentCovariantConcreteTypeConstructor() {
-        assertTrue(new ConcreteTypeConstructor(ERUDITE, asList(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR))).canAccept(new ConcreteTypeConstructor(ERUDITE, asList(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR)))));
+        ConcreteTypeConstructor target = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.covariant());
+        ConcreteTypeConstructor source = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.covariant());
+
+        assertTrue(target.canAccept(source));
     }
 
     @Test
     public void covariantConcreteTypeConstructorCanAcceptGivenEquivalentContravariantConcreteTypeConstructor() {
-        assertFalse(new ConcreteTypeConstructor(ERUDITE, asList(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR))).canAccept(new ConcreteTypeConstructor(ERUDITE, asList(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR)))));
+        ConcreteTypeConstructor target = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.covariant());
+        ConcreteTypeConstructor source = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.contravariant());
+
+        assertFalse(target.canAccept(source));
     }
 
     @Test
     public void contravariantConcreteTypeConstructorCanAcceptGivenDifferentContravariantConcreteTypeConstructor() {
-        assertFalse(new ConcreteTypeConstructor(ERUDITE, asList(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR))).canAccept(new ConcreteTypeConstructor(ERUDITE, asList(new WildcardTypeConstructor(SUPER, INTEGER_TYPE_CONSTRUCTOR)))));
+        ConcreteTypeConstructor target = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.contravariant());
+        ConcreteTypeConstructor source = TypeConstructor.concrete(ERUDITE, INTEGER_TYPE_CONSTRUCTOR.contravariant());
+
+        assertFalse(target.canAccept(source));
     }
 
     @Test
     public void contravariantConcreteTypeConstructorCanAcceptGivenEquivalentInvariantConcreteTypeConstructor() {
-        assertTrue(new ConcreteTypeConstructor(ERUDITE, asList(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR))).canAccept(new ConcreteTypeConstructor(ERUDITE, asList(STRING_TYPE_CONSTRUCTOR))));
+        ConcreteTypeConstructor target = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.contravariant());
+        ConcreteTypeConstructor source = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.invariant());
+
+        assertTrue(target.canAccept(source));
     }
 
     @Test
     public void contravariantConcreteTypeConstructorCanAcceptGivenEquivalentCovariantConcreteTypeConstructor() {
-        assertFalse(new ConcreteTypeConstructor(ERUDITE, asList(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR))).canAccept(new ConcreteTypeConstructor(ERUDITE, asList(new WildcardTypeConstructor(EXTENDS, STRING_TYPE_CONSTRUCTOR)))));
+        ConcreteTypeConstructor target = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.contravariant());
+        ConcreteTypeConstructor source = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.covariant());
+
+        assertFalse(target.canAccept(source));
     }
 
     @Test
     public void contravariantConcreteTypeConstructorCanAcceptGivenEquivalentContravariantConcreteTypeConstructor() {
-        assertTrue(new ConcreteTypeConstructor(ERUDITE, asList(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR))).canAccept(new ConcreteTypeConstructor(ERUDITE, asList(new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR)))));
+        ConcreteTypeConstructor target = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.contravariant());
+        ConcreteTypeConstructor source = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.contravariant());
+
+        assertTrue(target.canAccept(source));
     }
 
     @Test
     public void mixedVarianceConcreteTypeConstructorCanAcceptGivenEquivalentInvariantConcreteTypeConstructor() {
-        assertTrue(new ConcreteTypeConstructor(ERUDITE, asList(STRING_TYPE_CONSTRUCTOR, new WildcardTypeConstructor(EXTENDS, INTEGER_TYPE_CONSTRUCTOR), new WildcardTypeConstructor(SUPER, BOOLEAN_TYPE_CONSTRUCTOR))).canAccept(new ConcreteTypeConstructor(ERUDITE, asList(STRING_TYPE_CONSTRUCTOR, INTEGER_TYPE_CONSTRUCTOR, BOOLEAN_TYPE_CONSTRUCTOR))));
+        ConcreteTypeConstructor target = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.invariant(), INTEGER_TYPE_CONSTRUCTOR.covariant(), BOOLEAN_TYPE_CONSTRUCTOR.contravariant());
+        ConcreteTypeConstructor source = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.invariant(), INTEGER_TYPE_CONSTRUCTOR.invariant(), BOOLEAN_TYPE_CONSTRUCTOR.invariant());
+
+        assertTrue(target.canAccept(source));
     }
 
     @Test
     public void applyGivenTypeConstructorWithoutPlaceholder() {
-        ConcreteType expected = new ConcreteType(ERUDITE, asList(STRING_TYPE, INTEGER_TYPE));
-        ConcreteType toVerify = new ConcreteTypeConstructor(ERUDITE, asList(STRING_TYPE_CONSTRUCTOR, INTEGER_TYPE_CONSTRUCTOR)).apply(BOOLEAN_TYPE);
+        ConcreteType expected = Type.concrete(ERUDITE, STRING_TYPE.invariant(), BOOLEAN_TYPE.contravariant(), INTEGER_TYPE.covariant());
+        ConcreteType toVerify = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.invariant(), BOOLEAN_TYPE_CONSTRUCTOR.contravariant(), INTEGER_TYPE_CONSTRUCTOR.covariant()).apply(BOOLEAN_TYPE);
 
         assertEquals(expected, toVerify);
     }
 
     @Test
     public void applyGivenTypeConstructorWithPlaceholder() {
-        ConcreteType expected = new ConcreteType(ERUDITE, asList(STRING_TYPE, BOOLEAN_TYPE, INTEGER_TYPE));
-        ConcreteType toVerify = new ConcreteTypeConstructor(ERUDITE, asList(STRING_TYPE_CONSTRUCTOR, new PlaceholderTypeConstructor(), INTEGER_TYPE_CONSTRUCTOR)).apply(BOOLEAN_TYPE);
+        ConcreteType expected = Type.concrete(ERUDITE, STRING_TYPE.invariant(), BOOLEAN_TYPE.covariant(), INTEGER_TYPE.contravariant());
+        ConcreteType toVerify = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.invariant(), placeholder().covariant(), INTEGER_TYPE_CONSTRUCTOR.contravariant()).apply(BOOLEAN_TYPE);
 
         assertEquals(expected, toVerify);
     }

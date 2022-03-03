@@ -8,8 +8,9 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static nl.wernerdegroot.applicatives.processor.domain.BoundType.EXTENDS;
+import static nl.wernerdegroot.applicatives.processor.domain.Variance.*;
 
 /**
  * Represents a type in the Java language. Supported types are:
@@ -53,7 +54,6 @@ public interface Type {
     <R> R match(
             Function<GenericType, R> matchGeneric,
             Function<ConcreteType, R> matchConcrete,
-            Function<WildcardType, R> matchWildcard,
             Function<ArrayType, R> matchArray
     );
 
@@ -85,24 +85,32 @@ public interface Type {
         return Parameter.of(this, name);
     }
 
+    default TypeArgument invariant() {
+        return TypeArgument.of(INVARIANT, this);
+    }
+
+    default TypeArgument covariant() {
+        return TypeArgument.of(COVARIANT, this);
+    }
+
+    default TypeArgument contravariant() {
+        return TypeArgument.of(CONTRAVARIANT, this);
+    }
+
     static GenericType generic(TypeParameterName name) {
         return GenericType.of(name);
     }
 
-    static ConcreteType concrete(FullyQualifiedName name, List<Type> typeArguments) {
+    static ConcreteType concrete(FullyQualifiedName name, List<TypeArgument> typeArguments) {
         return ConcreteType.of(name, typeArguments);
+    }
+
+    static ConcreteType concrete(FullyQualifiedName name, TypeArgument... typeArguments) {
+        return ConcreteType.of(name, asList(typeArguments));
     }
 
     static ConcreteType concrete(FullyQualifiedName name) {
         return ConcreteType.of(name, emptyList());
-    }
-
-    static WildcardType wildcard(BoundType type, Type bound) {
-        return WildcardType.of(type, bound);
-    }
-
-    static WildcardType wildcard() {
-        return WildcardType.of(EXTENDS, OBJECT);
     }
 
     static ArrayType array(Type type) {

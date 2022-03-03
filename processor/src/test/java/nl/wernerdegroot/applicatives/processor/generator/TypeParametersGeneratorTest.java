@@ -21,7 +21,7 @@ public class TypeParametersGeneratorTest {
         TypeParameterName B = TypeParameterName.of("B");
         TypeParameterName C = TypeParameterName.of("C");
         String toVerify = toTest()
-                .withTypeParameters(A.asTypeParameter(), B.extending(COMPARABLE.of(B)))
+                .withTypeParameters(A.asTypeParameter(), B.extending(COMPARABLE.with(B)))
                 .withTypeParameters(C.asTypeParameter())
                 .getTypeParametersGenerator()
                 .generate();

@@ -21,4 +21,7 @@ public class Constants {
     public static String ARROW = "->";
     public static String RETURN = "return";
     public static String DOUBLE_COLON = "::";
+    public static String EXTENDS = "extends";
+    public static String SUPER = "super";
+    public static String QUESTION_MARK = "?";
 }

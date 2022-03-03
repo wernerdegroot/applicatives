@@ -1,6 +1,7 @@
 package nl.wernerdegroot.applicatives.processor.domain;
 
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
+import nl.wernerdegroot.applicatives.processor.domain.type.TypeArgument;
 
 import java.util.List;
 import java.util.Objects;
@@ -20,12 +21,12 @@ public class FullyQualifiedName {
         return new FullyQualifiedName(fullyQualifiedName);
     }
 
-    public Type with(List<Type> typeParameters) {
-        return Type.concrete(this, typeParameters);
+    public Type with(List<TypeArgument> typeArguments) {
+        return Type.concrete(this, typeArguments);
     }
 
-    public Type with(Type... typeParameters) {
-        return with(asList(typeParameters));
+    public Type with(TypeArgument... typeArguments) {
+        return with(asList(typeArguments));
     }
 
     public Type asType() {

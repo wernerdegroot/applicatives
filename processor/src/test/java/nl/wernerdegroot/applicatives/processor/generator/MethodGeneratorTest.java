@@ -22,10 +22,10 @@ public class MethodGeneratorTest {
         List<String> toVerify = method()
                 .withModifiers(PUBLIC, ABSTRACT)
                 .withTypeParameters(T.extending(OBJECT), U.asTypeParameter())
-                .withReturnType(OPTIONAL.of(U))
+                .withReturnType(OPTIONAL.with(U))
                 .withName("map")
-                .withParameter(OPTIONAL.of(T), "optional")
-                .withParameter(FUNCTION.of(T, U), "fn")
+                .withParameter(OPTIONAL.with(T), "optional")
+                .withParameter(FUNCTION.with(T, U), "fn")
                 .lines();
 
         List<String> expected = singletonList(
@@ -40,10 +40,10 @@ public class MethodGeneratorTest {
         List<String> toVerify = method()
                 .withModifiers(PRIVATE, STATIC)
                 .withTypeParameters(T.extending(OBJECT), U.asTypeParameter())
-                .withReturnType(OPTIONAL.of(U))
+                .withReturnType(OPTIONAL.with(U))
                 .withName("map")
-                .withParameter(OPTIONAL.of(T), "optional")
-                .withParameter(FUNCTION.of(T, U), "fn")
+                .withParameter(OPTIONAL.with(T), "optional")
+                .withParameter(FUNCTION.with(T, U), "fn")
                 .withBody("java.util.Optional<U> result = optional.map(fn);")
                 .withReturnStatement("result")
                 .lines();

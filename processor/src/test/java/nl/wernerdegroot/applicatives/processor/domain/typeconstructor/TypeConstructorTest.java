@@ -11,7 +11,7 @@ import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import nl.wernerdegroot.applicatives.processor.generator.TypeGenerator;
 import org.junit.jupiter.api.Test;
 
-import javax.tools.*;
+import javax.tools.JavaFileObject;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
@@ -19,13 +19,10 @@ import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
-import static nl.wernerdegroot.applicatives.processor.domain.BoundType.EXTENDS;
-import static nl.wernerdegroot.applicatives.processor.domain.BoundType.SUPER;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.LIST;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.STRING;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TypeConstructorTest {
 
@@ -63,16 +60,16 @@ public class TypeConstructorTest {
 
     @Test
     public void concreteGivenFullyQualifiedNameAndListOfTypeArguments() {
-        ConcreteTypeConstructor expected = new ConcreteTypeConstructor(ERUDITE, asList(STRING_TYPE_CONSTRUCTOR, new PlaceholderTypeConstructor(), INTEGER_TYPE_CONSTRUCTOR));
-        ConcreteTypeConstructor toVerify = TypeConstructor.concrete(ERUDITE, asList(STRING_TYPE_CONSTRUCTOR, new PlaceholderTypeConstructor(), INTEGER_TYPE_CONSTRUCTOR));
+        ConcreteTypeConstructor expected = new ConcreteTypeConstructor(ERUDITE, asList(STRING_TYPE_CONSTRUCTOR.invariant(), TypeConstructor.placeholder().covariant(), INTEGER_TYPE_CONSTRUCTOR.contravariant()));
+        ConcreteTypeConstructor toVerify = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.invariant(), TypeConstructor.placeholder().covariant(), INTEGER_TYPE_CONSTRUCTOR.contravariant());
 
         assertEquals(expected, toVerify);
     }
 
     @Test
     public void concreteGivenFullyQualifiedNameAndTypeArguments() {
-        ConcreteTypeConstructor expected = new ConcreteTypeConstructor(ERUDITE, asList(STRING_TYPE_CONSTRUCTOR, new PlaceholderTypeConstructor(), INTEGER_TYPE_CONSTRUCTOR));
-        ConcreteTypeConstructor toVerify = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR, new PlaceholderTypeConstructor(), INTEGER_TYPE_CONSTRUCTOR);
+        ConcreteTypeConstructor expected = new ConcreteTypeConstructor(ERUDITE, asList(STRING_TYPE_CONSTRUCTOR.invariant(), TypeConstructor.placeholder().covariant(), INTEGER_TYPE_CONSTRUCTOR.contravariant()));
+        ConcreteTypeConstructor toVerify = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.invariant(), TypeConstructor.placeholder().covariant(), INTEGER_TYPE_CONSTRUCTOR.contravariant());
 
         assertEquals(expected, toVerify);
     }
@@ -81,14 +78,6 @@ public class TypeConstructorTest {
     public void concreteGivenFullyQualifiedName() {
         ConcreteTypeConstructor expected = new ConcreteTypeConstructor(ERUDITE, emptyList());
         ConcreteTypeConstructor toVerify = TypeConstructor.concrete(ERUDITE);
-
-        assertEquals(expected, toVerify);
-    }
-
-    @Test
-    public void wildcard() {
-        WildcardTypeConstructor expected = new WildcardTypeConstructor(SUPER, STRING_TYPE_CONSTRUCTOR);
-        WildcardTypeConstructor toVerify = TypeConstructor.wildcard(SUPER, STRING_TYPE_CONSTRUCTOR);
 
         assertEquals(expected, toVerify);
     }
@@ -117,9 +106,9 @@ public class TypeConstructorTest {
         // if the subclasses work well together, and perform their function as expected.
 
         List<TypeConstructor> sources = Stream.of(
-                withList(withWildcards(withList(withWildcards(placeholders())))),
-                withList(withWildcards(withArray(placeholders()))),
-                withArray(withList(withWildcards(placeholders())))
+                withList(withVariance(withList(withVariance(placeholders())))),
+                withList(withVariance(withArray(placeholders()))),
+                withArray(withList(withVariance(placeholders())))
         ).reduce(Stream.empty(), Stream::concat).collect(toList());
 
         List<TypeConstructor> targets = sources;
@@ -135,12 +124,12 @@ public class TypeConstructorTest {
         return Stream.of(TypeConstructor.placeholder());
     }
 
-    private Stream<TypeConstructor> withWildcards(Stream<TypeConstructor> s) {
-        return s.flatMap(typeConstructor -> Stream.of(typeConstructor, EXTENDS.type(typeConstructor), SUPER.type(typeConstructor)));
+    private Stream<TypeConstructorArgument> withVariance(Stream<TypeConstructor> s) {
+        return s.flatMap(typeConstructor -> Stream.of(typeConstructor.invariant(), typeConstructor.covariant(), typeConstructor.contravariant()));
     }
 
-    private Stream<TypeConstructor> withList(Stream<TypeConstructor> s) {
-        return s.map(typeConstructor -> LIST.of(typeConstructor));
+    private Stream<TypeConstructor> withList(Stream<TypeConstructorArgument> s) {
+        return s.map(LIST::with);
     }
 
     private Stream<TypeConstructor> withArray(Stream<TypeConstructor> s) {

@@ -12,8 +12,6 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toSet;
-import static nl.wernerdegroot.applicatives.processor.domain.BoundType.EXTENDS;
-import static nl.wernerdegroot.applicatives.processor.domain.BoundType.SUPER;
 import static nl.wernerdegroot.applicatives.processor.domain.Modifier.*;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.*;
 import static nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor.placeholder;
@@ -38,9 +36,9 @@ public class MethodValidatorTest {
                 Optional.empty(),
                 "myFunction",
                 asList(
-                        Parameter.of(OPTIONAL.of(T), "left"),
-                        Parameter.of(OPTIONAL.of(U), "right"),
-                        Parameter.of(BI_FUNCTION.of(SUPER.type(T), SUPER.type(U), EXTENDS.type(V)), "compose")
+                        Parameter.of(OPTIONAL.with(T), "left"),
+                        Parameter.of(OPTIONAL.with(U), "right"),
+                        Parameter.of(BI_FUNCTION.with(T.asType().contravariant(), U.asType().contravariant(), V.asType().covariant()), "compose")
                 ),
                 ContainingClass.withoutTypeParameters(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"))
         );
@@ -56,12 +54,12 @@ public class MethodValidatorTest {
         Method toValidate = Method.of(
                 modifiers(STATIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
-                Optional.of(OPTIONAL.of(V)),
+                Optional.of(OPTIONAL.with(V)),
                 "myFunction",
                 asList(
-                        Parameter.of(OPTIONAL.of(T), "left"),
-                        Parameter.of(OPTIONAL.of(U), "right"),
-                        Parameter.of(BI_FUNCTION.of(SUPER.type(T), SUPER.type(U), EXTENDS.type(V)), "compose")
+                        Parameter.of(OPTIONAL.with(T), "left"),
+                        Parameter.of(OPTIONAL.with(U), "right"),
+                        Parameter.of(BI_FUNCTION.with(T.asType().contravariant(), U.asType().contravariant(), V.asType().covariant()), "compose")
                 ),
                 ContainingClass.withoutTypeParameters(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"))
         );
@@ -77,12 +75,12 @@ public class MethodValidatorTest {
         Method toValidate = Method.of(
                 modifiers(PRIVATE),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
-                Optional.of(OPTIONAL.of(V)),
+                Optional.of(OPTIONAL.with(V)),
                 "myFunction",
                 asList(
-                        Parameter.of(OPTIONAL.of(T), "left"),
-                        Parameter.of(OPTIONAL.of(U), "right"),
-                        Parameter.of(BI_FUNCTION.of(SUPER.type(T), SUPER.type(U), EXTENDS.type(V)), "compose")
+                        Parameter.of(OPTIONAL.with(T), "left"),
+                        Parameter.of(OPTIONAL.with(U), "right"),
+                        Parameter.of(BI_FUNCTION.with(T.asType().contravariant(), U.asType().contravariant(), V.asType().covariant()), "compose")
                 ),
                 ContainingClass.withoutTypeParameters(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"))
         );
@@ -97,13 +95,13 @@ public class MethodValidatorTest {
     public void shouldReturnInvalidWhenOneOfTheFirstThreeTypeParametersHasAnUpperBoundOtherThanObject() {
         Method toValidate = Method.of(
                 modifiers(PUBLIC),
-                asList(T.extending(COMPARABLE.of(T)), U.extending(COMPARABLE.of(U)), V.extending(COMPARABLE.of(V))),
-                Optional.of(OPTIONAL.of(V)),
+                asList(T.extending(COMPARABLE.with(T)), U.extending(COMPARABLE.with(U)), V.extending(COMPARABLE.with(V))),
+                Optional.of(OPTIONAL.with(V)),
                 "myFunction",
                 asList(
-                        Parameter.of(OPTIONAL.of(T), "left"),
-                        Parameter.of(OPTIONAL.of(U), "right"),
-                        Parameter.of(BI_FUNCTION.of(SUPER.type(T), SUPER.type(U), EXTENDS.type(V)), "compose")
+                        Parameter.of(OPTIONAL.with(T), "left"),
+                        Parameter.of(OPTIONAL.with(U), "right"),
+                        Parameter.of(BI_FUNCTION.with(T.asType().contravariant(), U.asType().contravariant(), V.asType().covariant()), "compose")
                 ),
                 ContainingClass.withoutTypeParameters(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"))
         );
@@ -119,12 +117,12 @@ public class MethodValidatorTest {
         Method toValidate = Method.of(
                 modifiers(PUBLIC),
                 asList(T.extending(OBJECT), U.extending(OBJECT), V.extending(OBJECT)),
-                Optional.of(OPTIONAL.of(V)),
+                Optional.of(OPTIONAL.with(V)),
                 "myFunction",
                 asList(
-                        Parameter.of(OPTIONAL.of(T), "left"),
-                        Parameter.of(OPTIONAL.of(U), "right"),
-                        Parameter.of(BI_FUNCTION.of(SUPER.type(T), SUPER.type(U), EXTENDS.type(V)), "compose")
+                        Parameter.of(OPTIONAL.with(T), "left"),
+                        Parameter.of(OPTIONAL.with(U), "right"),
+                        Parameter.of(BI_FUNCTION.with(T.asType().contravariant(), U.asType().contravariant(), V.asType().covariant()), "compose")
                 ),
                 ContainingClass.withoutTypeParameters(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"))
         );
@@ -146,12 +144,12 @@ public class MethodValidatorTest {
         Method toValidate = Method.of(
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter()),
-                Optional.of(OPTIONAL.of(T)),
+                Optional.of(OPTIONAL.with(T)),
                 "myFunction",
                 asList(
-                        Parameter.of(OPTIONAL.of(T), "left"),
-                        Parameter.of(OPTIONAL.of(T), "right"),
-                        Parameter.of(BI_FUNCTION.of(T, T, T), "compose")
+                        Parameter.of(OPTIONAL.with(T), "left"),
+                        Parameter.of(OPTIONAL.with(T), "right"),
+                        Parameter.of(BI_FUNCTION.with(T, T, T), "compose")
                 ),
                 ContainingClass.withoutTypeParameters(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"))
         );
@@ -167,12 +165,12 @@ public class MethodValidatorTest {
         Method toValidate = Method.of(
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter(), P.asTypeParameter()),
-                Optional.of(FUNCTION.of(P, V)),
+                Optional.of(FUNCTION.with(P, V)),
                 "myFunction",
                 asList(
-                        Parameter.of(FUNCTION.of(P, T), "left"),
-                        Parameter.of(FUNCTION.of(P, U), "right"),
-                        Parameter.of(BI_FUNCTION.of(SUPER.type(T), SUPER.type(U), EXTENDS.type(V)), "compose")
+                        Parameter.of(FUNCTION.with(P, T), "left"),
+                        Parameter.of(FUNCTION.with(P, U), "right"),
+                        Parameter.of(BI_FUNCTION.with(T.asType().contravariant(), U.asType().contravariant(), V.asType().covariant()), "compose")
                 ),
                 ContainingClass.withoutTypeParameters(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Functions"))
         );
@@ -180,8 +178,8 @@ public class MethodValidatorTest {
         ValidatedMethod expected = ValidatedMethod.valid(
                 asList(P.asTypeParameter()),
                 emptyList(),
-                FUNCTION.of(P.asTypeConstructor(), placeholder()),
-                FUNCTION.of(P.asTypeConstructor(), placeholder()),
+                FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()),
+                FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()),
                 emptyList()
         );
         ValidatedMethod toVerify = MethodValidator.validate(toValidate);
@@ -194,11 +192,11 @@ public class MethodValidatorTest {
         Method toValidate = Method.of(
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
-                Optional.of(OPTIONAL.of(V)),
+                Optional.of(OPTIONAL.with(V)),
                 "myFunction",
                 asList(
-                        Parameter.of(OPTIONAL.of(T), "left"),
-                        Parameter.of(OPTIONAL.of(U), "right")
+                        Parameter.of(OPTIONAL.with(T), "left"),
+                        Parameter.of(OPTIONAL.with(U), "right")
                 ),
                 ContainingClass.withoutTypeParameters(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"))
         );
@@ -214,12 +212,12 @@ public class MethodValidatorTest {
         Method toValidate = Method.of(
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
-                Optional.of(COMPLETABLE_FUTURE.of(V)),
+                Optional.of(COMPLETABLE_FUTURE.with(V)),
                 "myFunction",
                 asList(
-                        Parameter.of(COMPLETABLE_FUTURE.of(T), "left"),
-                        Parameter.of(COMPLETABLE_FUTURE.of(U), "right"),
-                        Parameter.of(BI_FUNCTION.of(SUPER.type(T), SUPER.type(U), EXTENDS.type(V)), "compose"),
+                        Parameter.of(COMPLETABLE_FUTURE.with(T), "left"),
+                        Parameter.of(COMPLETABLE_FUTURE.with(U), "right"),
+                        Parameter.of(BI_FUNCTION.with(T.asType().contravariant(), U.asType().contravariant(), V.asType().covariant()), "compose"),
                         Parameter.of(EXECUTOR, "executor")
                 ),
                 ContainingClass.withoutTypeParameters(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Futures"))
@@ -242,11 +240,11 @@ public class MethodValidatorTest {
         Method toValidate = Method.of(
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
-                Optional.of(OPTIONAL.of(V)),
+                Optional.of(OPTIONAL.with(V)),
                 "myFunction",
                 asList(
-                        Parameter.of(OPTIONAL.of(T), "left"),
-                        Parameter.of(OPTIONAL.of(U), "right"),
+                        Parameter.of(OPTIONAL.with(T), "left"),
+                        Parameter.of(OPTIONAL.with(U), "right"),
                         Parameter.of(OBJECT, "someObject")
                 ),
                 ContainingClass.withoutTypeParameters(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"))
@@ -263,12 +261,12 @@ public class MethodValidatorTest {
         Method toValidate = Method.of(
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
-                Optional.of(OPTIONAL.of(V)),
+                Optional.of(OPTIONAL.with(V)),
                 "myFunction",
                 asList(
-                        Parameter.of(OPTIONAL.of(T), "left"),
-                        Parameter.of(OPTIONAL.of(U), "right"),
-                        Parameter.of(BI_FUNCTION.of(W, W, W), "compose")
+                        Parameter.of(OPTIONAL.with(T), "left"),
+                        Parameter.of(OPTIONAL.with(U), "right"),
+                        Parameter.of(BI_FUNCTION.with(W, W, W), "compose")
                 ),
                 ContainingClass.withoutTypeParameters(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"))
         );
@@ -284,13 +282,13 @@ public class MethodValidatorTest {
         Method toValidate = Method.of(
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
-                Optional.of(OPTIONAL.of(V)),
+                Optional.of(OPTIONAL.with(V)),
                 "myFunction",
                 asList(
-                        Parameter.of(OPTIONAL.of(T), "left"),
-                        Parameter.of(OPTIONAL.of(U), "right"),
-                        Parameter.of(BI_FUNCTION.of(SUPER.type(T), SUPER.type(U), EXTENDS.type(V)), "compose"),
-                        Parameter.of(COMPARABLE.of(T), "comparable")
+                        Parameter.of(OPTIONAL.with(T), "left"),
+                        Parameter.of(OPTIONAL.with(U), "right"),
+                        Parameter.of(BI_FUNCTION.with(T.asType().contravariant(), U.asType().contravariant(), V.asType().covariant()), "compose"),
+                        Parameter.of(COMPARABLE.with(T), "comparable")
                 ),
                 ContainingClass.withoutTypeParameters(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"))
         );
@@ -306,12 +304,12 @@ public class MethodValidatorTest {
         Method toValidate = Method.of(
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
-                Optional.of(OPTIONAL.of(V)),
+                Optional.of(OPTIONAL.with(V)),
                 "myFunction",
                 asList(
-                        Parameter.of(OPTIONAL.of(T), "left"),
-                        Parameter.of(COMPLETABLE_FUTURE.of(U), "right"),
-                        Parameter.of(BI_FUNCTION.of(SUPER.type(T), SUPER.type(U), EXTENDS.type(V)), "compose")
+                        Parameter.of(OPTIONAL.with(T), "left"),
+                        Parameter.of(COMPLETABLE_FUTURE.with(U), "right"),
+                        Parameter.of(BI_FUNCTION.with(T.asType().contravariant(), U.asType().contravariant(), V.asType().covariant()), "compose")
                 ),
                 ContainingClass.withoutTypeParameters(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Weird"))
         );
@@ -327,12 +325,12 @@ public class MethodValidatorTest {
         Method toValidate = Method.of(
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter(), P.asTypeParameter()),
-                Optional.of(COMPLETABLE_FUTURE.of(V)),
+                Optional.of(COMPLETABLE_FUTURE.with(V)),
                 "myFunction",
                 asList(
-                        Parameter.of(OPTIONAL.of(T), "left"),
-                        Parameter.of(OPTIONAL.of(U), "right"),
-                        Parameter.of(BI_FUNCTION.of(SUPER.type(T), SUPER.type(U), EXTENDS.type(V)), "compose")
+                        Parameter.of(OPTIONAL.with(T), "left"),
+                        Parameter.of(OPTIONAL.with(U), "right"),
+                        Parameter.of(BI_FUNCTION.with(T.asType().contravariant(), U.asType().contravariant(), V.asType().covariant()), "compose")
                 ),
                 ContainingClass.withoutTypeParameters(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"))
         );
@@ -348,12 +346,12 @@ public class MethodValidatorTest {
         Method toValidate = Method.of(
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter(), P.asTypeParameter()),
-                Optional.of(FUNCTION.of(P, V)),
+                Optional.of(FUNCTION.with(P, V)),
                 "myFunction",
                 asList(
-                        Parameter.of(FUNCTION.of(SUPER.type(P), EXTENDS.type(T)), "left"),
-                        Parameter.of(FUNCTION.of(SUPER.type(P), EXTENDS.type(U)), "right"),
-                        Parameter.of(BI_FUNCTION.of(SUPER.type(T), SUPER.type(U), EXTENDS.type(V)), "compose")
+                        Parameter.of(FUNCTION.with(P.asType().contravariant(), T.asType().covariant()), "left"),
+                        Parameter.of(FUNCTION.with(P.asType().contravariant(), U.asType().covariant()), "right"),
+                        Parameter.of(BI_FUNCTION.with(T.asType().contravariant(), U.asType().contravariant(), V.asType().covariant()), "compose")
                 ),
                 ContainingClass.withoutTypeParameters(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Functions"))
         );
@@ -361,8 +359,8 @@ public class MethodValidatorTest {
         ValidatedMethod expected = ValidatedMethod.valid(
                 asList(P.asTypeParameter()),
                 emptyList(),
-                FUNCTION.of(SUPER.type(P).asTypeConstructor(), EXTENDS.type(placeholder())),
-                FUNCTION.of(P.asTypeConstructor(), placeholder()),
+                FUNCTION.with(P.asTypeConstructor().contravariant(), placeholder().covariant()),
+                FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()),
                 emptyList()
         );
         ValidatedMethod toVerify = MethodValidator.validate(toValidate);
@@ -375,12 +373,12 @@ public class MethodValidatorTest {
         Method toValidate = Method.of(
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
-                Optional.of(OPTIONAL.of(V)),
+                Optional.of(OPTIONAL.with(V)),
                 "myFunction",
                 asList(
-                        Parameter.of(OPTIONAL.of(T), "left"),
-                        Parameter.of(OPTIONAL.of(U), "right"),
-                        Parameter.of(BI_FUNCTION.of(SUPER.type(T), SUPER.type(U), EXTENDS.type(V)), "compose")
+                        Parameter.of(OPTIONAL.with(T), "left"),
+                        Parameter.of(OPTIONAL.with(U), "right"),
+                        Parameter.of(BI_FUNCTION.with(T.asType().contravariant(), U.asType().contravariant(), V.asType().covariant()), "compose")
                 ),
                 PackageName.of("nl.wernerdegroot.applicatives").asPackage().containingClass(emptySet(), ClassName.of("Outer")).containingClass(emptySet(), ClassName.of("Inner"))
         );
@@ -396,12 +394,12 @@ public class MethodValidatorTest {
         Method toValidate = Method.of(
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
-                Optional.of(OPTIONAL.of(V)),
+                Optional.of(OPTIONAL.with(V)),
                 "myFunction",
                 asList(
-                        Parameter.of(OPTIONAL.of(T), "left"),
-                        Parameter.of(OPTIONAL.of(U), "right"),
-                        Parameter.of(BI_FUNCTION.of(SUPER.type(T), SUPER.type(U), EXTENDS.type(V)), "compose")
+                        Parameter.of(OPTIONAL.with(T), "left"),
+                        Parameter.of(OPTIONAL.with(U), "right"),
+                        Parameter.of(BI_FUNCTION.with(T.asType().contravariant(), U.asType().contravariant(), V.asType().covariant()), "compose")
                 ),
                 PackageName.of("nl.wernerdegroot.applicatives").asPackage().containingClass(emptySet(), ClassName.of("Outer"), A, B).containingClass(modifiers(STATIC), ClassName.of("Inner"), B, C)
         );
@@ -423,12 +421,12 @@ public class MethodValidatorTest {
         Method toValidate = Method.of(
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
-                Optional.of(OPTIONAL.of(V)),
+                Optional.of(OPTIONAL.with(V)),
                 "myFunction",
                 asList(
-                        Parameter.of(OPTIONAL.of(T), "left"),
-                        Parameter.of(OPTIONAL.of(U), "right"),
-                        Parameter.of(BI_FUNCTION.of(SUPER.type(T), SUPER.type(U), EXTENDS.type(V)), "compose")
+                        Parameter.of(OPTIONAL.with(T), "left"),
+                        Parameter.of(OPTIONAL.with(U), "right"),
+                        Parameter.of(BI_FUNCTION.with(T.asType().contravariant(), U.asType().contravariant(), V.asType().covariant()), "compose")
                 ),
                 PackageName.of("nl.wernerdegroot.applicatives").asPackage().containingClass(emptySet(), ClassName.of("Outer"), A, B)
         );

@@ -2,6 +2,7 @@ package nl.wernerdegroot.applicatives.processor.generator;
 
 import nl.wernerdegroot.applicatives.processor.domain.*;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
+import nl.wernerdegroot.applicatives.processor.domain.type.TypeArgument;
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor;
 
 import java.util.ArrayList;
@@ -11,8 +12,6 @@ import java.util.stream.IntStream;
 import static java.util.Collections.nCopies;
 import static java.util.stream.Collectors.toList;
 import static nl.wernerdegroot.applicatives.processor.Ordinals.witherForIndex;
-import static nl.wernerdegroot.applicatives.processor.domain.BoundType.EXTENDS;
-import static nl.wernerdegroot.applicatives.processor.domain.BoundType.SUPER;
 import static nl.wernerdegroot.applicatives.processor.domain.Modifier.*;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.*;
 import static nl.wernerdegroot.applicatives.processor.generator.ClassOrInterfaceGenerator.classOrInterface;
@@ -75,8 +74,11 @@ public class Generator {
         return this;
     }
 
-    public List<Type> getClassTypeParametersAsTypes() {
-        return classTypeParameters.stream().map(TypeParameter::asType).collect(toList());
+    public List<TypeArgument> getClassTypeParametersAsTypeArguments() {
+        return classTypeParameters
+                .stream()
+                .map(TypeParameter::invariant)
+                .collect(toList());
     }
 
     public Generator withPrimaryMethodTypeParameters(List<TypeParameter> primaryMethodTypeParameters) {
@@ -95,8 +97,22 @@ public class Generator {
                 .collect(toList());
     }
 
+    public List<TypeArgument> getPrimaryMethodTypeParametersAsTypeArguments() {
+        return getPrimaryMethodTypeParametersAsTypes()
+                .stream()
+                .map(Type::invariant)
+                .collect(toList());
+    }
+
     public List<Type> takePrimaryMethodTypeParametersAsTypes(int toTake) {
         return getPrimaryMethodTypeParametersAsTypes().subList(0, toTake);
+    }
+
+    public List<TypeArgument> takePrimaryMethodTypeParametersAsTypeArguments(int toTake) {
+        return takePrimaryMethodTypeParametersAsTypes(toTake)
+                .stream()
+                .map(Type::invariant)
+                .collect(toList());
     }
 
     public List<Type> getLiftedPrimaryMethodTypeParametersAsTypes() {
@@ -124,8 +140,11 @@ public class Generator {
         return this;
     }
 
-    public List<Type> getSecondaryMethodTypeParametersAsTypes() {
-        return secondaryMethodTypeParameters.stream().map(TypeParameter::asType).collect(toList());
+    public List<TypeArgument> getSecondaryMethodTypeParametersAsTypeArguments() {
+        return secondaryMethodTypeParameters
+                .stream()
+                .map(TypeParameter::invariant)
+                .collect(toList());
     }
 
     public Generator withMethodName(String methodName) {
@@ -234,10 +253,10 @@ public class Generator {
                 .withParameterTypes(takeLiftedPrimaryMethodTypeParametersAsTypes(arity))
                 .andParameterNames(takePrimaryParameterNames(arity))
                 .withParameter(
-                        BI_FUNCTION.of(
-                                SUPER.type(primaryMethodTypeParameters.get(0).asType()),
-                                SUPER.type(primaryMethodTypeParameters.get(1).asType()),
-                                EXTENDS.type(resultTypeParameter.asType())
+                        BI_FUNCTION.with(
+                                primaryMethodTypeParameters.get(0).contravariant(),
+                                primaryMethodTypeParameters.get(1).contravariant(),
+                                resultTypeParameter.covariant()
                         ),
                         combinatorParameterName
                 )
@@ -264,10 +283,10 @@ public class Generator {
                                 .withArguments(
                                         methodCall()
                                                 .withType(getFullyQualifiedTupleClass())
-                                                .withTypeArguments(takePrimaryMethodTypeParametersAsTypes(arity))
-                                                .withTypeArguments(nCopies(NUMBER_OF_TUPLE_TYPE_PARAMETERS - arity, OBJECT))
-                                                .withTypeArguments(getSecondaryMethodTypeParametersAsTypes())
-                                                .withTypeArguments(getClassTypeParametersAsTypes())
+                                                .withTypeArguments(takePrimaryMethodTypeParametersAsTypeArguments(arity))
+                                                .withTypeArguments(nCopies(NUMBER_OF_TUPLE_TYPE_PARAMETERS - arity, OBJECT.invariant()))
+                                                .withTypeArguments(getSecondaryMethodTypeParametersAsTypeArguments())
+                                                .withTypeArguments(getClassTypeParametersAsTypeArguments())
                                                 .withMethodName(TUPLE_METHOD_NAME)
                                                 .withArguments(THIS)
                                                 .withArguments(takePrimaryParameterNames(arity - 1))
@@ -370,9 +389,9 @@ public class Generator {
                         .withArguments(
                                 methodCall()
                                         .withType(getFullyQualifiedTupleClass())
-                                        .withTypeArguments(getPrimaryMethodTypeParametersAsTypes())
-                                        .withTypeArguments(getSecondaryMethodTypeParametersAsTypes())
-                                        .withTypeArguments(getClassTypeParametersAsTypes())
+                                        .withTypeArguments(getPrimaryMethodTypeParametersAsTypeArguments())
+                                        .withTypeArguments(getSecondaryMethodTypeParametersAsTypeArguments())
+                                        .withTypeArguments(getClassTypeParametersAsTypeArguments())
                                         .withMethodName(TUPLE_METHOD_NAME)
                                         .withArguments(selfParameterName)
                                         .withArguments(takePrimaryParameterNames(arity - 1))
@@ -399,9 +418,9 @@ public class Generator {
                 // we need to make sure that the class type parameters are available as additional method
                 // type parameters:
                 .withTypeParameters(classTypeParameters)
-                .withReturnType(FAST_TUPLE.with(getPrimaryMethodTypeParametersAsTypes()).using(parameterTypeConstructor))
+                .withReturnType(FAST_TUPLE.with(getPrimaryMethodTypeParametersAsTypeArguments()).using(parameterTypeConstructor))
                 .withName(TUPLE_METHOD_NAME)
-                .withParameter(getFullyQualifiedClassNameToGenerate().with(getClassTypeParametersAsTypes()), selfParameterName)
+                .withParameter(getFullyQualifiedClassNameToGenerate().with(getClassTypeParametersAsTypeArguments()), selfParameterName)
                 .withParameterTypes(takeLiftedPrimaryMethodTypeParametersAsTypes(arity))
                 .andParameterNames(takePrimaryParameterNames(arity))
                 .withParameter(INT, maxTupleSizeParameterName)
@@ -411,15 +430,15 @@ public class Generator {
     }
 
     private Type lambdaType(TypeConstructor parameterTypeConstructor, TypeConstructor resultTypeConstructor, int arity) {
-        List<Type> typeParameters = new ArrayList<>();
+        List<TypeArgument> typeArguments = new ArrayList<>();
         takePrimaryMethodTypeParametersAsTypes(arity)
                 .stream()
                 .map(parameterTypeConstructor::apply)
-                .map(SUPER::type)
-                .forEachOrdered(typeParameters::add);
-        typeParameters.add(EXTENDS.type(resultTypeParameter.asType().using(resultTypeConstructor)));
+                .map(Type::contravariant)
+                .forEachOrdered(typeArguments::add);
+        typeArguments.add(resultTypeParameter.asType().using(resultTypeConstructor).covariant());
 
-        return Type.concrete(fullyQualifiedNameOfFunction(arity), typeParameters);
+        return Type.concrete(fullyQualifiedNameOfFunction(arity), typeArguments);
     }
 
     private static FullyQualifiedName fullyQualifiedNameOfFunction(int arity) {
