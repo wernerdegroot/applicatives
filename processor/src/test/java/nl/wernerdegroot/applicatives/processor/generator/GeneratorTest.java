@@ -27,6 +27,7 @@ public class GeneratorTest {
     //  * Class type parameters (Y/N)
     //  * Secondary method type parameters (Y/N)
     //  * Secondary parameters (Y/N)
+    //  * Different type constructors (Y/N)
     //  * Provided class name
     //  * Provided lift method name
     //  * Provided maximum arity
@@ -34,12 +35,13 @@ public class GeneratorTest {
     // Instead of testing each combination (which would be a lot of tests)
     // we only test the following cases:
     //
-    // |           | Class type | Secondary method | Secondary  | Provided       | Provided lift | Provided   |
-    // |           | parameters | type parameters  | parameters | class name     | method name   | max. arity |
-    // |-----------|------------|------------------|------------|----------------|---------------|------------|
-    // | Optionals | N          | N                | N          | OptionalsMixin | lift          | 2          |
-    // | Functions | Y          | N                | N          | FunctionsMixin | lift          | 4          |
-    // | Eithers   | N          | Y                | Y          | EithersMixin   | liftEither    | 26         |
+    // |           | Class type | Secondary method | Secondary  | Provided       | Provided lift | Provided   | Diffent type |
+    // |           | parameters | type parameters  | parameters | class name     | method name   | max. arity | constructors |
+    // |-----------|------------|------------------|------------|----------------|---------------|------------|--------------|
+    // | Optionals | N          | N                | N          | OptionalsMixin | lift          | 2          | N            |
+    // | Lists     | N          | N                | N          | ListsMixin     | lift          | 3          | Y            |
+    // | Functions | Y          | N                | N          | FunctionsMixin | lift          | 4          | N            |
+    // | Eithers   | N          | Y                | Y          | EithersMixin   | liftEither    | 26         | N            |
 
     @Test
     public void simple() throws IOException {
@@ -57,10 +59,37 @@ public class GeneratorTest {
                 .withSelfParameterName(SELF_PARAMETER_NAME)
                 .withCombinatorParameterName(COMBINATOR_PARAMETER_NAME)
                 .withMaxTupleSizeParameterName(MAX_TUPLE_SIZE_PARAMETER_NAME)
-                .withParameterTypeConstructor(OPTIONAL.with(placeholder().covariant()))
+                .withLeftParameterTypeConstructor(OPTIONAL.with(placeholder().covariant()))
+                .withRightParameterTypeConstructor(OPTIONAL.with(placeholder().covariant()))
                 .withResultTypeConstructor(OPTIONAL.with(placeholder().invariant()))
                 .withLiftMethodName("lift")
                 .withMaxArity(2)
+                .generate();
+
+        assertEquals(expected, toVerify);
+    }
+
+    @Test
+    public void withDifferentLeftTypeConstructorAndRightTypeConstructor() throws IOException {
+        String expected = getResourceFileAsString("/Lists.generated");
+        String toVerify = generator()
+                .withPackageName(PackageName.of("nl.wernerdegroot.applicatives"))
+                .withClassNameToGenerate("ListsMixin")
+                .withClassTypeParameters(emptyList())
+                .withPrimaryMethodTypeParameters(PRIMARY_METHOD_TYPE_PARAMETERS)
+                .withResultTypeParameter(RESULT_TYPE_PARAMETER)
+                .withSecondaryMethodTypeParameters(emptyList())
+                .withMethodName("compose")
+                .withPrimaryParameterNames(PRIMARY_PARAMETER_NAMES)
+                .withSecondaryParameters(emptyList())
+                .withSelfParameterName(SELF_PARAMETER_NAME)
+                .withCombinatorParameterName(COMBINATOR_PARAMETER_NAME)
+                .withMaxTupleSizeParameterName(MAX_TUPLE_SIZE_PARAMETER_NAME)
+                .withLeftParameterTypeConstructor(ARRAY_LIST.with(placeholder().covariant()))
+                .withRightParameterTypeConstructor(LIST.with(placeholder().covariant()))
+                .withResultTypeConstructor(ARRAY_LIST.with(placeholder().invariant()))
+                .withLiftMethodName("lift")
+                .withMaxArity(3)
                 .generate();
 
         assertEquals(expected, toVerify);
@@ -84,7 +113,8 @@ public class GeneratorTest {
                 .withSelfParameterName(SELF_PARAMETER_NAME)
                 .withCombinatorParameterName(COMBINATOR_PARAMETER_NAME)
                 .withMaxTupleSizeParameterName(MAX_TUPLE_SIZE_PARAMETER_NAME)
-                .withParameterTypeConstructor(FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()))
+                .withLeftParameterTypeConstructor(FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()))
+                .withRightParameterTypeConstructor(FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()))
                 .withResultTypeConstructor(FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()))
                 .withLiftMethodName("lift")
                 .withMaxArity(4)
@@ -116,7 +146,8 @@ public class GeneratorTest {
                 .withSelfParameterName(SELF_PARAMETER_NAME)
                 .withCombinatorParameterName(COMBINATOR_PARAMETER_NAME)
                 .withMaxTupleSizeParameterName(MAX_TUPLE_SIZE_PARAMETER_NAME)
-                .withParameterTypeConstructor(EITHER)
+                .withLeftParameterTypeConstructor(EITHER)
+                .withRightParameterTypeConstructor(EITHER)
                 .withResultTypeConstructor(EITHER)
                 .withLiftMethodName("liftEither")
                 .withMaxArity(26)

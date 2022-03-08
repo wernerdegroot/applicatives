@@ -1,5 +1,5 @@
 * Solve warnings about missing encoding
-* Make sure that none of the primary and secondary parameters contain A, B or C
+* Make sure that none of the primary parameters contain A, B or C
 * Document process to publish
 * Github Actions
 * Code coverage

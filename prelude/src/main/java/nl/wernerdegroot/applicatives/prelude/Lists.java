@@ -14,10 +14,13 @@ import java.util.function.BiFunction;
  */
 public class Lists implements ListsApplicative {
 
+    // The fact that we are returning an `ArrayList` (implementation detail)
+    // is a temporary situation while we allow the left type constructor and
+    // the right type constructor to diverge (work in progress).
     @Override
     @Covariant(className = "ListsApplicative")
-    public <A, B, C> List<C> combine(List<? extends A> left, List<? extends B> right, BiFunction<? super A, ? super B, ? extends C> fn) {
-        List<C> result = new ArrayList<>(left.size() * right.size());
+    public <A, B, C> ArrayList<C> combine(ArrayList<? extends A> left, List<? extends B> right, BiFunction<? super A, ? super B, ? extends C> fn) {
+        ArrayList<C> result = new ArrayList<>(left.size() * right.size());
         for (A elementFromLeft : left) {
             for (B elementFromRight : right) {
                 result.add(fn.apply(elementFromLeft, elementFromRight));

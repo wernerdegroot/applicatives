@@ -47,8 +47,11 @@ public class ConflictPreventionTest {
                         // Secondary parameters:
                         asList(Parameter.of(SAPIENT.with(I, M, J, C), first), Parameter.of(BUOYANT.with(S), second)),
 
-                        // Parameter type constructor:
-                        ERUDITE.with(I.asTypeConstructor().invariant(), M.asTypeConstructor().covariant(), placeholder().contravariant(), J.asTypeConstructor().invariant(), C.asTypeConstructor().covariant()),
+                        // Left parameter type constructor:
+                        ERUDITE.with(I.asTypeConstructor().invariant(), placeholder().covariant(), J.asTypeConstructor().contravariant()),
+
+                        // Right parameter type constructor:
+                        PROFUSE.with(M.asTypeConstructor().invariant(), placeholder().covariant(), C.asTypeConstructor().contravariant()),
 
                         // Result type constructor:
                         VOLUBLE.with(S.asTypeConstructor().contravariant(), placeholder().invariant())
@@ -72,8 +75,11 @@ public class ConflictPreventionTest {
                 // Secondary parameters:
                 assertEquals(asList(Parameter.of(SAPIENT.with(M1, M2, C1, C2), s1), Parameter.of(BUOYANT.with(S), s2)), conflictFree.getSecondaryParameters());
 
-                // Parameter type constructor:
-                assertEquals(ERUDITE.with(M1.asTypeConstructor().invariant(), M2.asTypeConstructor().covariant(), placeholder().contravariant(), C1.asTypeConstructor().invariant(), C2.asTypeConstructor().covariant()), conflictFree.getParameterTypeConstructor());
+                // Left parameter type constructor:
+                assertEquals(ERUDITE.with(M1.asTypeConstructor().invariant(), placeholder().covariant(), C1.asTypeConstructor().contravariant()), conflictFree.getLeftParameterTypeConstructor());
+
+                // Right parameter type constructor:
+                assertEquals(PROFUSE.with(M2.asTypeConstructor().invariant(), placeholder().covariant(), C2.asTypeConstructor().contravariant()), conflictFree.getRightParameterTypeConstructor());
 
                 // Result type constructor:
                 assertEquals(VOLUBLE.with(S.asTypeConstructor().contravariant(), placeholder().invariant()), conflictFree.getResultTypeConstructor());

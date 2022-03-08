@@ -99,7 +99,8 @@ public class CovariantProcessor extends AbstractProcessor {
                                 note("Method meets all criteria for code generation")
                                         .withDetail("Secondary type parameters", valid.getSecondaryMethodTypeParameters(), TypeParameterGenerator::generateFrom)
                                         .withDetail("Secondary parameters", valid.getSecondaryParameters(), ParameterGenerator::generateFrom)
-                                        .withDetail("Parameter type constructor", valid.getParameterTypeConstructor(), this::typeConstructorToString)
+                                        .withDetail("Left parameter type constructor", valid.getLeftParameterTypeConstructor(), this::typeConstructorToString)
+                                        .withDetail("Right parameter type constructor", valid.getRightParameterTypeConstructor(), this::typeConstructorToString)
                                         .withDetail("Result type constructor", valid.getResultTypeConstructor(), this::typeConstructorToString)
                                         .withDetail("Class type parameters", valid.getClassTypeParameters(), TypeParameterGenerator::generateFrom)
                                         .append();
@@ -108,7 +109,8 @@ public class CovariantProcessor extends AbstractProcessor {
                                         valid.getSecondaryMethodTypeParameters(),
                                         valid.getClassTypeParameters(),
                                         valid.getSecondaryParameters(),
-                                        valid.getParameterTypeConstructor(),
+                                        valid.getLeftParameterTypeConstructor(),
+                                        valid.getRightParameterTypeConstructor(),
                                         valid.getResultTypeConstructor()
                                 );
 
@@ -121,7 +123,8 @@ public class CovariantProcessor extends AbstractProcessor {
                                         .withDetail("Self parameter name", conflictFreeConflictFree.getSelfParameterName())
                                         .withDetail("Combinator parameter name", conflictFreeConflictFree.getCombinatorParameterName())
                                         .withDetail("Maximum tuple size parameter name", conflictFreeConflictFree.getMaxTupleSizeParameterName())
-                                        .withDetail("Parameter type constructor", conflictFreeConflictFree.getParameterTypeConstructor(), this::typeConstructorToString)
+                                        .withDetail("Left parameter type constructor", conflictFreeConflictFree.getLeftParameterTypeConstructor(), this::typeConstructorToString)
+                                        .withDetail("Right parameter type constructor", conflictFreeConflictFree.getRightParameterTypeConstructor(), this::typeConstructorToString)
                                         .withDetail("Result type constructor", conflictFreeConflictFree.getResultTypeConstructor(), this::typeConstructorToString)
                                         .append();
 
@@ -138,7 +141,8 @@ public class CovariantProcessor extends AbstractProcessor {
                                         .withSelfParameterName(conflictFreeConflictFree.getSelfParameterName())
                                         .withCombinatorParameterName(conflictFreeConflictFree.getCombinatorParameterName())
                                         .withMaxTupleSizeParameterName(conflictFreeConflictFree.getMaxTupleSizeParameterName())
-                                        .withParameterTypeConstructor(conflictFreeConflictFree.getParameterTypeConstructor())
+                                        .withLeftParameterTypeConstructor(conflictFreeConflictFree.getLeftParameterTypeConstructor())
+                                        .withRightParameterTypeConstructor(conflictFreeConflictFree.getRightParameterTypeConstructor())
                                         .withResultTypeConstructor(conflictFreeConflictFree.getResultTypeConstructor())
                                         .withLiftMethodName(covariantAnnotation.liftMethodName())
                                         .withMaxArity(covariantAnnotation.maxArity())

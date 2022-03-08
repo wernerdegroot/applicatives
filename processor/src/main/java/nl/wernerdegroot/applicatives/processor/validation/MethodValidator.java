@@ -78,23 +78,22 @@ public class MethodValidator {
             }
         }
 
-        // Compare if the type constructors for the left parameter and the right parameter are exactly the same:
-        TypeConstructor leftTypeConstructor = leftParameter.getType().asTypeConstructorWithPlaceholderFor(leftTypeParameter.getName());
-        TypeConstructor rightTypeConstructor = rightParameter.getType().asTypeConstructorWithPlaceholderFor(rightTypeParameter.getName());
-        if (!Objects.equals(leftTypeConstructor, rightTypeConstructor)) {
-            return ValidatedMethod.invalid("No shared type constructor between left parameter (" + generateFrom(leftParameter.getType()) + ") and right parameter (" + generateFrom(rightParameter.getType()) + ")");
-        }
+        TypeConstructor leftParameterTypeConstructor = leftParameter.getType().asTypeConstructorWithPlaceholderFor(leftTypeParameter.getName());
+        TypeConstructor rightParameterTypeConstructor = rightParameter.getType().asTypeConstructorWithPlaceholderFor(rightTypeParameter.getName());
 
-        // Pick any:
-        TypeConstructor parameterTypeConstructor = leftTypeConstructor;
-
-        // We also need to compare the type constructor for the parameters with the type constructor
-        // for the result. We can be somewhat lenient, as long as the result can be passed as an
-        // argument itself. This is the case when the parameter type is some covariant version of the
-        // result type.
+        // We need to compare the type constructor for the left parameter with the type constructor
+        // for the result. We can be somewhat lenient, as long as the result can be passed as a
+        // left argument itself. This is the case when the parameter type is some covariant or
+        // contravariant version of the result type.
         TypeConstructor resultTypeConstructor = resultType.asTypeConstructorWithPlaceholderFor(resultTypeParameter.getName());
-        if (!parameterTypeConstructor.canAccept(resultTypeConstructor)) {
-            return ValidatedMethod.invalid("No shared type constructor between parameters (" + generateFrom(leftParameter.getType()) + " and " + generateFrom(rightParameter.getType()) + ") and result (" + generateFrom(resultType) + ")");
+        if (!leftParameterTypeConstructor.canAccept(resultTypeConstructor)) {
+            // Tweak the error message to not confuse people using the simple case where
+            // parameter types and result type should be identical:
+            if (Objects.equals(leftParameterTypeConstructor, rightParameterTypeConstructor)) {
+                return ValidatedMethod.invalid("No shared type constructor between parameters (" + generateFrom(leftParameter.getType()) + " and " + generateFrom(rightParameter.getType()) + ") and result (" + generateFrom(resultType) + ")");
+            } else {
+                return ValidatedMethod.invalid("No shared type constructor between left parameter (" + generateFrom(leftParameter.getType()) + ") and result (" + generateFrom(resultType) + ")");
+            }
         }
 
         // Finally, we check whether we're dealing with an outer class or a static inner class.
@@ -123,7 +122,8 @@ public class MethodValidator {
         return ValidatedMethod.valid(
                 secondaryTypeParameters,
                 secondaryParameters,
-                parameterTypeConstructor,
+                leftParameterTypeConstructor,
+                rightParameterTypeConstructor,
                 resultTypeConstructor,
                 classTypeParameters
         );

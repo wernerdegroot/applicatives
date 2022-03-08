@@ -14,7 +14,7 @@ import static nl.wernerdegroot.applicatives.processor.conflicts.Conflicts.*;
 /**
  * In the process of generating overloads, we will be introducing new parameters and type parameters.
  * These new parameters and type parameters might conflict with the parameters and type parameters
- * that the programmer supplied. The method {@link ConflictPrevention#preventConflicts(List, List, List, TypeConstructor, TypeConstructor) preventConflicts}.
+ * that the programmer supplied. The method {@link ConflictPrevention#preventConflicts(List, List, List, TypeConstructor, TypeConstructor, TypeConstructor) preventConflicts}.
  * might be used to resolve these conflicts.
  */
 public class ConflictPrevention {
@@ -27,7 +27,8 @@ public class ConflictPrevention {
      * @param secondaryMethodTypeParameters
      * @param classTypeParameters
      * @param secondaryParameters
-     * @param parameterTypeConstructor
+     * @param leftParameterTypeConstructor
+     * @param rightParameterTypeConstructor
      * @param resultTypeConstructor
      * @return {@link ConflictFree} with conflict-free parameter
      * names and type parameter names that can be used directly when generating code.
@@ -36,7 +37,8 @@ public class ConflictPrevention {
             List<TypeParameter> secondaryMethodTypeParameters,
             List<TypeParameter> classTypeParameters,
             List<Parameter> secondaryParameters,
-            TypeConstructor parameterTypeConstructor,
+            TypeConstructor leftParameterTypeConstructor,
+            TypeConstructor rightParameterTypeConstructor,
             TypeConstructor resultTypeConstructor) {
 
         // == Step 1 ==
@@ -62,8 +64,8 @@ public class ConflictPrevention {
                 .map(typeParameter -> typeParameter.replaceAllTypeParameterNames(typeParameterNameReplacements.getSecondaryMethodTypeParameterReplacements()))
                 .collect(Collectors.toList());
 
-        TypeConstructor conflictFreeParameterTypeConstructor = parameterTypeConstructor.replaceAllTypeParameterNames(typeParameterNameReplacements.getSecondaryMethodTypeParameterReplacements());
-
+        TypeConstructor conflictFreeLeftParameterTypeConstructor = leftParameterTypeConstructor.replaceAllTypeParameterNames(typeParameterNameReplacements.getSecondaryMethodTypeParameterReplacements());
+        TypeConstructor conflictFreeRightParameterTypeConstructor = rightParameterTypeConstructor.replaceAllTypeParameterNames(typeParameterNameReplacements.getSecondaryMethodTypeParameterReplacements());
         TypeConstructor conflictFreeResultTypeConstructor = resultTypeConstructor.replaceAllTypeParameterNames(typeParameterNameReplacements.getSecondaryMethodTypeParameterReplacements());
 
         List<Parameter> conflictFreeSecondaryParameters = secondaryParameters
@@ -84,7 +86,8 @@ public class ConflictPrevention {
                 SELF_PARAMETER_NAME,
                 COMBINATOR_PARAMETER_NAME,
                 MAX_TUPLE_SIZE_PARAMETER_NAME,
-                conflictFreeParameterTypeConstructor,
+                conflictFreeLeftParameterTypeConstructor,
+                conflictFreeRightParameterTypeConstructor,
                 conflictFreeResultTypeConstructor
         );
 
