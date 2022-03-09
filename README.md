@@ -268,48 +268,66 @@ Function<Random, Person> randomPerson = new RandomGeneratorFunctions()
 You will need to write a class that looks like the following (for a given, imaginary class `Foo`):
 
 ```
- ┌─────────────────────────────────────┐                                                    
- │ Name of the class is not important. │                                                    
- └──────────────────┬──────────────────┘                                                    
-                    │         ┌─────────────────────────────────────────────┐               
-                    │         │ Class can have type parameters. These need  │               
-                    │         │ to provided to the generated class as well. │               
-                    │         └──────────┬────────────────────────────┬─────┘               
-                    ▼                    ▼                            ▼                     
-public class CanBeAnything<C1, C2, ..., CN> implements GeneratedClass<C1, C2, ..., CN> {    
-                                                                                            
-                                                                                            
-                 ┌──────────────────────────────────┐      ┌─────────────────────────────┐  
-                 │ Specify name of generated class. │   ┌──│ Explained in next section.  │  
-                 └─────────────────┬────────────────┘   │  └─────────────────────────────┘  
-    @Override                      ▼                    ▼                                   
-    @Covariant(className = "GeneratedClass", liftMethodName = "lift", maxArity = 26)        
-                                                                                            
-  ┌─────────────────────────────────────────────┐        ┌────────────────────────────┐     
-  │ Method needs at least three type parameters │        │ Name of the method is not  │     
-  │  (although name is not important). You can  │    ┌───│  important, but overloads  │     
-  │   specify additional type parameters too.   │    │   │  will have the same name.  │     
-  └──────────────────────┬──────────────────────┘    │   └────────────────────────────┘     
-                         ▼                           ▼                                      
-    public <A, B, C, M1, M2, ..., MN> Foo<C> whateverYouLike(                               
-                                       ▲                       ┌───────────────────────────┐
-            Foo<? extends A> left,   ◀─┤                       │  The types of these need  │
-                                       ├───────────────────────│ to correspond. The names  │
-            Foo<? extends B> right,  ◀─┘                       │  of these don't matter.   │
-                                                               └───────────────────────────┘
-            BiFunction<? super A, ? super B, ? extends C> fn,                               
-                                                                                            
-            Bar<M1> bar,  ◀───┐                                                            
-                              │    ┌────────────────────────────────────────┐              
-            Baz baz,      ◀───┤    │ Method can have additional parameters. │              
-                              ├────│    These need to be provided to the    │              
-            ...,          ◀───┤    │    overloads of the method as well.    │              
-                              │    └────────────────────────────────────────┘              
-            Qux qux) {    ◀───┘                                                            
-                                   ┌────────────────────┐                                  
-        return ...;  ◀─────────────│ This is up to you! │                                  
-    }                              └────────────────────┘                                  
-}                                                                                           
+  ┌────────────────────────────────────────────────────────────────────────────────────┐         ┌──────────────────────────────────────────────────────────────────────────────────────────────┐
+  │                         BiFunction<String, String, Person>                         │         │                              BiFunction<String, String, Person>                              │
+  └────────────────────────────────────────────────────────────────────────────────────┘         └──────────────────────────────────────────────────────────────────────────────────────────────┘
+                                             │                                                                                                   │                                               
+                                             │  Optionals.lift                                                                                   │  CompletableFutures.lift                      
+                                             ▼                                                                                                   ▼                                               
+  ┌────────────────────────────────────────────────────────────────────────────────────┐         ┌──────────────────────────────────────────────────────────────────────────────────────────────┐
+  │          BiFunction<Optional<String>, Optional<String>, Optional<Person>>          │         │ BiFunction<CompletableFuture<String>, CompletableFuture<String>, CompletableFuture<Person>>  │
+  └────────────────────────────────────────────────────────────────────────────────────┘         └──────────────────────────────────────────────────────────────────────────────────────────────┘
+                                             │                                                                                                                                                   
+                                             │  Lists.lift                                                                                                                                       
+                                             ▼                                                                                                                                                   
+  ┌────────────────────────────────────────────────────────────────────────────────────┐                                                                                                         
+  │ BiFunction<List<Optional<String>>, List<Optional<String>>, List<Optional<Person>>> │                                                                                                         
+  └────────────────────────────────────────────────────────────────────────────────────┘                                                                                                         
+                                                                                                                                                                                                 
+                                                                                                                                                                                                 
+                                                                                                                                                                                                 
+                                                                                                                                                                                                 
+ ┌─────────────────────────────────────┐                                                                                                                                                         
+ │ Name of the class is not important. │                                                                                                                                                         
+ └──────────────────┬──────────────────┘                                                                                                                                                         
+                    │         ┌─────────────────────────────────────────────┐                                                                                                                    
+                    │         │ Class can have type parameters. These need  │                                                                                                                    
+                    │         │ to provided to the generated class as well. │                                                                                                                    
+                    │         └──────────┬────────────────────────────┬─────┘                                                                                                                    
+                    ▼                    ▼                            ▼                                                                                                                          
+public class CanBeAnything<C1, C2, ..., CN> implements GeneratedClass<C1, C2, ..., CN> {                                                                                                         
+                                                                                                                                                                                                 
+                 ┌──────────────────────────────────┐      ┌─────────────────────────────┐                                                                                                       
+                 │ Specify name of generated class. │   ┌──│ Explained in next section.  │                                                                                                       
+                 └─────────────────┬────────────────┘   │  └─────────────────────────────┘                                                                                                       
+    @Override                      ▼                    ▼                                                                                                                                        
+    @Covariant(className = "GeneratedClass", liftMethodName = "lift", maxArity = 26)                                                                                                             
+                                                                                                                                                                                                 
+  ┌─────────────────────────────────────────────┐        ┌────────────────────────────┐                                                                                                          
+  │ Method needs at least three type parameters │        │ Name of the method is not  │                                                                                                          
+  │  (although name is not important). You can  │    ┌───│  important, but overloads  │                                                                                                          
+  │   specify additional type parameters too.   │    │   │  will have the same name.  │                                                                                                          
+  └──────────────────────┬──────────────────────┘    │   └────────────────────────────┘                                                                                                          
+                         ▼                           ▼                                                                                                                                           
+    public <A, B, C, M1, M2, ..., MN> Foo<C> whateverYouLike(     ┌───────────────────────────┐                                                                                                  
+                                       ▲                          │  Typically, the types of  │                                                                                                  
+            Foo<A> left,  ◀──────┐     │                          │  these are identical. In  │                                                                                                  
+                                 ├─────┴──────────────────────────│ some cases, the types are │                                                                                                  
+            Foo<B> right, ◀──────┘                                │  allowed to diverge. See  │                                                                                                  
+                                                                  │   "Type constructors".    │                                                                                                  
+            BiFunction<? super A, ? super B, ? extends C> fn,     └───────────────────────────┘                                                                                                  
+                                                                                                                                                                                                 
+            Bar<M1> bar,  ◀───┐                                                                                                                                                                  
+                              │    ┌────────────────────────────────────────┐                                                                                                                    
+            Baz baz,      ◀───┤    │ Method can have additional parameters. │                                                                                                                    
+                              ├────│    These need to be provided to the    │                                                                                                                    
+            ...,          ◀───┤    │    overloads of the method as well.    │                                                                                                                    
+                              │    └────────────────────────────────────────┘                                                                                                                    
+            Qux qux) {    ◀───┘                                                                                                                                                                  
+                                   ┌────────────────────┐                                                                                                                                        
+        return ...;  ◀─────────────│ This is up to you! │                                                                                                                                        
+    }                              └────────────────────┘                                                                                                                                        
+}                                                                                                                                                                                                
 ```
 
 `Foo` can be any data structure for which you can write a class like above. Such data structures are called ["applicatives"](https://en.wikipedia.org/wiki/Applicative_functor). Common examples from the Java standard library are:
@@ -326,11 +344,15 @@ There are many other data structures like this, such as `Mono`/`Flux` from [Reac
 
 Moreover, any "stack" of these data structures (a `List` of `Optional`s, or a `Function` that returns a `Stream` of `CompletableFuture`s) can automatically be combined this way too!
 
-Note that, in the example above, the types of the parameters `left` and `right` (`Foo<? extends A>` and `Foo<? extends B>` respectively) and the return type (`Foo<C>`) are not alike. The former are covariant in its type argument, while the latter is invariant. This is similar to something you'll find in [the definition of `CompletableFuture.thenCombine`](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFuture.html#thenCombine-java.util.concurrent.CompletionStage-java.util.function.BiFunction-) and is [generally recommended](https://en.wikipedia.org/wiki/Robustness_principle):
+## Type constructors
+
+Note that, in the example above, the types of the parameters `left` and `right` are too strict. Applicatives are typically covariant, and you may want to adjust the types of the parameters to reflect this (`Foo<? extends A>` and `Foo<? extends B>` instead of `Foo<A>` and `Foo<B>`). This is similar to something you'll find in [the definition of `CompletableFuture.thenCombine`](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFuture.html#thenCombine-java.util.concurrent.CompletionStage-java.util.function.BiFunction-) and is [generally recommended](https://en.wikipedia.org/wiki/Robustness_principle):
 
 > Among programmers, to produce [compatible functions](https://en.wikipedia.org/wiki/Liskov_substitution_principle), the principle is also known in the form [be contravariant in the input type and covariant in the output type](https://en.wikipedia.org/wiki/Covariance_and_contravariance_(computer_science)).
 
-## `lift`
+The types of `left` and `right` are allowed to diverge as well. This is considered to be an advanced feature, but could be necessary to prevent the execution time overhead of excessive copying. See [the implementation of the applicative for `List`](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/main/java/nl/wernerdegroot/applicatives/prelude/Lists.java) for inspiration. 
+
+## Lift
 
 Using `lift`, you can transform every `BiFunction<A, B, C>` into a `BiFunction<CompletableFuture<A>, CompletableFuture<B>, CompletableFuture<C>>` or `BiFunction<Stream<A>, Stream<B>, Stream<C>>` or whatever applicative you may choose to lift this function into. You are not limited to a `BiFunction` either. Any function with up to 26 arguments can be lifted in this fashion. Let's check out an example:
 
