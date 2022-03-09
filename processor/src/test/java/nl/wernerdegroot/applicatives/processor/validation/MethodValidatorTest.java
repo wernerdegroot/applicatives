@@ -132,6 +132,7 @@ public class MethodValidatorTest {
                 emptyList(),
                 OPTIONAL.asTypeConstructor(),
                 OPTIONAL.asTypeConstructor(),
+                OPTIONAL.asTypeConstructor(),
                 emptyList()
         );
         ValidatedMethod toVerify = MethodValidator.validate(toValidate);
@@ -180,6 +181,7 @@ public class MethodValidatorTest {
                 emptyList(),
                 FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()),
                 FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()),
+                FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()),
                 emptyList()
         );
         ValidatedMethod toVerify = MethodValidator.validate(toValidate);
@@ -226,6 +228,7 @@ public class MethodValidatorTest {
         ValidatedMethod expected = ValidatedMethod.valid(
                 emptyList(),
                 asList(Parameter.of(EXECUTOR, "executor")),
+                COMPLETABLE_FUTURE.asTypeConstructor(),
                 COMPLETABLE_FUTURE.asTypeConstructor(),
                 COMPLETABLE_FUTURE.asTypeConstructor(),
                 emptyList()
@@ -300,7 +303,7 @@ public class MethodValidatorTest {
     }
 
     @Test
-    public void shouldReturnInvalidWhenThereIsNoSharedTypeConstructorBetweenBothParameters() {
+    public void shouldReturnValidWhenThereIsNoSharedTypeConstructorBetweenBothParameters() {
         Method toValidate = Method.of(
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
@@ -314,7 +317,14 @@ public class MethodValidatorTest {
                 ContainingClass.withoutTypeParameters(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Weird"))
         );
 
-        ValidatedMethod expected = ValidatedMethod.invalid("No shared type constructor between left parameter (java.util.Optional<T>) and right parameter (java.util.concurrent.CompletableFuture<U>)");
+        ValidatedMethod expected = ValidatedMethod.valid(
+                emptyList(),
+                emptyList(),
+                OPTIONAL.asTypeConstructor(),
+                COMPLETABLE_FUTURE.asTypeConstructor(),
+                OPTIONAL.asTypeConstructor(),
+                emptyList()
+        );
         ValidatedMethod toVerify = MethodValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
@@ -341,6 +351,28 @@ public class MethodValidatorTest {
         assertEquals(expected, toVerify);
     }
 
+
+    @Test
+    public void shouldReturnInvalidWhenThereIsNoSharedTypeConstructorBetweenLeftParameterAndResult() {
+        Method toValidate = Method.of(
+                modifiers(PUBLIC),
+                asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter(), P.asTypeParameter()),
+                Optional.of(COMPLETABLE_FUTURE.with(V)),
+                "myFunction",
+                asList(
+                        Parameter.of(OPTIONAL.with(T), "left"),
+                        Parameter.of(COMPLETABLE_FUTURE.with(U), "right"),
+                        Parameter.of(BI_FUNCTION.with(T.asType().contravariant(), U.asType().contravariant(), V.asType().covariant()), "compose")
+                ),
+                ContainingClass.withoutTypeParameters(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"))
+        );
+
+        ValidatedMethod expected = ValidatedMethod.invalid("No shared type constructor between left parameter (java.util.Optional<T>) and result (java.util.concurrent.CompletableFuture<V>)");
+        ValidatedMethod toVerify = MethodValidator.validate(toValidate);
+
+        assertEquals(expected, toVerify);
+    }
+
     @Test
     public void shouldReturnValidWhenResultTypeConstructorIsAssignableToParameterTypeConstructor() {
         Method toValidate = Method.of(
@@ -359,6 +391,7 @@ public class MethodValidatorTest {
         ValidatedMethod expected = ValidatedMethod.valid(
                 asList(P.asTypeParameter()),
                 emptyList(),
+                FUNCTION.with(P.asTypeConstructor().contravariant(), placeholder().covariant()),
                 FUNCTION.with(P.asTypeConstructor().contravariant(), placeholder().covariant()),
                 FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()),
                 emptyList()
@@ -390,7 +423,7 @@ public class MethodValidatorTest {
     }
 
     @Test
-    public void shouldReturnValidWhenTheContainClassIsAStaticInnerClass() {
+    public void shouldReturnValidWhenTheContainingClassIsAStaticInnerClass() {
         Method toValidate = Method.of(
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
@@ -409,6 +442,7 @@ public class MethodValidatorTest {
                 emptyList(),
                 OPTIONAL.asTypeConstructor(),
                 OPTIONAL.asTypeConstructor(),
+                OPTIONAL.asTypeConstructor(),
                 asList(B, C)
         );
         ValidatedMethod toVerify = MethodValidator.validate(toValidate);
@@ -417,7 +451,7 @@ public class MethodValidatorTest {
     }
 
     @Test
-    public void shouldReturnValidWhenTheContainClassIsAOuterClass() {
+    public void shouldReturnValidWhenTheContainingClassIsAOuterClass() {
         Method toValidate = Method.of(
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
@@ -434,6 +468,7 @@ public class MethodValidatorTest {
         ValidatedMethod expected = ValidatedMethod.valid(
                 emptyList(),
                 emptyList(),
+                OPTIONAL.asTypeConstructor(),
                 OPTIONAL.asTypeConstructor(),
                 OPTIONAL.asTypeConstructor(),
                 asList(A, B)

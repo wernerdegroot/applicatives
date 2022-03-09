@@ -41,6 +41,7 @@ public interface Type {
     TypeBuilder OPTIONAL = new TypeBuilder(FullyQualifiedName.of("java.util.Optional"));
     TypeBuilder COLLECTION = new TypeBuilder(FullyQualifiedName.of("java.util.Collection"));
     TypeBuilder LIST = new TypeBuilder(FullyQualifiedName.of("java.util.List"));
+    TypeBuilder ARRAY_LIST = new TypeBuilder(FullyQualifiedName.of("java.util.ArrayList"));
     TypeBuilder SET = new TypeBuilder(FullyQualifiedName.of("java.util.Set"));
     TypeBuilder MAP = new TypeBuilder(FullyQualifiedName.of("java.util.Map"));
     TypeBuilder FUNCTION = new TypeBuilder(FullyQualifiedName.of("java.util.function.Function"));

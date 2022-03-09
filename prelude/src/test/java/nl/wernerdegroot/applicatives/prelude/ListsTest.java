@@ -2,6 +2,8 @@ package nl.wernerdegroot.applicatives.prelude;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static java.util.Arrays.asList;
@@ -11,7 +13,7 @@ public class ListsTest {
 
     @Test
     public void combine() {
-        List<String> name = asList("Bulbasaur", "Charmander", "Squirtle");
+        ArrayList<String> name = arrayList("Bulbasaur", "Charmander", "Squirtle");
         List<Integer> hp = asList(10);
         List<EnergyType> energyType = asList(EnergyType.GRASS, EnergyType.FIRE);
         List<List<Move>> moves = asList(
@@ -23,7 +25,7 @@ public class ListsTest {
                         Move.of(asList(EnergyType.FIRE, EnergyType.COLORLESS), "Ember", 30)
                 )
         );
-        List<PokemonCard> expected = asList(
+        ArrayList<PokemonCard> expected = arrayList(
                 PokemonCard.of(
                         "Bulbasaur",
                         10,
@@ -129,5 +131,9 @@ public class ListsTest {
         );
         List<PokemonCard> toVerify = new Lists().combine(name, hp, energyType, moves, PokemonCard::new);
         assertEquals(expected, toVerify);
+    }
+
+    private static <T> ArrayList<T> arrayList(T... elements) {
+        return new ArrayList<>(asList(elements));
     }
 }

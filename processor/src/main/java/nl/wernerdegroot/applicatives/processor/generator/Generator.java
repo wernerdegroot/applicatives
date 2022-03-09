@@ -42,7 +42,8 @@ public class Generator {
     private String selfParameterName;
     private String combinatorParameterName;
     private String maxTupleSizeParameterName;
-    private TypeConstructor parameterTypeConstructor;
+    private TypeConstructor leftParameterTypeConstructor;
+    private TypeConstructor rightParameterTypeConstructor;
     private TypeConstructor resultTypeConstructor;
     private String liftMethodName;
     private int maxArity;
@@ -115,15 +116,24 @@ public class Generator {
                 .collect(toList());
     }
 
-    public List<Type> getLiftedPrimaryMethodTypeParametersAsTypes() {
-        return getPrimaryMethodTypeParametersAsTypes()
-                .stream()
-                .map(parameterTypeConstructor::apply)
-                .collect(toList());
+    public List<Type> takeLiftedPrimaryMethodTypeParametersAsTypes(int toTake) {
+        return takeLiftedPrimaryMethodTypeParametersAsTypes(toTake, leftParameterTypeConstructor, rightParameterTypeConstructor);
     }
 
-    public List<Type> takeLiftedPrimaryMethodTypeParametersAsTypes(int toTake) {
-        return getLiftedPrimaryMethodTypeParametersAsTypes().subList(0, toTake);
+    public List<Type> takeLiftedPrimaryMethodTypeParametersAsTypes(int toTake, TypeConstructor leftParameterTypeConstructor, TypeConstructor rightParameterTypeConstructor) {
+        List<Type> result = new ArrayList<>();
+        getPrimaryMethodTypeParametersAsTypes()
+                .stream()
+                .limit(1)
+                .map(leftParameterTypeConstructor::apply)
+                .forEachOrdered(result::add);
+        getPrimaryMethodTypeParametersAsTypes()
+                .stream()
+                .limit(toTake)
+                .skip(1)
+                .map(rightParameterTypeConstructor::apply)
+                .forEachOrdered(result::add);
+        return result;
     }
 
     public Generator withResultTypeParameter(TypeParameter resultTypeParameter) {
@@ -185,8 +195,13 @@ public class Generator {
         return this;
     }
 
-    public Generator withParameterTypeConstructor(TypeConstructor parameterTypeConstructor) {
-        this.parameterTypeConstructor = parameterTypeConstructor;
+    public Generator withLeftParameterTypeConstructor(TypeConstructor leftParameterTypeConstructor) {
+        this.leftParameterTypeConstructor = leftParameterTypeConstructor;
+        return this;
+    }
+
+    public Generator withRightParameterTypeConstructor(TypeConstructor rightParameterTypeConstructor) {
+        this.rightParameterTypeConstructor = rightParameterTypeConstructor;
         return this;
     }
 
@@ -274,7 +289,7 @@ public class Generator {
                 .withName(methodName)
                 .withParameterTypes(takeLiftedPrimaryMethodTypeParametersAsTypes(arity))
                 .andParameterNames(takePrimaryParameterNames(arity))
-                .withParameter(lambdaType(TypeConstructor.placeholder(), TypeConstructor.placeholder(), arity), combinatorParameterName)
+                .withParameter(lambdaType(TypeConstructor.placeholder(), TypeConstructor.placeholder(), TypeConstructor.placeholder(), arity), combinatorParameterName)
                 .withParameters(secondaryParameters)
                 .withReturnStatement(
                         methodCall()
@@ -334,9 +349,9 @@ public class Generator {
                 .withTypeParameters(takePrimaryMethodTypeParameters(arity))
                 .withTypeParameters(resultTypeParameter.getName())
                 .withTypeParameters(secondaryMethodTypeParameters)
-                .withReturnType(lambdaType(parameterTypeConstructor, resultTypeConstructor, arity))
+                .withReturnType(lambdaType(leftParameterTypeConstructor, rightParameterTypeConstructor, resultTypeConstructor, arity))
                 .withName(liftMethodName)
-                .withParameter(lambdaType(TypeConstructor.placeholder(), TypeConstructor.placeholder(), arity), combinatorParameterName)
+                .withParameter(lambdaType(TypeConstructor.placeholder(), TypeConstructor.placeholder(), TypeConstructor.placeholder(), arity), combinatorParameterName)
                 .withParameters(secondaryParameters)
                 .withReturnStatement(
                         lambda()
@@ -418,7 +433,7 @@ public class Generator {
                 // we need to make sure that the class type parameters are available as additional method
                 // type parameters:
                 .withTypeParameters(classTypeParameters)
-                .withReturnType(FAST_TUPLE.with(getPrimaryMethodTypeParametersAsTypeArguments()).using(parameterTypeConstructor))
+                .withReturnType(FAST_TUPLE.with(getPrimaryMethodTypeParametersAsTypeArguments()).using(resultTypeConstructor))
                 .withName(TUPLE_METHOD_NAME)
                 .withParameter(getFullyQualifiedClassNameToGenerate().with(getClassTypeParametersAsTypeArguments()), selfParameterName)
                 .withParameterTypes(takeLiftedPrimaryMethodTypeParametersAsTypes(arity))
@@ -429,11 +444,10 @@ public class Generator {
                 .lines();
     }
 
-    private Type lambdaType(TypeConstructor parameterTypeConstructor, TypeConstructor resultTypeConstructor, int arity) {
+    private Type lambdaType(TypeConstructor leftParameterTypeConstructor, TypeConstructor rightParameterTypeConstructor, TypeConstructor resultTypeConstructor, int arity) {
         List<TypeArgument> typeArguments = new ArrayList<>();
-        takePrimaryMethodTypeParametersAsTypes(arity)
+        takeLiftedPrimaryMethodTypeParametersAsTypes(arity, leftParameterTypeConstructor, rightParameterTypeConstructor)
                 .stream()
-                .map(parameterTypeConstructor::apply)
                 .map(Type::contravariant)
                 .forEachOrdered(typeArguments::add);
         typeArguments.add(resultTypeParameter.asType().using(resultTypeConstructor).covariant());
