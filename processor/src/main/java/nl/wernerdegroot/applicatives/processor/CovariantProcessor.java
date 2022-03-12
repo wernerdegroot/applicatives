@@ -97,7 +97,6 @@ public class CovariantProcessor extends AbstractProcessor {
                     validatedMethod.match(
                             valid -> {
                                 note("Method meets all criteria for code generation")
-                                        .withDetail("Secondary type parameters", valid.getSecondaryMethodTypeParameters(), TypeParameterGenerator::generateFrom)
                                         .withDetail("Secondary parameters", valid.getSecondaryParameters(), ParameterGenerator::generateFrom)
                                         .withDetail("Left parameter type constructor", valid.getLeftParameterTypeConstructor(), this::typeConstructorToString)
                                         .withDetail("Right parameter type constructor", valid.getRightParameterTypeConstructor(), this::typeConstructorToString)
@@ -106,7 +105,6 @@ public class CovariantProcessor extends AbstractProcessor {
                                         .append();
 
                                 ConflictFree conflictFreeConflictFree = ConflictPrevention.preventConflicts(
-                                        valid.getSecondaryMethodTypeParameters(),
                                         valid.getClassTypeParameters(),
                                         valid.getSecondaryParameters(),
                                         valid.getLeftParameterTypeConstructor(),
@@ -115,9 +113,8 @@ public class CovariantProcessor extends AbstractProcessor {
                                 );
 
                                 note("Resolved (potential) conflicts between existing type parameters and new, generated type parameters (and likewise for secondary parameters)")
-                                        .withDetail("Primary method type parameters", conflictFreeConflictFree.getPrimaryMethodTypeParameters(), TypeParameterGenerator::generateFrom)
+                                        .withDetail("Method type parameters", conflictFreeConflictFree.getParticipantTypeParameters(), TypeParameterGenerator::generateFrom)
                                         .withDetail("Result type parameter", conflictFreeConflictFree.getResultTypeParameter(), TypeParameterGenerator::generateFrom)
-                                        .withDetail("Secondary method type parameters", conflictFreeConflictFree.getSecondaryMethodTypeParameters(), TypeParameterGenerator::generateFrom)
                                         .withDetail("Class type parameters", conflictFreeConflictFree.getClassTypeParameters(), TypeParameterGenerator::generateFrom)
                                         .withDetail("Primary parameter names", conflictFreeConflictFree.getPrimaryParameterNames())
                                         .withDetail("Self parameter name", conflictFreeConflictFree.getSelfParameterName())
@@ -132,9 +129,8 @@ public class CovariantProcessor extends AbstractProcessor {
                                         .withPackageName(method.getContainingClass().getPackageName())
                                         .withClassNameToGenerate(covariantAnnotation.className())
                                         .withClassTypeParameters(conflictFreeConflictFree.getClassTypeParameters())
-                                        .withPrimaryMethodTypeParameters(conflictFreeConflictFree.getPrimaryMethodTypeParameters())
+                                        .withParticipantTypeParameters(conflictFreeConflictFree.getParticipantTypeParameters())
                                         .withResultTypeParameter(conflictFreeConflictFree.getResultTypeParameter())
-                                        .withSecondaryMethodTypeParameters(conflictFreeConflictFree.getSecondaryMethodTypeParameters())
                                         .withMethodName(method.getName())
                                         .withPrimaryParameterNames(conflictFreeConflictFree.getPrimaryParameterNames())
                                         .withSecondaryParameters(conflictFreeConflictFree.getSecondaryParameters())

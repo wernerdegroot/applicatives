@@ -16,9 +16,8 @@ public class ConflictFree {
 
     // For an explanation of these fields, check `README.md` in the `domain` package.
 
-    private final List<TypeParameter> primaryMethodTypeParameters;
+    private final List<TypeParameter> participantTypeParameters;
     private final TypeParameter resultTypeParameter;
-    private final List<TypeParameter> secondaryMethodTypeParameters;
     private final List<TypeParameter> classTypeParameters;
     private final List<String> primaryParameterNames;
     private final List<Parameter> secondaryParameters;
@@ -29,10 +28,9 @@ public class ConflictFree {
     private final TypeConstructor rightParameterTypeConstructor;
     private final TypeConstructor resultTypeConstructor;
 
-    public ConflictFree(List<TypeParameter> primaryMethodTypeParameters, TypeParameter resultTypeParameter, List<TypeParameter> secondaryMethodTypeParameters, List<TypeParameter> classTypeParameters, List<String> primaryParameterNames, List<Parameter> secondaryParameters, String selfParameterName, String combinatorParameterName, String maxTupleSizeParameterName, TypeConstructor leftParameterTypeConstructor, TypeConstructor rightParameterTypeConstructor, TypeConstructor resultTypeConstructor) {
-        this.primaryMethodTypeParameters = primaryMethodTypeParameters;
+    public ConflictFree(List<TypeParameter> participantTypeParameters, TypeParameter resultTypeParameter, List<TypeParameter> classTypeParameters, List<String> primaryParameterNames, List<Parameter> secondaryParameters, String selfParameterName, String combinatorParameterName, String maxTupleSizeParameterName, TypeConstructor leftParameterTypeConstructor, TypeConstructor rightParameterTypeConstructor, TypeConstructor resultTypeConstructor) {
+        this.participantTypeParameters = participantTypeParameters;
         this.resultTypeParameter = resultTypeParameter;
-        this.secondaryMethodTypeParameters = secondaryMethodTypeParameters;
         this.classTypeParameters = classTypeParameters;
         this.primaryParameterNames = primaryParameterNames;
         this.secondaryParameters = secondaryParameters;
@@ -44,20 +42,16 @@ public class ConflictFree {
         this.resultTypeConstructor = resultTypeConstructor;
     }
 
-    public static ConflictFree of(List<TypeParameter> primaryMethodTypeParameters, TypeParameter resultTypeParameter, List<TypeParameter> secondaryMethodTypeParameters, List<TypeParameter> classTypeParameters, List<String> primaryParameterNames, List<Parameter> secondaryParameters, String selfParameterName, String combinatorParameterName, String maxTupleSizeParameterName, TypeConstructor leftParameterTypeConstructor, TypeConstructor rightParameterTypeConstructor, TypeConstructor resultTypeConstructor) {
-        return new ConflictFree(primaryMethodTypeParameters, resultTypeParameter, secondaryMethodTypeParameters, classTypeParameters, primaryParameterNames, secondaryParameters, selfParameterName, combinatorParameterName, maxTupleSizeParameterName, leftParameterTypeConstructor, rightParameterTypeConstructor, resultTypeConstructor);
+    public static ConflictFree of(List<TypeParameter> parameterTypeParameters, TypeParameter resultTypeParameter, List<TypeParameter> classTypeParameters, List<String> primaryParameterNames, List<Parameter> secondaryParameters, String selfParameterName, String combinatorParameterName, String maxTupleSizeParameterName, TypeConstructor leftParameterTypeConstructor, TypeConstructor rightParameterTypeConstructor, TypeConstructor resultTypeConstructor) {
+        return new ConflictFree(parameterTypeParameters, resultTypeParameter, classTypeParameters, primaryParameterNames, secondaryParameters, selfParameterName, combinatorParameterName, maxTupleSizeParameterName, leftParameterTypeConstructor, rightParameterTypeConstructor, resultTypeConstructor);
     }
 
-    public List<TypeParameter> getPrimaryMethodTypeParameters() {
-        return primaryMethodTypeParameters;
+    public List<TypeParameter> getParticipantTypeParameters() {
+        return participantTypeParameters;
     }
 
     public TypeParameter getResultTypeParameter() {
         return resultTypeParameter;
-    }
-
-    public List<TypeParameter> getSecondaryMethodTypeParameters() {
-        return secondaryMethodTypeParameters;
     }
 
     public List<TypeParameter> getClassTypeParameters() {
@@ -101,20 +95,19 @@ public class ConflictFree {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ConflictFree that = (ConflictFree) o;
-        return getPrimaryMethodTypeParameters().equals(that.getPrimaryMethodTypeParameters()) && getResultTypeParameter().equals(that.getResultTypeParameter()) && getSecondaryMethodTypeParameters().equals(that.getSecondaryMethodTypeParameters()) && getClassTypeParameters().equals(that.getClassTypeParameters()) && getPrimaryParameterNames().equals(that.getPrimaryParameterNames()) && getSecondaryParameters().equals(that.getSecondaryParameters()) && getSelfParameterName().equals(that.getSelfParameterName()) && getCombinatorParameterName().equals(that.getCombinatorParameterName()) && getMaxTupleSizeParameterName().equals(that.getMaxTupleSizeParameterName()) && getLeftParameterTypeConstructor().equals(that.getLeftParameterTypeConstructor()) && getRightParameterTypeConstructor().equals(that.getRightParameterTypeConstructor()) && getResultTypeConstructor().equals(that.getResultTypeConstructor());
+        return getParticipantTypeParameters().equals(that.getParticipantTypeParameters()) && getResultTypeParameter().equals(that.getResultTypeParameter()) && getClassTypeParameters().equals(that.getClassTypeParameters()) && getPrimaryParameterNames().equals(that.getPrimaryParameterNames()) && getSecondaryParameters().equals(that.getSecondaryParameters()) && getSelfParameterName().equals(that.getSelfParameterName()) && getCombinatorParameterName().equals(that.getCombinatorParameterName()) && getMaxTupleSizeParameterName().equals(that.getMaxTupleSizeParameterName()) && getLeftParameterTypeConstructor().equals(that.getLeftParameterTypeConstructor()) && getRightParameterTypeConstructor().equals(that.getRightParameterTypeConstructor()) && getResultTypeConstructor().equals(that.getResultTypeConstructor());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getPrimaryMethodTypeParameters(), getResultTypeParameter(), getSecondaryMethodTypeParameters(), getClassTypeParameters(), getPrimaryParameterNames(), getSecondaryParameters(), getSelfParameterName(), getCombinatorParameterName(), getMaxTupleSizeParameterName(), getLeftParameterTypeConstructor(), getRightParameterTypeConstructor(), getResultTypeConstructor());
+        return Objects.hash(getParticipantTypeParameters(), getResultTypeParameter(), getClassTypeParameters(), getPrimaryParameterNames(), getSecondaryParameters(), getSelfParameterName(), getCombinatorParameterName(), getMaxTupleSizeParameterName(), getLeftParameterTypeConstructor(), getRightParameterTypeConstructor(), getResultTypeConstructor());
     }
 
     @Override
     public String toString() {
         return "ConflictFree{" +
-                "primaryMethodTypeParameters=" + primaryMethodTypeParameters +
+                "participantTypeParameters=" + participantTypeParameters +
                 ", resultTypeParameter=" + resultTypeParameter +
-                ", secondaryMethodTypeParameters=" + secondaryMethodTypeParameters +
                 ", classTypeParameters=" + classTypeParameters +
                 ", primaryParameterNames=" + primaryParameterNames +
                 ", secondaryParameters=" + secondaryParameters +

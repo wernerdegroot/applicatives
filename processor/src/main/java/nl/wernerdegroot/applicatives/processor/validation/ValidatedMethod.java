@@ -16,8 +16,8 @@ public interface ValidatedMethod {
 
     void match(Consumer<Valid> matchValid, Consumer<Invalid> matchInvalid);
 
-    static Valid valid(List<TypeParameter> secondaryMethodTypeParameters, List<Parameter> secondaryParameters, TypeConstructor leftParameterTypeConstructor, TypeConstructor rightParameterTypeConstructor, TypeConstructor resultTypeConstructor, List<TypeParameter> classTypeParameters) {
-        return Valid.of(secondaryMethodTypeParameters, secondaryParameters, leftParameterTypeConstructor, rightParameterTypeConstructor, resultTypeConstructor, classTypeParameters);
+    static Valid valid(List<Parameter> secondaryParameters, TypeConstructor leftParameterTypeConstructor, TypeConstructor rightParameterTypeConstructor, TypeConstructor resultTypeConstructor, List<TypeParameter> classTypeParameters) {
+        return Valid.of(secondaryParameters, leftParameterTypeConstructor, rightParameterTypeConstructor, resultTypeConstructor, classTypeParameters);
     }
 
     static Invalid invalid(Set<String> errorMessages) {
@@ -30,15 +30,13 @@ public interface ValidatedMethod {
 
     class Valid implements ValidatedMethod {
 
-        private final List<TypeParameter> secondaryMethodTypeParameters;
         private final List<Parameter> secondaryParameters;
         private final TypeConstructor leftParameterTypeConstructor;
         private final TypeConstructor rightParameterTypeConstructor;
         private final TypeConstructor resultTypeConstructor;
         private final List<TypeParameter> classTypeParameters;
 
-        public Valid(List<TypeParameter> secondaryMethodTypeParameters, List<Parameter> secondaryParameters, TypeConstructor leftParameterTypeConstructor, TypeConstructor rightParameterTypeConstructor, TypeConstructor resultTypeConstructor, List<TypeParameter> classTypeParameters) {
-            this.secondaryMethodTypeParameters = secondaryMethodTypeParameters;
+        public Valid(List<Parameter> secondaryParameters, TypeConstructor leftParameterTypeConstructor, TypeConstructor rightParameterTypeConstructor, TypeConstructor resultTypeConstructor, List<TypeParameter> classTypeParameters) {
             this.secondaryParameters = secondaryParameters;
             this.leftParameterTypeConstructor = leftParameterTypeConstructor;
             this.rightParameterTypeConstructor = rightParameterTypeConstructor;
@@ -46,17 +44,13 @@ public interface ValidatedMethod {
             this.classTypeParameters = classTypeParameters;
         }
 
-        public static Valid of(List<TypeParameter> secondaryMethodTypeParameters, List<Parameter> secondaryParameters, TypeConstructor leftParameterTypeConstructor, TypeConstructor rightParameterTypeConstructor, TypeConstructor resultTypeConstructor, List<TypeParameter> classTypeParameters) {
-            return new Valid(secondaryMethodTypeParameters, secondaryParameters, leftParameterTypeConstructor, rightParameterTypeConstructor, resultTypeConstructor, classTypeParameters);
+        public static Valid of(List<Parameter> secondaryParameters, TypeConstructor leftParameterTypeConstructor, TypeConstructor rightParameterTypeConstructor, TypeConstructor resultTypeConstructor, List<TypeParameter> classTypeParameters) {
+            return new Valid(secondaryParameters, leftParameterTypeConstructor, rightParameterTypeConstructor, resultTypeConstructor, classTypeParameters);
         }
 
         @Override
         public void match(Consumer<Valid> matchValid, Consumer<Invalid> matchInvalid) {
             matchValid.accept(this);
-        }
-
-        public List<TypeParameter> getSecondaryMethodTypeParameters() {
-            return secondaryMethodTypeParameters;
         }
 
         public List<Parameter> getSecondaryParameters() {
@@ -84,19 +78,18 @@ public interface ValidatedMethod {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Valid valid = (Valid) o;
-            return getSecondaryMethodTypeParameters().equals(valid.getSecondaryMethodTypeParameters()) && getSecondaryParameters().equals(valid.getSecondaryParameters()) && getLeftParameterTypeConstructor().equals(valid.getLeftParameterTypeConstructor()) && getRightParameterTypeConstructor().equals(valid.getRightParameterTypeConstructor()) && getResultTypeConstructor().equals(valid.getResultTypeConstructor()) && getClassTypeParameters().equals(valid.getClassTypeParameters());
+            return getSecondaryParameters().equals(valid.getSecondaryParameters()) && getLeftParameterTypeConstructor().equals(valid.getLeftParameterTypeConstructor()) && getRightParameterTypeConstructor().equals(valid.getRightParameterTypeConstructor()) && getResultTypeConstructor().equals(valid.getResultTypeConstructor()) && getClassTypeParameters().equals(valid.getClassTypeParameters());
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(getSecondaryMethodTypeParameters(), getSecondaryParameters(), getLeftParameterTypeConstructor(), getRightParameterTypeConstructor(), getResultTypeConstructor(), getClassTypeParameters());
+            return Objects.hash(getSecondaryParameters(), getLeftParameterTypeConstructor(), getRightParameterTypeConstructor(), getResultTypeConstructor(), getClassTypeParameters());
         }
 
         @Override
         public String toString() {
             return "Valid{" +
-                    "secondaryMethodTypeParameters=" + secondaryMethodTypeParameters +
-                    ", secondaryParameters=" + secondaryParameters +
+                    "secondaryParameters=" + secondaryParameters +
                     ", leftParameterTypeConstructor=" + leftParameterTypeConstructor +
                     ", rightParameterTypeConstructor=" + rightParameterTypeConstructor +
                     ", resultTypeConstructor=" + resultTypeConstructor +

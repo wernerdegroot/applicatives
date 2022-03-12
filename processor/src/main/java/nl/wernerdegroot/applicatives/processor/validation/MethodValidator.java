@@ -30,14 +30,13 @@ public class MethodValidator {
 
         List<TypeParameter> typeParameters = method.getTypeParameters();
         int numberOfTypeParameters = typeParameters.size();
-        if (numberOfTypeParameters < 3) {
-            return ValidatedMethod.invalid("Method needs at least 3 type parameters, but found only " + numberOfTypeParameters);
+        if (numberOfTypeParameters != 3) {
+            return ValidatedMethod.invalid("Method requires exactly 3 type parameters, but found " + numberOfTypeParameters);
         }
 
         TypeParameter leftTypeParameter = typeParameters.get(0);
         TypeParameter rightTypeParameter = typeParameters.get(1);
         TypeParameter resultTypeParameter = typeParameters.get(2);
-        List<TypeParameter> secondaryTypeParameters = typeParameters.subList(3, numberOfTypeParameters);
 
         boolean firstThreeTypeParametersHaveUpperBound = Stream.of(leftTypeParameter, rightTypeParameter, resultTypeParameter)
                 .map(TypeParameter::getUpperBounds)
@@ -120,7 +119,6 @@ public class MethodValidator {
         List<TypeParameter> classTypeParameters = method.getContainingClass().getTypeParameters();
 
         return ValidatedMethod.valid(
-                secondaryTypeParameters,
                 secondaryParameters,
                 leftParameterTypeConstructor,
                 rightParameterTypeConstructor,

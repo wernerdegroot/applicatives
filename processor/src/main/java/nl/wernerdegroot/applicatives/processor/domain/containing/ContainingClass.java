@@ -33,8 +33,16 @@ public class ContainingClass implements Containing {
         return new ContainingClass(parent, modifiers, className, typeParameters);
     }
 
-    public static ContainingClass withoutTypeParameters(PackageName packageName, ClassName className) {
-        return new ContainingClass(ContainingPackage.of(packageName), singleton(PUBLIC), className, emptyList());
+    public static ContainingClass of(PackageName packageName, Set<Modifier> modifiers, ClassName className, List<TypeParameter> typeParameters) {
+        return ContainingClass.of(ContainingPackage.of(packageName), modifiers, className, typeParameters);
+    }
+
+    public static ContainingClass of(PackageName packageName, ClassName className, List<TypeParameter> typeParameters) {
+        return ContainingClass.of(ContainingPackage.of(packageName), singleton(PUBLIC), className, typeParameters);
+    }
+
+    public static ContainingClass of(PackageName packageName, ClassName className) {
+        return ContainingClass.of(packageName, className, emptyList());
     }
 
     @Override
