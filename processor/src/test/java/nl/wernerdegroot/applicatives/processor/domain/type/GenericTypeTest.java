@@ -54,16 +54,6 @@ public class GenericTypeTest {
     }
 
     @Test
-    public void containsGivenNeedleThatMatches() {
-        assertTrue(new GenericType(T).contains(T));
-    }
-
-    @Test
-    public void containsGivenNeedleThatDoesNotMatch() {
-        assertFalse(new GenericType(U).contains(T));
-    }
-
-    @Test
     public void replaceAllTypeParameterNamesGivenMappingThatContainsTypeParameterName() {
         Map<TypeParameterName, TypeParameterName> mapping = new HashMap<>();
         mapping.put(T, A);

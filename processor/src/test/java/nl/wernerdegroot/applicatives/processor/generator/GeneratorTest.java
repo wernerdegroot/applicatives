@@ -1,10 +1,7 @@
 package nl.wernerdegroot.applicatives.processor.generator;
 
-import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
 import nl.wernerdegroot.applicatives.processor.domain.PackageName;
-import nl.wernerdegroot.applicatives.processor.domain.Parameter;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
-import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
@@ -23,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class GeneratorTest {
 
+    // @TODO FIX ME
     // Options:
     //  * Class type parameters (Y/N)
     //  * Secondary method type parameters (Y/N)
@@ -50,17 +48,16 @@ public class GeneratorTest {
                 .withPackageName(PackageName.of("nl.wernerdegroot.applicatives"))
                 .withClassNameToGenerate("OptionalsMixin")
                 .withClassTypeParameters(emptyList())
-                .withParticipantTypeParameters(PARTICIPANT_TYPE_PARAMETERS)
-                .withResultTypeParameter(RESULT_TYPE_PARAMETER)
+                .withInputTypeConstructorArguments(INPUT_TYPE_CONSTRUCTOR_ARGUMENTS)
+                .withResultTypeConstructorArgument(RESULT_TYPE_CONSTRUCTOR_ARGUMENT)
                 .withMethodName("compose")
-                .withPrimaryParameterNames(PRIMARY_PARAMETER_NAMES)
-                .withSecondaryParameters(emptyList())
+                .withInputParameterNames(INPUT_PARAMETER_NAMES)
                 .withSelfParameterName(SELF_PARAMETER_NAME)
                 .withCombinatorParameterName(COMBINATOR_PARAMETER_NAME)
                 .withMaxTupleSizeParameterName(MAX_TUPLE_SIZE_PARAMETER_NAME)
-                .withLeftParameterTypeConstructor(OPTIONAL.with(placeholder().covariant()))
-                .withRightParameterTypeConstructor(OPTIONAL.with(placeholder().covariant()))
-                .withResultTypeConstructor(OPTIONAL.with(placeholder().invariant()))
+                .withPermissiveAccumulationTypeConstructor(OPTIONAL.with(placeholder().covariant()))
+                .withInputTypeConstructor(OPTIONAL.with(placeholder().covariant()))
+                .withAccumulationTypeConstructor(OPTIONAL.with(placeholder().invariant()))
                 .withLiftMethodName("lift")
                 .withMaxArity(2)
                 .generate();
@@ -75,17 +72,16 @@ public class GeneratorTest {
                 .withPackageName(PackageName.of("nl.wernerdegroot.applicatives"))
                 .withClassNameToGenerate("ListsMixin")
                 .withClassTypeParameters(emptyList())
-                .withParticipantTypeParameters(PARTICIPANT_TYPE_PARAMETERS)
-                .withResultTypeParameter(RESULT_TYPE_PARAMETER)
+                .withInputTypeConstructorArguments(INPUT_TYPE_CONSTRUCTOR_ARGUMENTS)
+                .withResultTypeConstructorArgument(RESULT_TYPE_CONSTRUCTOR_ARGUMENT)
                 .withMethodName("compose")
-                .withPrimaryParameterNames(PRIMARY_PARAMETER_NAMES)
-                .withSecondaryParameters(emptyList())
+                .withInputParameterNames(INPUT_PARAMETER_NAMES)
                 .withSelfParameterName(SELF_PARAMETER_NAME)
                 .withCombinatorParameterName(COMBINATOR_PARAMETER_NAME)
                 .withMaxTupleSizeParameterName(MAX_TUPLE_SIZE_PARAMETER_NAME)
-                .withLeftParameterTypeConstructor(ARRAY_LIST.with(placeholder().covariant()))
-                .withRightParameterTypeConstructor(LIST.with(placeholder().covariant()))
-                .withResultTypeConstructor(ARRAY_LIST.with(placeholder().invariant()))
+                .withPermissiveAccumulationTypeConstructor(ARRAY_LIST.with(placeholder().covariant()))
+                .withInputTypeConstructor(LIST.with(placeholder().covariant()))
+                .withAccumulationTypeConstructor(ARRAY_LIST.with(placeholder().invariant()))
                 .withLiftMethodName("lift")
                 .withMaxArity(3)
                 .generate();
@@ -102,51 +98,18 @@ public class GeneratorTest {
                 .withPackageName(PackageName.of("nl.wernerdegroot.applicatives"))
                 .withClassNameToGenerate("FunctionsMixin")
                 .withClassTypeParameters(asList(P.extending(OBJECT)))
-                .withParticipantTypeParameters(PARTICIPANT_TYPE_PARAMETERS)
-                .withResultTypeParameter(RESULT_TYPE_PARAMETER)
+                .withInputTypeConstructorArguments(INPUT_TYPE_CONSTRUCTOR_ARGUMENTS)
+                .withResultTypeConstructorArgument(RESULT_TYPE_CONSTRUCTOR_ARGUMENT)
                 .withMethodName("compose")
-                .withPrimaryParameterNames(PRIMARY_PARAMETER_NAMES)
-                .withSecondaryParameters(emptyList())
+                .withInputParameterNames(INPUT_PARAMETER_NAMES)
                 .withSelfParameterName(SELF_PARAMETER_NAME)
                 .withCombinatorParameterName(COMBINATOR_PARAMETER_NAME)
                 .withMaxTupleSizeParameterName(MAX_TUPLE_SIZE_PARAMETER_NAME)
-                .withLeftParameterTypeConstructor(FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()))
-                .withRightParameterTypeConstructor(FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()))
-                .withResultTypeConstructor(FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()))
+                .withPermissiveAccumulationTypeConstructor(FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()))
+                .withInputTypeConstructor(FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()))
+                .withAccumulationTypeConstructor(FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()))
                 .withLiftMethodName("lift")
                 .withMaxArity(4)
-                .generate();
-
-        assertEquals(expected, toVerify);
-    }
-
-    @Test
-    public void withSecondaryTypeParametersAndSecondaryParameters() throws IOException {
-        TypeParameterName P = TypeParameterName.of("P");
-        TypeConstructor EITHER = TypeConstructor.concrete(
-                FullyQualifiedName.of("nl.wernerdegroot.applicatives.Either"),
-                P.asTypeConstructor().invariant(),
-                placeholder().invariant()
-        );
-
-        String expected = getResourceFileAsString("/Eithers.generated");
-        String toVerify = generator()
-                .withPackageName(PackageName.of("nl.wernerdegroot.applicatives"))
-                .withClassNameToGenerate("EithersMixin")
-                .withClassTypeParameters(asList(P.extending(OBJECT)))
-                .withParticipantTypeParameters(PARTICIPANT_TYPE_PARAMETERS)
-                .withResultTypeParameter(RESULT_TYPE_PARAMETER)
-                .withMethodName("compose")
-                .withPrimaryParameterNames(PRIMARY_PARAMETER_NAMES)
-                .withSecondaryParameters(asList(Parameter.of(BI_FUNCTION.with(P.asType().contravariant(), P.asType().contravariant(), P.asType().covariant()), "composeLeft")))
-                .withSelfParameterName(SELF_PARAMETER_NAME)
-                .withCombinatorParameterName(COMBINATOR_PARAMETER_NAME)
-                .withMaxTupleSizeParameterName(MAX_TUPLE_SIZE_PARAMETER_NAME)
-                .withLeftParameterTypeConstructor(EITHER)
-                .withRightParameterTypeConstructor(EITHER)
-                .withResultTypeConstructor(EITHER)
-                .withLiftMethodName("liftEither")
-                .withMaxArity(26)
                 .generate();
 
         assertEquals(expected, toVerify);

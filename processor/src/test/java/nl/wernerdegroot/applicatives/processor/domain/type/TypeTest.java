@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TypeTest {
 
@@ -39,26 +39,6 @@ public class TypeTest {
         Type toVerify = Type.generic(T).using(TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.invariant(), TypeConstructor.placeholder().covariant(), INTEGER_TYPE_CONSTRUCTOR.contravariant()));
 
         assertEquals(expected, toVerify);
-    }
-
-    @Test
-    public void containsGivenManyTypeParameterNamesWithOneThatMatches() {
-        assertTrue(Type.concrete(ERUDITE, STRING_TYPE.invariant(), T_TYPE.covariant(), INTEGER_TYPE.contravariant()).contains(T, U, V));
-    }
-
-    @Test
-    public void containsGivenManyTypeParameterNamesWithNoneThatMatches() {
-        assertFalse(Type.concrete(ERUDITE, STRING_TYPE.invariant(), W_TYPE.covariant(), INTEGER_TYPE.contravariant()).contains(T, U, V));
-    }
-
-    @Test
-    public void containsGivenManyTypeParametersWithOneThatMatches() {
-        assertTrue(Type.concrete(ERUDITE, STRING_TYPE.invariant(), T_TYPE.covariant(), INTEGER_TYPE.contravariant()).contains(T_TYPE_PARAMETER, U_TYPE_PARAMETER, V_TYPE_PARAMETER));
-    }
-
-    @Test
-    public void containsGivenManyTypeParametersWithNoneThatMatches() {
-        assertFalse(Type.concrete(ERUDITE, STRING_TYPE.invariant(), W_TYPE.covariant(), INTEGER_TYPE.contravariant()).contains(T_TYPE_PARAMETER, U_TYPE_PARAMETER, V_TYPE_PARAMETER));
     }
 
     @Test

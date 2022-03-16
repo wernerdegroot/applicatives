@@ -29,7 +29,7 @@ public class MethodValidatorTest {
     private final TypeParameterName W = TypeParameterName.of("W");
 
     @Test
-    public void shouldReturnInvalidWhenTheMethodDoesNotReturnAnything() {
+    public void validateGivenMethodThatDoesNotReturnAnything() {
         Method toValidate = Method.of(
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
@@ -50,7 +50,7 @@ public class MethodValidatorTest {
     }
 
     @Test
-    public void shouldReturnInvalidWhenFunctionIsStatic() {
+    public void validateGivenStaticMethod() {
         Method toValidate = Method.of(
                 modifiers(STATIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
@@ -71,7 +71,7 @@ public class MethodValidatorTest {
     }
 
     @Test
-    public void shouldReturnInvalidWhenFunctionIsPrivate() {
+    public void validateGivenPrivateMethod() {
         Method toValidate = Method.of(
                 modifiers(PRIVATE),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
@@ -92,10 +92,10 @@ public class MethodValidatorTest {
     }
 
     @Test
-    public void shouldReturnInvalidWhenOneOfTheFirstThreeTypeParametersHasAnUpperBoundOtherThanObject() {
+    public void validateGivenMethodWithTypeParameterWithUpperBoundOtherThanObject() {
         Method toValidate = Method.of(
                 modifiers(PUBLIC),
-                asList(T.extending(COMPARABLE.with(T)), U.extending(COMPARABLE.with(U)), V.extending(COMPARABLE.with(V))),
+                asList(T.asTypeParameter(), U.extending(COMPARABLE.with(U)), V.asTypeParameter()),
                 Optional.of(OPTIONAL.with(V)),
                 "myFunction",
                 asList(
@@ -106,17 +106,17 @@ public class MethodValidatorTest {
                 ContainingClass.of(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"))
         );
 
-        ValidatedMethod expected = ValidatedMethod.invalid("The first 3 type parameters need to be unbounded");
+        ValidatedMethod expected = ValidatedMethod.invalid("The type parameters need to be unbounded");
         ValidatedMethod toVerify = MethodValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
 
     @Test
-    public void shouldReturnValidWhenTheFirstThreeTypeParametersOnlyExtendObject() {
+    public void validateGivenMethodWithTypeParametersThatHaveNoUpperBound() {
         Method toValidate = Method.of(
                 modifiers(PUBLIC),
-                asList(T.extending(OBJECT), U.extending(OBJECT), V.extending(OBJECT)),
+                asList(T.asTypeParameter(), U.extending(OBJECT), V.asTypeParameter()),
                 Optional.of(OPTIONAL.with(V)),
                 "myFunction",
                 asList(
@@ -128,7 +128,6 @@ public class MethodValidatorTest {
         );
 
         ValidatedMethod expected = ValidatedMethod.valid(
-                emptyList(),
                 OPTIONAL.asTypeConstructor(),
                 OPTIONAL.asTypeConstructor(),
                 OPTIONAL.asTypeConstructor(),
@@ -140,7 +139,7 @@ public class MethodValidatorTest {
     }
 
     @Test
-    public void shouldReturnInvalidWhenFunctionHasLessThanThreeGenerics() {
+    public void validateGivenMethodWithLessThanThreeTypeParameters() {
         Method toValidate = Method.of(
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter()),
@@ -161,7 +160,7 @@ public class MethodValidatorTest {
     }
 
     @Test
-    public void shouldReturnInvalidWhenFunctionHasMoreThanThreeGenerics() {
+    public void validateGivenMethodWithMoreThanThreeTypeParameters() {
         Method toValidate = Method.of(
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter(), P.asTypeParameter()),
@@ -182,7 +181,7 @@ public class MethodValidatorTest {
     }
 
     @Test
-    public void shouldReturnInvalidWhenMethodHasLessThanThreeParameters() {
+    public void validateGivenMethodWithLessThanThreeParameters() {
         Method toValidate = Method.of(
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
@@ -195,14 +194,14 @@ public class MethodValidatorTest {
                 ContainingClass.of(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"))
         );
 
-        ValidatedMethod expected = ValidatedMethod.invalid("Method needs at least 3 parameters, but found only 2");
+        ValidatedMethod expected = ValidatedMethod.invalid("Method requires exactly 3 parameters, but found 2");
         ValidatedMethod toVerify = MethodValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
 
     @Test
-    public void shouldReturnValidWhenFunctionHasMoreThanThreeParameters() {
+    public void validateGivenMethodWithMoreThanThreeParameters() {
         Method toValidate = Method.of(
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
@@ -217,20 +216,14 @@ public class MethodValidatorTest {
                 ContainingClass.of(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Futures"))
         );
 
-        ValidatedMethod expected = ValidatedMethod.valid(
-                asList(Parameter.of(EXECUTOR, "executor")),
-                COMPLETABLE_FUTURE.asTypeConstructor(),
-                COMPLETABLE_FUTURE.asTypeConstructor(),
-                COMPLETABLE_FUTURE.asTypeConstructor(),
-                emptyList()
-        );
+        ValidatedMethod expected = ValidatedMethod.invalid("Method requires exactly 3 parameters, but found 4");
         ValidatedMethod toVerify = MethodValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
 
     @Test
-    public void shouldReturnInvalidWhenThirdParameterIsNotABiFunction() {
+    public void validateGivenMethodWithThirdParameterThatIsNotABiFunction() {
         Method toValidate = Method.of(
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
@@ -251,7 +244,7 @@ public class MethodValidatorTest {
     }
 
     @Test
-    public void shouldReturnInvalidWhenBiFunctionHasWrongParameters() {
+    public void validateGivenMethodWithThirdParameterThatIsBiFunctionWithWrongTypeArguments() {
         Method toValidate = Method.of(
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
@@ -272,29 +265,7 @@ public class MethodValidatorTest {
     }
 
     @Test
-    public void shouldReturnInvalidIfTypesOfSecondaryParametersContainOneOfTheFirstThreeTypeParameters() {
-        Method toValidate = Method.of(
-                modifiers(PUBLIC),
-                asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
-                Optional.of(OPTIONAL.with(V)),
-                "myFunction",
-                asList(
-                        Parameter.of(OPTIONAL.with(T), "left"),
-                        Parameter.of(OPTIONAL.with(U), "right"),
-                        Parameter.of(BI_FUNCTION.with(T.asType().contravariant(), U.asType().contravariant(), V.asType().covariant()), "compose"),
-                        Parameter.of(COMPARABLE.with(T), "comparable")
-                ),
-                ContainingClass.of(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"))
-        );
-
-        ValidatedMethod expected = ValidatedMethod.invalid("Parameter with name \"comparable\" cannot reference T, U or V");
-        ValidatedMethod toVerify = MethodValidator.validate(toValidate);
-
-        assertEquals(expected, toVerify);
-    }
-
-    @Test
-    public void shouldReturnValidWhenThereIsNoSharedTypeConstructorBetweenBothParameters() {
+    public void validateGivenMethodWithNoSharedTypeConstructorBetweenInputParameters() {
         Method toValidate = Method.of(
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
@@ -309,7 +280,6 @@ public class MethodValidatorTest {
         );
 
         ValidatedMethod expected = ValidatedMethod.valid(
-                emptyList(),
                 OPTIONAL.asTypeConstructor(),
                 COMPLETABLE_FUTURE.asTypeConstructor(),
                 OPTIONAL.asTypeConstructor(),
@@ -321,7 +291,7 @@ public class MethodValidatorTest {
     }
 
     @Test
-    public void shouldReturnInvalidWhenThereIsNoSharedTypeConstructorBetweenParametersAndResult() {
+    public void validateGivenMethodWithNoSharedTypeConstructorBetweenLeftInputParameterAndResultType() {
         Method toValidate = Method.of(
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
@@ -341,30 +311,8 @@ public class MethodValidatorTest {
         assertEquals(expected, toVerify);
     }
 
-
     @Test
-    public void shouldReturnInvalidWhenThereIsNoSharedTypeConstructorBetweenLeftParameterAndResult() {
-        Method toValidate = Method.of(
-                modifiers(PUBLIC),
-                asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
-                Optional.of(COMPLETABLE_FUTURE.with(V)),
-                "myFunction",
-                asList(
-                        Parameter.of(OPTIONAL.with(T), "left"),
-                        Parameter.of(COMPLETABLE_FUTURE.with(U), "right"),
-                        Parameter.of(BI_FUNCTION.with(T.asType().contravariant(), U.asType().contravariant(), V.asType().covariant()), "compose")
-                ),
-                ContainingClass.of(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"))
-        );
-
-        ValidatedMethod expected = ValidatedMethod.invalid("No shared type constructor between left parameter (java.util.Optional<T>) and result (java.util.concurrent.CompletableFuture<V>)");
-        ValidatedMethod toVerify = MethodValidator.validate(toValidate);
-
-        assertEquals(expected, toVerify);
-    }
-
-    @Test
-    public void shouldReturnValidWhenResultTypeConstructorIsAssignableToParameterTypeConstructor() {
+    public void validateGivenMethodWithAccumulationTypeConstructorThatIsAssignableToPermissiveAccumulationTypeConstructor() {
         Method toValidate = Method.of(
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
@@ -379,7 +327,6 @@ public class MethodValidatorTest {
         );
 
         ValidatedMethod expected = ValidatedMethod.valid(
-                emptyList(),
                 FUNCTION.with(P.asTypeConstructor().contravariant(), placeholder().covariant()),
                 FUNCTION.with(P.asTypeConstructor().contravariant(), placeholder().covariant()),
                 FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()),
@@ -391,7 +338,7 @@ public class MethodValidatorTest {
     }
 
     @Test
-    public void shouldReturnInvalidWhenTheContainingClassIsANonStaticInnerClass() {
+    public void validateGivenNonStaticInnerClassAsContainingClass() {
         Method toValidate = Method.of(
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
@@ -405,14 +352,14 @@ public class MethodValidatorTest {
                 PackageName.of("nl.wernerdegroot.applicatives").asPackage().containingClass(emptySet(), ClassName.of("Outer")).containingClass(emptySet(), ClassName.of("Inner"))
         );
 
-        ValidatedMethod expected = ValidatedMethod.invalid("Only outer classes and static inner classes are supported");
+        ValidatedMethod expected = ValidatedMethod.invalid("Only outer classes and static inner classes are currently supported");
         ValidatedMethod toVerify = MethodValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
 
     @Test
-    public void shouldReturnValidWhenTheContainingClassIsAStaticInnerClass() {
+    public void validateGivenStaticInnerClassAsContainingClass() {
         Method toValidate = Method.of(
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
@@ -427,7 +374,6 @@ public class MethodValidatorTest {
         );
 
         ValidatedMethod expected = ValidatedMethod.valid(
-                emptyList(),
                 OPTIONAL.asTypeConstructor(),
                 OPTIONAL.asTypeConstructor(),
                 OPTIONAL.asTypeConstructor(),
@@ -439,7 +385,7 @@ public class MethodValidatorTest {
     }
 
     @Test
-    public void shouldReturnValidWhenTheContainingClassIsAOuterClass() {
+    public void validateGivenOuterClassAsContainingClass() {
         Method toValidate = Method.of(
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
@@ -454,7 +400,6 @@ public class MethodValidatorTest {
         );
 
         ValidatedMethod expected = ValidatedMethod.valid(
-                emptyList(),
                 OPTIONAL.asTypeConstructor(),
                 OPTIONAL.asTypeConstructor(),
                 OPTIONAL.asTypeConstructor(),

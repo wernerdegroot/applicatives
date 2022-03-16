@@ -1,12 +1,14 @@
 package nl.wernerdegroot.applicatives.processor.domain.type;
 
-import nl.wernerdegroot.applicatives.processor.domain.*;
+import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
+import nl.wernerdegroot.applicatives.processor.domain.Parameter;
+import nl.wernerdegroot.applicatives.processor.domain.TypeBuilder;
+import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor;
 
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -15,10 +17,9 @@ import static nl.wernerdegroot.applicatives.processor.domain.Variance.*;
 /**
  * Represents a type in the Java language. Supported types are:
  * <ul>
- *     <li>Concrete types, like {@code int}, {@link String String} and {@link List List&lt;String&gt;}</li>
+ *     <li>Concrete types, like {@code int}, {@link String String} {@link java.util.List List&lt;String&gt;} and {@link java.util.Collection Collection&lt;? extends String&gt;l}</li>
  *     <li>Generic types, like {@code T}</li>
  *     <li>Array types, like {@code int[]}</li>
- *     <li>Wildcard types, like {@code ? extends Comparable<?>}</li>
  * </ul>
  * Each of these is represented as a subclass of {@link Type Type}
  */
@@ -62,20 +63,10 @@ public interface Type {
 
     TypeConstructor asTypeConstructorWithPlaceholderFor(TypeParameterName needle);
 
-    boolean contains(TypeParameterName needle);
-
     Type replaceAllTypeParameterNames(Map<TypeParameterName, TypeParameterName> replacement);
 
     default Type using(TypeConstructor typeConstructor) {
         return typeConstructor.apply(this);
-    }
-
-    default boolean contains(TypeParameterName... needles) {
-        return Stream.of(needles).anyMatch(this::contains);
-    }
-
-    default boolean contains(TypeParameter... needles) {
-        return Stream.of(needles).map(TypeParameter::getName).anyMatch(this::contains);
     }
 
     default ArrayType array() {

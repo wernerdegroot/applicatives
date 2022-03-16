@@ -48,11 +48,6 @@ public class ConcreteType implements Type {
     }
 
     @Override
-    public boolean contains(TypeParameterName needle) {
-        return typeArguments.stream().anyMatch(typeArgument -> typeArgument.contains(needle));
-    }
-
-    @Override
     public ConcreteType replaceAllTypeParameterNames(Map<TypeParameterName, TypeParameterName> replacement) {
         List<TypeArgument> replacedTypeArguments = typeArguments
                 .stream()

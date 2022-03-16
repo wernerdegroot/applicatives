@@ -66,7 +66,7 @@ public class CovariantProcessor extends AbstractProcessor {
                         throw new IllegalArgumentException("Not a method");
                     }
 
-                    Covariant covariantAnnotation = ((ExecutableElement) element).getAnnotation(Covariant.class);
+                    Covariant covariantAnnotation = element.getAnnotation(Covariant.class);
 
                     note("Found annotation of type '%s'", COVARIANT_CLASS_NAME)
                             .withDetail("Class name", covariantAnnotation.className())
@@ -97,49 +97,46 @@ public class CovariantProcessor extends AbstractProcessor {
                     validatedMethod.match(
                             valid -> {
                                 note("Method meets all criteria for code generation")
-                                        .withDetail("Secondary parameters", valid.getSecondaryParameters(), ParameterGenerator::generateFrom)
-                                        .withDetail("Left parameter type constructor", valid.getLeftParameterTypeConstructor(), this::typeConstructorToString)
-                                        .withDetail("Right parameter type constructor", valid.getRightParameterTypeConstructor(), this::typeConstructorToString)
-                                        .withDetail("Result type constructor", valid.getResultTypeConstructor(), this::typeConstructorToString)
+                                        .withDetail("Accumulation type constructor", valid.getAccumulationTypeConstructor(), this::typeConstructorToString)
+                                        .withDetail("Permissive accumulation type constructor", valid.getPermissiveAccumulationTypeConstructor(), this::typeConstructorToString)
+                                        .withDetail("Input type constructor", valid.getInputTypeConstructor(), this::typeConstructorToString)
                                         .withDetail("Class type parameters", valid.getClassTypeParameters(), TypeParameterGenerator::generateFrom)
                                         .append();
 
-                                ConflictFree conflictFreeConflictFree = ConflictPrevention.preventConflicts(
+                                ConflictFree conflictFree = ConflictPrevention.preventConflicts(
                                         valid.getClassTypeParameters(),
-                                        valid.getSecondaryParameters(),
-                                        valid.getLeftParameterTypeConstructor(),
-                                        valid.getRightParameterTypeConstructor(),
-                                        valid.getResultTypeConstructor()
+                                        valid.getAccumulationTypeConstructor(),
+                                        valid.getPermissiveAccumulationTypeConstructor(),
+                                        valid.getInputTypeConstructor()
                                 );
 
-                                note("Resolved (potential) conflicts between existing type parameters and new, generated type parameters (and likewise for secondary parameters)")
-                                        .withDetail("Method type parameters", conflictFreeConflictFree.getParticipantTypeParameters(), TypeParameterGenerator::generateFrom)
-                                        .withDetail("Result type parameter", conflictFreeConflictFree.getResultTypeParameter(), TypeParameterGenerator::generateFrom)
-                                        .withDetail("Class type parameters", conflictFreeConflictFree.getClassTypeParameters(), TypeParameterGenerator::generateFrom)
-                                        .withDetail("Primary parameter names", conflictFreeConflictFree.getPrimaryParameterNames())
-                                        .withDetail("Self parameter name", conflictFreeConflictFree.getSelfParameterName())
-                                        .withDetail("Combinator parameter name", conflictFreeConflictFree.getCombinatorParameterName())
-                                        .withDetail("Maximum tuple size parameter name", conflictFreeConflictFree.getMaxTupleSizeParameterName())
-                                        .withDetail("Left parameter type constructor", conflictFreeConflictFree.getLeftParameterTypeConstructor(), this::typeConstructorToString)
-                                        .withDetail("Right parameter type constructor", conflictFreeConflictFree.getRightParameterTypeConstructor(), this::typeConstructorToString)
-                                        .withDetail("Result type constructor", conflictFreeConflictFree.getResultTypeConstructor(), this::typeConstructorToString)
+                                note("Resolved (potential) conflicts between existing type parameters and new, generated type parameters")
+                                        .withDetail("Input type constructor arguments", conflictFree.getInputTypeConstructorArguments(), TypeParameterGenerator::generateFrom)
+                                        .withDetail("Result type constructor arguments", conflictFree.getResultTypeConstructorArguments(), TypeParameterGenerator::generateFrom)
+                                        .withDetail("Class type parameters", conflictFree.getClassTypeParameters(), TypeParameterGenerator::generateFrom)
+                                        .withDetail("Input parameter names", conflictFree.getInputParameterNames())
+                                        .withDetail("Self parameter name", conflictFree.getSelfParameterName())
+                                        .withDetail("Combinator parameter name", conflictFree.getCombinatorParameterName())
+                                        .withDetail("Maximum tuple size parameter name", conflictFree.getMaxTupleSizeParameterName())
+                                        .withDetail("Accumulation type constructor", conflictFree.getAccumulationTypeConstructor(), this::typeConstructorToString)
+                                        .withDetail("Permissive accumulation type constructor", conflictFree.getPermissiveAccumulationTypeConstructor(), this::typeConstructorToString)
+                                        .withDetail("Input type constructor", conflictFree.getInputTypeConstructor(), this::typeConstructorToString)
                                         .append();
 
                                 String generated = generator()
                                         .withPackageName(method.getContainingClass().getPackageName())
                                         .withClassNameToGenerate(covariantAnnotation.className())
-                                        .withClassTypeParameters(conflictFreeConflictFree.getClassTypeParameters())
-                                        .withParticipantTypeParameters(conflictFreeConflictFree.getParticipantTypeParameters())
-                                        .withResultTypeParameter(conflictFreeConflictFree.getResultTypeParameter())
+                                        .withClassTypeParameters(conflictFree.getClassTypeParameters())
+                                        .withInputTypeConstructorArguments(conflictFree.getInputTypeConstructorArguments())
+                                        .withResultTypeConstructorArgument(conflictFree.getResultTypeConstructorArguments())
                                         .withMethodName(method.getName())
-                                        .withPrimaryParameterNames(conflictFreeConflictFree.getPrimaryParameterNames())
-                                        .withSecondaryParameters(conflictFreeConflictFree.getSecondaryParameters())
-                                        .withSelfParameterName(conflictFreeConflictFree.getSelfParameterName())
-                                        .withCombinatorParameterName(conflictFreeConflictFree.getCombinatorParameterName())
-                                        .withMaxTupleSizeParameterName(conflictFreeConflictFree.getMaxTupleSizeParameterName())
-                                        .withLeftParameterTypeConstructor(conflictFreeConflictFree.getLeftParameterTypeConstructor())
-                                        .withRightParameterTypeConstructor(conflictFreeConflictFree.getRightParameterTypeConstructor())
-                                        .withResultTypeConstructor(conflictFreeConflictFree.getResultTypeConstructor())
+                                        .withInputParameterNames(conflictFree.getInputParameterNames())
+                                        .withSelfParameterName(conflictFree.getSelfParameterName())
+                                        .withCombinatorParameterName(conflictFree.getCombinatorParameterName())
+                                        .withMaxTupleSizeParameterName(conflictFree.getMaxTupleSizeParameterName())
+                                        .withAccumulationTypeConstructor(conflictFree.getAccumulationTypeConstructor())
+                                        .withPermissiveAccumulationTypeConstructor(conflictFree.getPermissiveAccumulationTypeConstructor())
+                                        .withInputTypeConstructor(conflictFree.getInputTypeConstructor())
                                         .withLiftMethodName(covariantAnnotation.liftMethodName())
                                         .withMaxArity(covariantAnnotation.maxArity())
                                         .generate();
