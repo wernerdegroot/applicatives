@@ -29,67 +29,63 @@ public class MethodValidator {
         }
 
         List<TypeParameter> typeParameters = method.getTypeParameters();
+        Optional<Type> optionalResultType = method.getReturnType();
+        List<Parameter> parameters = method.getParameters();
+
+        // We require exactly three type parameters:
         int numberOfTypeParameters = typeParameters.size();
-        if (numberOfTypeParameters < 3) {
-            return ValidatedMethod.invalid("Method needs at least 3 type parameters, but found only " + numberOfTypeParameters);
+        if (numberOfTypeParameters != 3) {
+            return ValidatedMethod.invalid("Method requires exactly 3 type parameters, but found " + numberOfTypeParameters);
         }
 
-        TypeParameter leftTypeParameter = typeParameters.get(0);
-        TypeParameter rightTypeParameter = typeParameters.get(1);
-        TypeParameter resultTypeParameter = typeParameters.get(2);
-        List<TypeParameter> secondaryTypeParameters = typeParameters.subList(3, numberOfTypeParameters);
-
-        boolean firstThreeTypeParametersHaveUpperBound = Stream.of(leftTypeParameter, rightTypeParameter, resultTypeParameter)
+        // We require the (three) type parameters to be unbounded:
+        boolean typeParametersHaveUpperBound = typeParameters
+                .stream()
                 .map(TypeParameter::getUpperBounds)
                 .flatMap(List::stream)
                 .anyMatch(type -> !OBJECT.equals(type));
-        if (firstThreeTypeParametersHaveUpperBound) {
-            return ValidatedMethod.invalid("The first 3 type parameters need to be unbounded");
+        if (typeParametersHaveUpperBound) {
+            return ValidatedMethod.invalid("The type parameters need to be unbounded");
         }
 
-        Optional<Type> optionalResultType = method.getReturnType();
+        // Assign a meaningful name to each of the (three) type parameters:
+        TypeParameter leftInputTypeConstructorArgument = typeParameters.get(0);
+        TypeParameter rightInputTypeConstructorArgument = typeParameters.get(1);
+        TypeParameter resultTypeConstructorArgument = typeParameters.get(2);
+
+        // We require the method to have a return type:
         if (!optionalResultType.isPresent()) {
             return ValidatedMethod.invalid("Method needs to return something");
         }
+
+        // Now that we are sure that there is a return type, extract it from the `Optional`:
         Type resultType = optionalResultType.get();
 
-        List<Parameter> parameters = method.getParameters();
+        // We require exactly three parameters:
         int numberOfParameters = parameters.size();
-        if (numberOfParameters < 3) {
-            return ValidatedMethod.invalid("Method needs at least 3 parameters, but found only " + numberOfParameters);
+        if (numberOfParameters != 3) {
+            return ValidatedMethod.invalid("Method requires exactly 3 parameters, but found " + numberOfParameters);
         }
 
+        // Assign a meaningful name to each of the (three) parameters:
         Parameter leftParameter = parameters.get(0);
         Parameter rightParameter = parameters.get(1);
-        Parameter combineParameter = parameters.get(2);
-        List<Parameter> secondaryParameters = parameters.subList(3, numberOfParameters);
-        Type expectedCombineParameter = BI_FUNCTION.with(leftTypeParameter.contravariant(), rightTypeParameter.contravariant(), resultTypeParameter.covariant());
+        Parameter combinatorParameter = parameters.get(2);
 
-        if (!Objects.equals(combineParameter.getType(), expectedCombineParameter)) {
-            return ValidatedMethod.invalid("Expected third argument to be a " + generateFrom(expectedCombineParameter) + " but was " + generateFrom(combineParameter.getType()));
+        // Check if the third parameter is as expected:
+        Type expectedCombinatorParameter = BI_FUNCTION.with(leftInputTypeConstructorArgument.contravariant(), rightInputTypeConstructorArgument.contravariant(), resultTypeConstructorArgument.covariant());
+        if (!Objects.equals(combinatorParameter.getType(), expectedCombinatorParameter)) {
+            return ValidatedMethod.invalid("Expected third argument to be a " + generateFrom(expectedCombinatorParameter) + " but was " + generateFrom(combinatorParameter.getType()));
         }
 
-        for (Parameter secondaryParameter : secondaryParameters) {
-            Type secondaryParameterType = secondaryParameter.getType();
-            String secondaryParameterName = secondaryParameter.getName();
-            if (secondaryParameterType.contains(leftTypeParameter, rightTypeParameter, resultTypeParameter)) {
-                String message = String.format("Parameter with name \"%s\" cannot reference %s, %s or %s", secondaryParameterName, leftTypeParameter.getName().raw(), rightTypeParameter.getName().raw(), resultTypeParameter.getName().raw());
-                return ValidatedMethod.invalid(message);
-            }
-        }
+        TypeConstructor accumulationTypeConstructor = resultType.asTypeConstructorWithPlaceholderFor(resultTypeConstructorArgument.getName());
+        TypeConstructor permissiveAccumulationTypeConstructor = leftParameter.getType().asTypeConstructorWithPlaceholderFor(leftInputTypeConstructorArgument.getName());
+        TypeConstructor inputTypeConstructor = rightParameter.getType().asTypeConstructorWithPlaceholderFor(rightInputTypeConstructorArgument.getName());
 
-        TypeConstructor leftParameterTypeConstructor = leftParameter.getType().asTypeConstructorWithPlaceholderFor(leftTypeParameter.getName());
-        TypeConstructor rightParameterTypeConstructor = rightParameter.getType().asTypeConstructorWithPlaceholderFor(rightTypeParameter.getName());
-
-        // We need to compare the type constructor for the left parameter with the type constructor
-        // for the result. We can be somewhat lenient, as long as the result can be passed as a
-        // left argument itself. This is the case when the parameter type is some covariant or
-        // contravariant version of the result type.
-        TypeConstructor resultTypeConstructor = resultType.asTypeConstructorWithPlaceholderFor(resultTypeParameter.getName());
-        if (!leftParameterTypeConstructor.canAccept(resultTypeConstructor)) {
+        if (!permissiveAccumulationTypeConstructor.canAccept(accumulationTypeConstructor)) {
             // Tweak the error message to not confuse people using the simple case where
             // parameter types and result type should be identical:
-            if (Objects.equals(leftParameterTypeConstructor, rightParameterTypeConstructor)) {
+            if (Objects.equals(permissiveAccumulationTypeConstructor, inputTypeConstructor)) {
                 return ValidatedMethod.invalid("No shared type constructor between parameters (" + generateFrom(leftParameter.getType()) + " and " + generateFrom(rightParameter.getType()) + ") and result (" + generateFrom(resultType) + ")");
             } else {
                 return ValidatedMethod.invalid("No shared type constructor between left parameter (" + generateFrom(leftParameter.getType()) + ") and result (" + generateFrom(resultType) + ")");
@@ -113,18 +109,16 @@ public class MethodValidator {
         //  * To support only a single class with type parameters in the hierarchy
         //  * Only support multiple classes with type parameters if their names don't conflict
         //  * Only support conflicts if the type parameter that is shadowed can be removed
-        //    completely (isn't used as bound for any of the other type parameters)
+        //    completely (isn't used as upper bound for any of the other type parameters)
         if (!method.getContainingClass().isOuterClass() && !method.getContainingClass().isStaticInnerClass()) {
-            return ValidatedMethod.invalid("Only outer classes and static inner classes are supported");
+            return ValidatedMethod.invalid("Only outer classes and static inner classes are currently supported");
         }
         List<TypeParameter> classTypeParameters = method.getContainingClass().getTypeParameters();
 
         return ValidatedMethod.valid(
-                secondaryTypeParameters,
-                secondaryParameters,
-                leftParameterTypeConstructor,
-                rightParameterTypeConstructor,
-                resultTypeConstructor,
+                permissiveAccumulationTypeConstructor,
+                inputTypeConstructor,
+                accumulationTypeConstructor,
                 classTypeParameters
         );
     }

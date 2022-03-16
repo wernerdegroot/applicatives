@@ -10,7 +10,7 @@ import java.util.Map;
 
 import static java.util.Collections.emptyList;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.STRING;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ArrayTypeTest {
 
@@ -55,16 +55,6 @@ public class ArrayTypeTest {
         TypeConstructor toVerify = new ArrayType(new GenericType(U)).asTypeConstructorWithPlaceholderFor(T);
 
         assertEquals(expected, toVerify);
-    }
-
-    @Test
-    public void containsGivenNeedleThatMatchesElementType() {
-        assertTrue(new ArrayType(new GenericType(T)).contains(T));
-    }
-
-    @Test
-    public void containsGivenNeedleThatDoesNotMatchElementType() {
-        assertFalse(new ArrayType(new GenericType(U)).contains(T));
     }
 
     @Test

@@ -28,10 +28,6 @@ public class TypeArgument {
         return new TypeArgument(COVARIANT, OBJECT);
     }
 
-    public boolean contains(TypeParameterName needle) {
-        return type.contains(needle);
-    }
-
     public TypeArgument replaceAllTypeParameterNames(Map<TypeParameterName, TypeParameterName> replacement) {
         return new TypeArgument(variance, type.replaceAllTypeParameterNames(replacement));
     }

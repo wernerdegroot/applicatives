@@ -40,11 +40,6 @@ public class ArrayType implements Type {
     }
 
     @Override
-    public boolean contains(TypeParameterName needle) {
-        return type.contains(needle);
-    }
-
-    @Override
     public ArrayType replaceAllTypeParameterNames(Map<TypeParameterName, TypeParameterName> replacement) {
         return Type.array(type.replaceAllTypeParameterNames(replacement));
     }

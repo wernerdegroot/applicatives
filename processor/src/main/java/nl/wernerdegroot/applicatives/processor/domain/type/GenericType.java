@@ -40,11 +40,6 @@ public class GenericType implements Type {
     }
 
     @Override
-    public boolean contains(TypeParameterName needle) {
-        return Objects.equals(name, needle);
-    }
-
-    @Override
     public GenericType replaceAllTypeParameterNames(Map<TypeParameterName, TypeParameterName> replacement) {
         return Type.generic(replacement.getOrDefault(name, name));
     }

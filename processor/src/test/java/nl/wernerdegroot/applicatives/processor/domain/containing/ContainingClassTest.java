@@ -47,7 +47,7 @@ public class ContainingClassTest {
                 emptyList()
         );
 
-        ContainingClass toVerify = ContainingClass.withoutTypeParameters(
+        ContainingClass toVerify = ContainingClass.of(
                 packageName,
                 new ClassName("Erudite")
         );

@@ -19,33 +19,33 @@ public final class Conflicts {
 
     /**
      * Although a programmer may choose to generate <i>less</i> overloads,
-     * which will result in less primary method type parameters that can
+     * which will result in less input type constructor arguments that can
      * cause conflicts, the algorithms in this package will assume the worst
-     * and always try to prevent conflicts will all 26 possible primary
-     * method type parameters (whether they are used or not).
+     * and always try to prevent conflicts will all 26 possible input type
+     * constructor arguments (whether they are used or not).
      */
-    public static final int NUMBER_OF_PRIMARY_METHOD_TYPE_PARAMETERS = 26;
+    public static final int NUMBER_OF_INPUT_TYPE_CONSTRUCTOR_ARGUMENTS = 26;
 
-    public static final List<TypeParameterName> PRIMARY_METHOD_TYPE_PARAMETER_NAMES = IntStream
-            .range(0, NUMBER_OF_PRIMARY_METHOD_TYPE_PARAMETERS)
-            .mapToObj(Conflicts::primaryMethodTypeParameterName)
+    public static final List<TypeParameterName> INPUT_TYPE_CONSTRUCTOR_ARGUMENT_NAMES = IntStream
+            .range(0, NUMBER_OF_INPUT_TYPE_CONSTRUCTOR_ARGUMENTS)
+            .mapToObj(Conflicts::inputTypeConstructorArgumentName)
             .collect(toList());
 
-    public static final List<TypeParameter> PRIMARY_METHOD_TYPE_PARAMETERS = PRIMARY_METHOD_TYPE_PARAMETER_NAMES
+    public static final List<TypeParameter> INPUT_TYPE_CONSTRUCTOR_ARGUMENTS = INPUT_TYPE_CONSTRUCTOR_ARGUMENT_NAMES
             .stream()
             .map(TypeParameter::of)
             .collect(toList());
 
-    public static final List<String> PRIMARY_PARAMETER_NAMES = IntStream
-            .range(0, NUMBER_OF_PRIMARY_METHOD_TYPE_PARAMETERS)
-            .mapToObj(Conflicts::primaryParameterName)
+    public static final List<String> INPUT_PARAMETER_NAMES = IntStream
+            .range(0, NUMBER_OF_INPUT_TYPE_CONSTRUCTOR_ARGUMENTS)
+            .mapToObj(Conflicts::inputParameterName)
             .collect(toList());
 
-    public static final String PRIMARY_METHOD_TYPE_PARAMETER_PREFIX = "P";
+    public static final String INPUT_TYPE_CONSTRUCTOR_ARGUMENT_PREFIX = "P";
 
-    public static final TypeParameterName RESULT_TYPE_PARAMETER_NAME = TypeParameterName.of("R");
+    public static final TypeParameterName RESULT_TYPE_CONSTRUCTOR_ARGUMENT_NAME = TypeParameterName.of("R");
 
-    public static final TypeParameter RESULT_TYPE_PARAMETER = TypeParameter.of(RESULT_TYPE_PARAMETER_NAME);
+    public static final TypeParameter RESULT_TYPE_CONSTRUCTOR_ARGUMENT = TypeParameter.of(RESULT_TYPE_CONSTRUCTOR_ARGUMENT_NAME);
 
     public static final String SELF_PARAMETER_NAME = "self";
 
@@ -53,32 +53,19 @@ public final class Conflicts {
 
     public static final String MAX_TUPLE_SIZE_PARAMETER_NAME = "maxSize";
 
-    public static final String SECONDARY_METHOD_TYPE_PARAMETER_NAME_PREFIX = "M";
-
     public static final String CLASS_TYPE_PARAMETER_NAME_PREFIX = "C";
 
-    public static final String SECONDARY_PARAMETER_NAME_PREFIX = "s";
-
-    public static String primaryParameterName(int i) {
+    public static String inputParameterName(int i) {
         return ORDINALS.get(i);
     }
 
-    public static TypeParameterName primaryMethodTypeParameterName(int i) {
-        String name = PRIMARY_METHOD_TYPE_PARAMETER_PREFIX + (i + 1);
-        return TypeParameterName.of(name);
-    }
-
-    public static TypeParameterName alternativeSecondaryMethodTypeParameterName(int i) {
-        String name = SECONDARY_METHOD_TYPE_PARAMETER_NAME_PREFIX + (i + 1);
+    public static TypeParameterName inputTypeConstructorArgumentName(int i) {
+        String name = INPUT_TYPE_CONSTRUCTOR_ARGUMENT_PREFIX + (i + 1);
         return TypeParameterName.of(name);
     }
 
     public static TypeParameterName alternativeClassTypeParameterName(int i) {
         String name = CLASS_TYPE_PARAMETER_NAME_PREFIX + (i + 1);
         return TypeParameterName.of(name);
-    }
-
-    public static String alternativeSecondaryMethodParameterName(int i) {
-        return SECONDARY_PARAMETER_NAME_PREFIX + (i + 1);
     }
 }

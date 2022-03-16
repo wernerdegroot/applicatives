@@ -12,7 +12,7 @@ import java.util.Map;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ConcreteTypeTest {
 
@@ -66,16 +66,6 @@ public class ConcreteTypeTest {
         TypeConstructor toVerify = Type.concrete(ERUDITE, STRING_TYPE.invariant(), U_TYPE.covariant(), INTEGER_TYPE.contravariant()).asTypeConstructorWithPlaceholderFor(T);
 
         assertEquals(expected, toVerify);
-    }
-
-    @Test
-    public void containsGivenNeedleThatMatchesOneOfTheTypeArguments() {
-        assertTrue(Type.concrete(ERUDITE, STRING_TYPE.invariant(), T_TYPE.covariant(), INTEGER_TYPE.contravariant()).contains(T));
-    }
-
-    @Test
-    public void containsGivenNeedleThatDoesNotMatchAnyOfTheTypeArguments() {
-        assertFalse(Type.concrete(ERUDITE, STRING_TYPE.invariant(), U_TYPE.covariant(), INTEGER_TYPE.contravariant()).contains(T));
     }
 
     @Test

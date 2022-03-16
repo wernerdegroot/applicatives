@@ -1,6 +1,5 @@
 package nl.wernerdegroot.applicatives.processor.validation;
 
-import nl.wernerdegroot.applicatives.processor.domain.Parameter;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameter;
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor;
 
@@ -16,8 +15,8 @@ public interface ValidatedMethod {
 
     void match(Consumer<Valid> matchValid, Consumer<Invalid> matchInvalid);
 
-    static Valid valid(List<TypeParameter> secondaryMethodTypeParameters, List<Parameter> secondaryParameters, TypeConstructor leftParameterTypeConstructor, TypeConstructor rightParameterTypeConstructor, TypeConstructor resultTypeConstructor, List<TypeParameter> classTypeParameters) {
-        return Valid.of(secondaryMethodTypeParameters, secondaryParameters, leftParameterTypeConstructor, rightParameterTypeConstructor, resultTypeConstructor, classTypeParameters);
+    static Valid valid(TypeConstructor leftParameterTypeConstructor, TypeConstructor rightParameterTypeConstructor, TypeConstructor resultTypeConstructor, List<TypeParameter> classTypeParameters) {
+        return Valid.of(resultTypeConstructor, leftParameterTypeConstructor, rightParameterTypeConstructor, classTypeParameters);
     }
 
     static Invalid invalid(Set<String> errorMessages) {
@@ -30,24 +29,20 @@ public interface ValidatedMethod {
 
     class Valid implements ValidatedMethod {
 
-        private final List<TypeParameter> secondaryMethodTypeParameters;
-        private final List<Parameter> secondaryParameters;
-        private final TypeConstructor leftParameterTypeConstructor;
-        private final TypeConstructor rightParameterTypeConstructor;
-        private final TypeConstructor resultTypeConstructor;
+        private final TypeConstructor accumulationTypeConstructor;
+        private final TypeConstructor permissiveAccumulationTypeConstructor;
+        private final TypeConstructor inputTypeConstructor;
         private final List<TypeParameter> classTypeParameters;
 
-        public Valid(List<TypeParameter> secondaryMethodTypeParameters, List<Parameter> secondaryParameters, TypeConstructor leftParameterTypeConstructor, TypeConstructor rightParameterTypeConstructor, TypeConstructor resultTypeConstructor, List<TypeParameter> classTypeParameters) {
-            this.secondaryMethodTypeParameters = secondaryMethodTypeParameters;
-            this.secondaryParameters = secondaryParameters;
-            this.leftParameterTypeConstructor = leftParameterTypeConstructor;
-            this.rightParameterTypeConstructor = rightParameterTypeConstructor;
-            this.resultTypeConstructor = resultTypeConstructor;
+        public Valid(TypeConstructor accumulationTypeConstructor, TypeConstructor permissiveAccumulationTypeConstructor, TypeConstructor inputTypeConstructor, List<TypeParameter> classTypeParameters) {
+            this.accumulationTypeConstructor = accumulationTypeConstructor;
+            this.permissiveAccumulationTypeConstructor = permissiveAccumulationTypeConstructor;
+            this.inputTypeConstructor = inputTypeConstructor;
             this.classTypeParameters = classTypeParameters;
         }
 
-        public static Valid of(List<TypeParameter> secondaryMethodTypeParameters, List<Parameter> secondaryParameters, TypeConstructor leftParameterTypeConstructor, TypeConstructor rightParameterTypeConstructor, TypeConstructor resultTypeConstructor, List<TypeParameter> classTypeParameters) {
-            return new Valid(secondaryMethodTypeParameters, secondaryParameters, leftParameterTypeConstructor, rightParameterTypeConstructor, resultTypeConstructor, classTypeParameters);
+        public static Valid of(TypeConstructor accumulationTypeConstructor, TypeConstructor permissiveAccumulationTypeConstructor, TypeConstructor inputTypeConstructor, List<TypeParameter> classTypeParameters) {
+            return new Valid(accumulationTypeConstructor, permissiveAccumulationTypeConstructor, inputTypeConstructor, classTypeParameters);
         }
 
         @Override
@@ -55,24 +50,16 @@ public interface ValidatedMethod {
             matchValid.accept(this);
         }
 
-        public List<TypeParameter> getSecondaryMethodTypeParameters() {
-            return secondaryMethodTypeParameters;
+        public TypeConstructor getAccumulationTypeConstructor() {
+            return accumulationTypeConstructor;
         }
 
-        public List<Parameter> getSecondaryParameters() {
-            return secondaryParameters;
+        public TypeConstructor getPermissiveAccumulationTypeConstructor() {
+            return permissiveAccumulationTypeConstructor;
         }
 
-        public TypeConstructor getLeftParameterTypeConstructor() {
-            return leftParameterTypeConstructor;
-        }
-
-        public TypeConstructor getRightParameterTypeConstructor() {
-            return rightParameterTypeConstructor;
-        }
-
-        public TypeConstructor getResultTypeConstructor() {
-            return resultTypeConstructor;
+        public TypeConstructor getInputTypeConstructor() {
+            return inputTypeConstructor;
         }
 
         public List<TypeParameter> getClassTypeParameters() {
@@ -84,22 +71,20 @@ public interface ValidatedMethod {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Valid valid = (Valid) o;
-            return getSecondaryMethodTypeParameters().equals(valid.getSecondaryMethodTypeParameters()) && getSecondaryParameters().equals(valid.getSecondaryParameters()) && getLeftParameterTypeConstructor().equals(valid.getLeftParameterTypeConstructor()) && getRightParameterTypeConstructor().equals(valid.getRightParameterTypeConstructor()) && getResultTypeConstructor().equals(valid.getResultTypeConstructor()) && getClassTypeParameters().equals(valid.getClassTypeParameters());
+            return getAccumulationTypeConstructor().equals(valid.getAccumulationTypeConstructor()) && getPermissiveAccumulationTypeConstructor().equals(valid.getPermissiveAccumulationTypeConstructor()) && getInputTypeConstructor().equals(valid.getInputTypeConstructor()) && getClassTypeParameters().equals(valid.getClassTypeParameters());
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(getSecondaryMethodTypeParameters(), getSecondaryParameters(), getLeftParameterTypeConstructor(), getRightParameterTypeConstructor(), getResultTypeConstructor(), getClassTypeParameters());
+            return Objects.hash(getAccumulationTypeConstructor(), getPermissiveAccumulationTypeConstructor(), getInputTypeConstructor(), getClassTypeParameters());
         }
 
         @Override
         public String toString() {
             return "Valid{" +
-                    "secondaryMethodTypeParameters=" + secondaryMethodTypeParameters +
-                    ", secondaryParameters=" + secondaryParameters +
-                    ", leftParameterTypeConstructor=" + leftParameterTypeConstructor +
-                    ", rightParameterTypeConstructor=" + rightParameterTypeConstructor +
-                    ", resultTypeConstructor=" + resultTypeConstructor +
+                    "accumulationTypeConstructor=" + accumulationTypeConstructor +
+                    ", permissiveAccumulationTypeConstructor=" + permissiveAccumulationTypeConstructor +
+                    ", inputTypeConstructor=" + inputTypeConstructor +
                     ", classTypeParameters=" + classTypeParameters +
                     '}';
         }
