@@ -44,8 +44,8 @@ public class MethodValidatorTest {
                 ContainingClass.of(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"))
         );
 
-        ValidatedMethod expected = ValidatedMethod.invalid("Method needs to return something");
-        ValidatedMethod toVerify = MethodValidator.validate(toValidate);
+        Validated<AccumulatorMethod> expected = Validated.invalid("Method needs to return something");
+        Validated<AccumulatorMethod> toVerify = MethodValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -66,8 +66,8 @@ public class MethodValidatorTest {
                 ContainingClass.of(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"))
         );
 
-        ValidatedMethod expected = ValidatedMethod.invalid("Method is static and cannot implement an abstract method");
-        ValidatedMethod toVerify = MethodValidator.validate(toValidate);
+        Validated<AccumulatorMethod> expected = Validated.invalid("Method is static and cannot implement an abstract method");
+        Validated<AccumulatorMethod> toVerify = MethodValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -88,8 +88,8 @@ public class MethodValidatorTest {
                 ContainingClass.of(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"))
         );
 
-        ValidatedMethod expected = ValidatedMethod.invalid("Method is private and cannot implement an abstract method");
-        ValidatedMethod toVerify = MethodValidator.validate(toValidate);
+        Validated<AccumulatorMethod> expected = Validated.invalid("Method is private and cannot implement an abstract method");
+        Validated<AccumulatorMethod> toVerify = MethodValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -110,8 +110,8 @@ public class MethodValidatorTest {
                 ContainingClass.of(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"))
         );
 
-        ValidatedMethod expected = ValidatedMethod.invalid("The type parameters need to be unbounded");
-        ValidatedMethod toVerify = MethodValidator.validate(toValidate);
+        Validated<AccumulatorMethod> expected = Validated.invalid("The type parameters need to be unbounded");
+        Validated<AccumulatorMethod> toVerify = MethodValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -132,13 +132,15 @@ public class MethodValidatorTest {
                 ContainingClass.of(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"))
         );
 
-        ValidatedMethod expected = ValidatedMethod.valid(
-                OPTIONAL.asTypeConstructor(),
-                OPTIONAL.asTypeConstructor(),
-                OPTIONAL.asTypeConstructor(),
-                emptyList()
+        Validated<AccumulatorMethod> expected = Validated.valid(
+                AccumulatorMethod.of(
+                        OPTIONAL.asTypeConstructor(),
+                        OPTIONAL.asTypeConstructor(),
+                        OPTIONAL.asTypeConstructor(),
+                        emptyList()
+                )
         );
-        ValidatedMethod toVerify = MethodValidator.validate(toValidate);
+        Validated<AccumulatorMethod> toVerify = MethodValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -159,8 +161,8 @@ public class MethodValidatorTest {
                 ContainingClass.of(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"))
         );
 
-        ValidatedMethod expected = ValidatedMethod.invalid("Method requires exactly 3 type parameters, but found 1");
-        ValidatedMethod toVerify = MethodValidator.validate(toValidate);
+        Validated<AccumulatorMethod> expected = Validated.invalid("Method requires exactly 3 type parameters, but found 1");
+        Validated<AccumulatorMethod> toVerify = MethodValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -181,8 +183,8 @@ public class MethodValidatorTest {
                 ContainingClass.of(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Functions"))
         );
 
-        ValidatedMethod expected = ValidatedMethod.invalid("Method requires exactly 3 type parameters, but found 4");
-        ValidatedMethod toVerify = MethodValidator.validate(toValidate);
+        Validated<AccumulatorMethod> expected = Validated.invalid("Method requires exactly 3 type parameters, but found 4");
+        Validated<AccumulatorMethod> toVerify = MethodValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -202,8 +204,8 @@ public class MethodValidatorTest {
                 ContainingClass.of(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"))
         );
 
-        ValidatedMethod expected = ValidatedMethod.invalid("Method requires exactly 3 parameters, but found 2");
-        ValidatedMethod toVerify = MethodValidator.validate(toValidate);
+        Validated<AccumulatorMethod> expected = Validated.invalid("Method requires exactly 3 parameters, but found 2");
+        Validated<AccumulatorMethod> toVerify = MethodValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -225,8 +227,8 @@ public class MethodValidatorTest {
                 ContainingClass.of(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Futures"))
         );
 
-        ValidatedMethod expected = ValidatedMethod.invalid("Method requires exactly 3 parameters, but found 4");
-        ValidatedMethod toVerify = MethodValidator.validate(toValidate);
+        Validated<AccumulatorMethod> expected = Validated.invalid("Method requires exactly 3 parameters, but found 4");
+        Validated<AccumulatorMethod> toVerify = MethodValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -247,8 +249,8 @@ public class MethodValidatorTest {
                 ContainingClass.of(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"))
         );
 
-        ValidatedMethod expected = ValidatedMethod.invalid("Expected third argument to be a java.util.function.BiFunction<? super T, ? super U, ? extends V> but was java.lang.Object");
-        ValidatedMethod toVerify = MethodValidator.validate(toValidate);
+        Validated<AccumulatorMethod> expected = Validated.invalid("Expected third argument to be a java.util.function.BiFunction<? super T, ? super U, ? extends V> but was java.lang.Object");
+        Validated<AccumulatorMethod> toVerify = MethodValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -269,8 +271,8 @@ public class MethodValidatorTest {
                 ContainingClass.of(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"))
         );
 
-        ValidatedMethod expected = ValidatedMethod.invalid("Expected third argument to be a java.util.function.BiFunction<? super T, ? super U, ? extends V> but was java.util.function.BiFunction<W, W, W>");
-        ValidatedMethod toVerify = MethodValidator.validate(toValidate);
+        Validated<AccumulatorMethod> expected = Validated.invalid("Expected third argument to be a java.util.function.BiFunction<? super T, ? super U, ? extends V> but was java.util.function.BiFunction<W, W, W>");
+        Validated<AccumulatorMethod> toVerify = MethodValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -291,13 +293,15 @@ public class MethodValidatorTest {
                 ContainingClass.of(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Weird"))
         );
 
-        ValidatedMethod expected = ValidatedMethod.valid(
-                OPTIONAL.asTypeConstructor(),
-                COMPLETABLE_FUTURE.asTypeConstructor(),
-                OPTIONAL.asTypeConstructor(),
-                emptyList()
+        Validated<AccumulatorMethod> expected = Validated.valid(
+                AccumulatorMethod.of(
+                        OPTIONAL.asTypeConstructor(),
+                        OPTIONAL.asTypeConstructor(),
+                        COMPLETABLE_FUTURE.asTypeConstructor(),
+                        emptyList()
+                )
         );
-        ValidatedMethod toVerify = MethodValidator.validate(toValidate);
+        Validated<AccumulatorMethod> toVerify = MethodValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -318,8 +322,8 @@ public class MethodValidatorTest {
                 ContainingClass.of(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"), asList(P.asTypeParameter()))
         );
 
-        ValidatedMethod expected = ValidatedMethod.invalid("No shared type constructor between parameters (java.util.Optional<T> and java.util.Optional<U>) and result (java.util.concurrent.CompletableFuture<V>)");
-        ValidatedMethod toVerify = MethodValidator.validate(toValidate);
+        Validated<AccumulatorMethod> expected = Validated.invalid("No shared type constructor between parameters (java.util.Optional<T> and java.util.Optional<U>) and result (java.util.concurrent.CompletableFuture<V>)");
+        Validated<AccumulatorMethod> toVerify = MethodValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -340,13 +344,15 @@ public class MethodValidatorTest {
                 ContainingClass.of(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Functions"), asList(P.asTypeParameter()))
         );
 
-        ValidatedMethod expected = ValidatedMethod.valid(
-                FUNCTION.with(P.asTypeConstructor().contravariant(), placeholder().covariant()),
-                FUNCTION.with(P.asTypeConstructor().contravariant(), placeholder().covariant()),
-                FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()),
-                asList(P.asTypeParameter())
+        Validated<AccumulatorMethod> expected = Validated.valid(
+                AccumulatorMethod.of(
+                        FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()),
+                        FUNCTION.with(P.asTypeConstructor().contravariant(), placeholder().covariant()),
+                        FUNCTION.with(P.asTypeConstructor().contravariant(), placeholder().covariant()),
+                        asList(P.asTypeParameter())
+                )
         );
-        ValidatedMethod toVerify = MethodValidator.validate(toValidate);
+        Validated<AccumulatorMethod> toVerify = MethodValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -367,8 +373,8 @@ public class MethodValidatorTest {
                 PackageName.of("nl.wernerdegroot.applicatives").asPackage().containingClass(emptySet(), ClassName.of("Outer")).containingClass(emptySet(), ClassName.of("Inner"))
         );
 
-        ValidatedMethod expected = ValidatedMethod.invalid("Only outer classes and static inner classes are currently supported");
-        ValidatedMethod toVerify = MethodValidator.validate(toValidate);
+        Validated<AccumulatorMethod> expected = Validated.invalid("Only outer classes and static inner classes are currently supported");
+        Validated<AccumulatorMethod> toVerify = MethodValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -389,13 +395,15 @@ public class MethodValidatorTest {
                 PackageName.of("nl.wernerdegroot.applicatives").asPackage().containingClass(emptySet(), ClassName.of("Outer"), A, B).containingClass(modifiers(STATIC), ClassName.of("Inner"), B, C)
         );
 
-        ValidatedMethod expected = ValidatedMethod.valid(
-                OPTIONAL.asTypeConstructor(),
-                OPTIONAL.asTypeConstructor(),
-                OPTIONAL.asTypeConstructor(),
-                asList(B, C)
+        Validated<AccumulatorMethod> expected = Validated.valid(
+                AccumulatorMethod.of(
+                        OPTIONAL.asTypeConstructor(),
+                        OPTIONAL.asTypeConstructor(),
+                        OPTIONAL.asTypeConstructor(),
+                        asList(B, C)
+                )
         );
-        ValidatedMethod toVerify = MethodValidator.validate(toValidate);
+        Validated<AccumulatorMethod> toVerify = MethodValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -416,13 +424,15 @@ public class MethodValidatorTest {
                 PackageName.of("nl.wernerdegroot.applicatives").asPackage().containingClass(emptySet(), ClassName.of("Outer"), A, B)
         );
 
-        ValidatedMethod expected = ValidatedMethod.valid(
-                OPTIONAL.asTypeConstructor(),
-                OPTIONAL.asTypeConstructor(),
-                OPTIONAL.asTypeConstructor(),
-                asList(A, B)
+        Validated<AccumulatorMethod> expected = Validated.valid(
+                AccumulatorMethod.of(
+                        OPTIONAL.asTypeConstructor(),
+                        OPTIONAL.asTypeConstructor(),
+                        OPTIONAL.asTypeConstructor(),
+                        asList(A, B)
+                )
         );
-        ValidatedMethod toVerify = MethodValidator.validate(toValidate);
+        Validated<AccumulatorMethod> toVerify = MethodValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }

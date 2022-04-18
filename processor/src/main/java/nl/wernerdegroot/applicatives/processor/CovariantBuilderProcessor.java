@@ -4,10 +4,7 @@ import com.google.auto.service.AutoService;
 import nl.wernerdegroot.applicatives.processor.conflicts.ConflictFree;
 import nl.wernerdegroot.applicatives.processor.conflicts.ConflictPrevention;
 import nl.wernerdegroot.applicatives.processor.converters.MethodConverter;
-import nl.wernerdegroot.applicatives.processor.domain.ClassName;
-import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
-import nl.wernerdegroot.applicatives.processor.domain.Method;
-import nl.wernerdegroot.applicatives.processor.domain.Modifier;
+import nl.wernerdegroot.applicatives.processor.domain.*;
 import nl.wernerdegroot.applicatives.processor.domain.containing.Containing;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor;
@@ -20,7 +17,7 @@ import nl.wernerdegroot.applicatives.processor.logging.LoggingBackend;
 import nl.wernerdegroot.applicatives.processor.logging.MessagerLoggingBackend;
 import nl.wernerdegroot.applicatives.processor.logging.NoLoggingBackend;
 import nl.wernerdegroot.applicatives.processor.validation.MethodValidator;
-import nl.wernerdegroot.applicatives.processor.validation.ValidatedMethod;
+import nl.wernerdegroot.applicatives.processor.validation.Validated;
 import nl.wernerdegroot.applicatives.runtime.Accumulator;
 import nl.wernerdegroot.applicatives.runtime.Covariant;
 
@@ -131,73 +128,72 @@ public class CovariantBuilderProcessor extends AbstractProcessor {
                             .withDetail("Containing class", accumulator.getContainingClass(), this::containingToString)
                             .append();
 
-                    ValidatedMethod validatedMethod = MethodValidator.validate(accumulator);
-                    validatedMethod.match(
-                            valid -> {
-                                note("Method meets all criteria for code generation")
-                                        .withDetail("Accumulation type constructor", valid.getAccumulationTypeConstructor(), this::typeConstructorToString)
-                                        .withDetail("Permissive accumulation type constructor", valid.getPermissiveAccumulationTypeConstructor(), this::typeConstructorToString)
-                                        .withDetail("Input type constructor", valid.getInputTypeConstructor(), this::typeConstructorToString)
-                                        .withDetail("Class type parameters", valid.getClassTypeParameters(), TypeParameterGenerator::generateFrom)
-                                        .append();
+                    Validated<AccumulatorMethod> validatedMethod = MethodValidator.validate(accumulator);
+                    if (!validatedMethod.isValid()) {
+                        error("Method '%s' in package '%s' does not meet all criteria for code generation", accumulator.getName(), accumulator.getContainingClass().getPackageName().raw())
+                                .withDetails(validatedMethod.getErrorMessages())
+                                .append();
+                        return;
+                    }
 
-                                ConflictFree conflictFree = ConflictPrevention.preventConflicts(
-                                        valid.getClassTypeParameters(),
-                                        valid.getAccumulationTypeConstructor(),
-                                        valid.getPermissiveAccumulationTypeConstructor(),
-                                        valid.getInputTypeConstructor()
-                                );
+                    AccumulatorMethod valid = validatedMethod.getValue();
+                    note("Method meets all criteria for code generation")
+                            .withDetail("Accumulation type constructor", valid.getAccumulationTypeConstructor(), this::typeConstructorToString)
+                            .withDetail("Permissive accumulation type constructor", valid.getPermissiveAccumulationTypeConstructor(), this::typeConstructorToString)
+                            .withDetail("Input type constructor", valid.getInputTypeConstructor(), this::typeConstructorToString)
+                            .withDetail("Class type parameters", valid.getClassTypeParameters(), TypeParameterGenerator::generateFrom)
+                            .append();
 
-                                note("Resolved (potential) conflicts between existing type parameters and new, generated type parameters")
-                                        .withDetail("Input type constructor arguments", conflictFree.getInputTypeConstructorArguments(), TypeParameterGenerator::generateFrom)
-                                        .withDetail("Result type constructor arguments", conflictFree.getResultTypeConstructorArguments(), TypeParameterGenerator::generateFrom)
-                                        .withDetail("Class type parameters", conflictFree.getClassTypeParameters(), TypeParameterGenerator::generateFrom)
-                                        .withDetail("Input parameter names", conflictFree.getInputParameterNames())
-                                        .withDetail("Self parameter name", conflictFree.getSelfParameterName())
-                                        .withDetail("Combinator parameter name", conflictFree.getCombinatorParameterName())
-                                        .withDetail("Maximum tuple size parameter name", conflictFree.getMaxTupleSizeParameterName())
-                                        .withDetail("Accumulation type constructor", conflictFree.getAccumulationTypeConstructor(), this::typeConstructorToString)
-                                        .withDetail("Permissive accumulation type constructor", conflictFree.getPermissiveAccumulationTypeConstructor(), this::typeConstructorToString)
-                                        .withDetail("Input type constructor", conflictFree.getInputTypeConstructor(), this::typeConstructorToString)
-                                        .append();
-
-                                String generated = generator()
-                                        .withPackageName(accumulator.getContainingClass().getPackageName())
-                                        .withClassNameToGenerate(covariantBuilderAnnotation.className())
-                                        .withClassTypeParameters(conflictFree.getClassTypeParameters())
-                                        .withInputTypeConstructorArguments(conflictFree.getInputTypeConstructorArguments())
-                                        .withResultTypeConstructorArgument(conflictFree.getResultTypeConstructorArguments())
-                                        .withMethodName(accumulator.getName())
-                                        .withInputParameterNames(conflictFree.getInputParameterNames())
-                                        .withSelfParameterName(conflictFree.getSelfParameterName())
-                                        .withCombinatorParameterName(conflictFree.getCombinatorParameterName())
-                                        .withMaxTupleSizeParameterName(conflictFree.getMaxTupleSizeParameterName())
-                                        .withAccumulationTypeConstructor(conflictFree.getAccumulationTypeConstructor())
-                                        .withPermissiveAccumulationTypeConstructor(conflictFree.getPermissiveAccumulationTypeConstructor())
-                                        .withInputTypeConstructor(conflictFree.getInputTypeConstructor())
-                                        .withLiftMethodName(covariantBuilderAnnotation.liftMethodName())
-                                        .withMaxArity(covariantBuilderAnnotation.maxArity())
-                                        .generate();
-
-                                note("Done generating code").append();
-
-                                FullyQualifiedName fullyQualifiedNameOfGeneratedClass = accumulator.getContainingClass().getPackageName().withClassName(ClassName.of(covariantBuilderAnnotation.className()));
-                                try {
-                                    JavaFileObject builderFile = processingEnv.getFiler().createSourceFile(accumulator.getContainingClass().getPackageName().withClassName(ClassName.of(covariantBuilderAnnotation.className())).raw());
-                                    try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
-                                        out.print(generated);
-                                        note("Saved generated code to .java-file on disk (%s)", fullyQualifiedNameOfGeneratedClass.raw()).append();
-                                    }
-                                } catch (IOException e) {
-                                    error("Error saving generated code to .java-file on disk (%s)", fullyQualifiedNameOfGeneratedClass.raw()).append();
-                                }
-                            },
-                            invalid -> {
-                                error("Method '%s' in package '%s' does not meet all criteria for code generation", accumulator.getName(), accumulator.getContainingClass().getPackageName().raw())
-                                        .withDetails(invalid.getErrorMessages())
-                                        .append();
-                            }
+                    ConflictFree conflictFree = ConflictPrevention.preventConflicts(
+                            valid.getClassTypeParameters(),
+                            valid.getAccumulationTypeConstructor(),
+                            valid.getPermissiveAccumulationTypeConstructor(),
+                            valid.getInputTypeConstructor()
                     );
+
+                    note("Resolved (potential) conflicts between existing type parameters and new, generated type parameters")
+                            .withDetail("Input type constructor arguments", conflictFree.getInputTypeConstructorArguments(), TypeParameterGenerator::generateFrom)
+                            .withDetail("Result type constructor arguments", conflictFree.getResultTypeConstructorArguments(), TypeParameterGenerator::generateFrom)
+                            .withDetail("Class type parameters", conflictFree.getClassTypeParameters(), TypeParameterGenerator::generateFrom)
+                            .withDetail("Input parameter names", conflictFree.getInputParameterNames())
+                            .withDetail("Self parameter name", conflictFree.getSelfParameterName())
+                            .withDetail("Combinator parameter name", conflictFree.getCombinatorParameterName())
+                            .withDetail("Maximum tuple size parameter name", conflictFree.getMaxTupleSizeParameterName())
+                            .withDetail("Accumulation type constructor", conflictFree.getAccumulationTypeConstructor(), this::typeConstructorToString)
+                            .withDetail("Permissive accumulation type constructor", conflictFree.getPermissiveAccumulationTypeConstructor(), this::typeConstructorToString)
+                            .withDetail("Input type constructor", conflictFree.getInputTypeConstructor(), this::typeConstructorToString)
+                            .append();
+
+                    String generated = generator()
+                            .withPackageName(accumulator.getContainingClass().getPackageName())
+                            .withClassNameToGenerate(covariantBuilderAnnotation.className())
+                            .withClassTypeParameters(conflictFree.getClassTypeParameters())
+                            .withInputTypeConstructorArguments(conflictFree.getInputTypeConstructorArguments())
+                            .withResultTypeConstructorArgument(conflictFree.getResultTypeConstructorArguments())
+                            .withMethodName(accumulator.getName())
+                            .withInputParameterNames(conflictFree.getInputParameterNames())
+                            .withSelfParameterName(conflictFree.getSelfParameterName())
+                            .withCombinatorParameterName(conflictFree.getCombinatorParameterName())
+                            .withMaxTupleSizeParameterName(conflictFree.getMaxTupleSizeParameterName())
+                            .withAccumulationTypeConstructor(conflictFree.getAccumulationTypeConstructor())
+                            .withPermissiveAccumulationTypeConstructor(conflictFree.getPermissiveAccumulationTypeConstructor())
+                            .withInputTypeConstructor(conflictFree.getInputTypeConstructor())
+                            .withLiftMethodName(covariantBuilderAnnotation.liftMethodName())
+                            .withMaxArity(covariantBuilderAnnotation.maxArity())
+                            .generate();
+
+                    note("Done generating code").append();
+
+                    FullyQualifiedName fullyQualifiedNameOfGeneratedClass = accumulator.getContainingClass().getPackageName().withClassName(ClassName.of(covariantBuilderAnnotation.className()));
+                    try {
+                        JavaFileObject builderFile = processingEnv.getFiler().createSourceFile(accumulator.getContainingClass().getPackageName().withClassName(ClassName.of(covariantBuilderAnnotation.className())).raw());
+                        try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
+                            out.print(generated);
+                            note("Saved generated code to .java-file on disk (%s)", fullyQualifiedNameOfGeneratedClass.raw()).append();
+                        }
+                    } catch (IOException e) {
+                        error("Error saving generated code to .java-file on disk (%s)", fullyQualifiedNameOfGeneratedClass.raw()).append();
+                    }
                 } catch (Throwable t) {
                     error("Error occurred while processing annotation of type '%s': %s", COVARIANT_BUILDER_CLASS, t.getMessage()).append();
                     error("(Enable verbose logging to see a stack trace)").append();
