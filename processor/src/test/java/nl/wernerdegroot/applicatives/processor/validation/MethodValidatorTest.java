@@ -136,8 +136,7 @@ public class MethodValidatorTest {
                 AccumulatorMethod.of(
                         OPTIONAL.asTypeConstructor(),
                         OPTIONAL.asTypeConstructor(),
-                        OPTIONAL.asTypeConstructor(),
-                        emptyList()
+                        OPTIONAL.asTypeConstructor()
                 )
         );
         Validated<AccumulatorMethod> toVerify = MethodValidator.validate(toValidate);
@@ -297,8 +296,7 @@ public class MethodValidatorTest {
                 AccumulatorMethod.of(
                         OPTIONAL.asTypeConstructor(),
                         OPTIONAL.asTypeConstructor(),
-                        COMPLETABLE_FUTURE.asTypeConstructor(),
-                        emptyList()
+                        COMPLETABLE_FUTURE.asTypeConstructor()
                 )
         );
         Validated<AccumulatorMethod> toVerify = MethodValidator.validate(toValidate);
@@ -348,88 +346,7 @@ public class MethodValidatorTest {
                 AccumulatorMethod.of(
                         FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()),
                         FUNCTION.with(P.asTypeConstructor().contravariant(), placeholder().covariant()),
-                        FUNCTION.with(P.asTypeConstructor().contravariant(), placeholder().covariant()),
-                        asList(P.asTypeParameter())
-                )
-        );
-        Validated<AccumulatorMethod> toVerify = MethodValidator.validate(toValidate);
-
-        assertEquals(expected, toVerify);
-    }
-
-    @Test
-    public void validateGivenNonStaticInnerClassAsContainingClass() {
-        Method toValidate = Method.of(
-                emptySet(),
-                modifiers(PUBLIC),
-                asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
-                Optional.of(OPTIONAL.with(V)),
-                "myFunction",
-                asList(
-                        Parameter.of(OPTIONAL.with(T), "left"),
-                        Parameter.of(OPTIONAL.with(U), "right"),
-                        Parameter.of(BI_FUNCTION.with(T.asType().contravariant(), U.asType().contravariant(), V.asType().covariant()), "compose")
-                ),
-                PackageName.of("nl.wernerdegroot.applicatives").asPackage().containingClass(emptySet(), ClassName.of("Outer")).containingClass(emptySet(), ClassName.of("Inner"))
-        );
-
-        Validated<AccumulatorMethod> expected = Validated.invalid("Only outer classes and static inner classes are currently supported");
-        Validated<AccumulatorMethod> toVerify = MethodValidator.validate(toValidate);
-
-        assertEquals(expected, toVerify);
-    }
-
-    @Test
-    public void validateGivenStaticInnerClassAsContainingClass() {
-        Method toValidate = Method.of(
-                emptySet(),
-                modifiers(PUBLIC),
-                asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
-                Optional.of(OPTIONAL.with(V)),
-                "myFunction",
-                asList(
-                        Parameter.of(OPTIONAL.with(T), "left"),
-                        Parameter.of(OPTIONAL.with(U), "right"),
-                        Parameter.of(BI_FUNCTION.with(T.asType().contravariant(), U.asType().contravariant(), V.asType().covariant()), "compose")
-                ),
-                PackageName.of("nl.wernerdegroot.applicatives").asPackage().containingClass(emptySet(), ClassName.of("Outer"), A, B).containingClass(modifiers(STATIC), ClassName.of("Inner"), B, C)
-        );
-
-        Validated<AccumulatorMethod> expected = Validated.valid(
-                AccumulatorMethod.of(
-                        OPTIONAL.asTypeConstructor(),
-                        OPTIONAL.asTypeConstructor(),
-                        OPTIONAL.asTypeConstructor(),
-                        asList(B, C)
-                )
-        );
-        Validated<AccumulatorMethod> toVerify = MethodValidator.validate(toValidate);
-
-        assertEquals(expected, toVerify);
-    }
-
-    @Test
-    public void validateGivenOuterClassAsContainingClass() {
-        Method toValidate = Method.of(
-                emptySet(),
-                modifiers(PUBLIC),
-                asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
-                Optional.of(OPTIONAL.with(V)),
-                "myFunction",
-                asList(
-                        Parameter.of(OPTIONAL.with(T), "left"),
-                        Parameter.of(OPTIONAL.with(U), "right"),
-                        Parameter.of(BI_FUNCTION.with(T.asType().contravariant(), U.asType().contravariant(), V.asType().covariant()), "compose")
-                ),
-                PackageName.of("nl.wernerdegroot.applicatives").asPackage().containingClass(emptySet(), ClassName.of("Outer"), A, B)
-        );
-
-        Validated<AccumulatorMethod> expected = Validated.valid(
-                AccumulatorMethod.of(
-                        OPTIONAL.asTypeConstructor(),
-                        OPTIONAL.asTypeConstructor(),
-                        OPTIONAL.asTypeConstructor(),
-                        asList(A, B)
+                        FUNCTION.with(P.asTypeConstructor().contravariant(), placeholder().covariant())
                 )
         );
         Validated<AccumulatorMethod> toVerify = MethodValidator.validate(toValidate);

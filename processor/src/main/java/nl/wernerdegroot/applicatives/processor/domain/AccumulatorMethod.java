@@ -10,17 +10,15 @@ public class AccumulatorMethod {
     private final TypeConstructor accumulationTypeConstructor;
     private final TypeConstructor permissiveAccumulationTypeConstructor;
     private final TypeConstructor inputTypeConstructor;
-    private final List<TypeParameter> classTypeParameters;
 
-    public AccumulatorMethod(TypeConstructor accumulationTypeConstructor, TypeConstructor permissiveAccumulationTypeConstructor, TypeConstructor inputTypeConstructor, List<TypeParameter> classTypeParameters) {
+    public AccumulatorMethod(TypeConstructor accumulationTypeConstructor, TypeConstructor permissiveAccumulationTypeConstructor, TypeConstructor inputTypeConstructor) {
         this.accumulationTypeConstructor = accumulationTypeConstructor;
         this.permissiveAccumulationTypeConstructor = permissiveAccumulationTypeConstructor;
         this.inputTypeConstructor = inputTypeConstructor;
-        this.classTypeParameters = classTypeParameters;
     }
 
-    public static AccumulatorMethod of(TypeConstructor accumulationTypeConstructor, TypeConstructor permissiveAccumulationTypeConstructor, TypeConstructor inputTypeConstructor, List<TypeParameter> classTypeParameters) {
-        return new AccumulatorMethod(accumulationTypeConstructor, permissiveAccumulationTypeConstructor, inputTypeConstructor, classTypeParameters);
+    public static AccumulatorMethod of(TypeConstructor accumulationTypeConstructor, TypeConstructor permissiveAccumulationTypeConstructor, TypeConstructor inputTypeConstructor) {
+        return new AccumulatorMethod(accumulationTypeConstructor, permissiveAccumulationTypeConstructor, inputTypeConstructor);
     }
 
     public TypeConstructor getAccumulationTypeConstructor() {
@@ -35,21 +33,17 @@ public class AccumulatorMethod {
         return inputTypeConstructor;
     }
 
-    public List<TypeParameter> getClassTypeParameters() {
-        return classTypeParameters;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AccumulatorMethod that = (AccumulatorMethod) o;
-        return getAccumulationTypeConstructor().equals(that.getAccumulationTypeConstructor()) && getPermissiveAccumulationTypeConstructor().equals(that.getPermissiveAccumulationTypeConstructor()) && getInputTypeConstructor().equals(that.getInputTypeConstructor()) && getClassTypeParameters().equals(that.getClassTypeParameters());
+        return getAccumulationTypeConstructor().equals(that.getAccumulationTypeConstructor()) && getPermissiveAccumulationTypeConstructor().equals(that.getPermissiveAccumulationTypeConstructor()) && getInputTypeConstructor().equals(that.getInputTypeConstructor());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getAccumulationTypeConstructor(), getPermissiveAccumulationTypeConstructor(), getInputTypeConstructor(), getClassTypeParameters());
+        return Objects.hash(getAccumulationTypeConstructor(), getPermissiveAccumulationTypeConstructor(), getInputTypeConstructor());
     }
 
     @Override
@@ -58,7 +52,6 @@ public class AccumulatorMethod {
                 "accumulationTypeConstructor=" + accumulationTypeConstructor +
                 ", permissiveAccumulationTypeConstructor=" + permissiveAccumulationTypeConstructor +
                 ", inputTypeConstructor=" + inputTypeConstructor +
-                ", classTypeParameters=" + classTypeParameters +
                 '}';
     }
 }

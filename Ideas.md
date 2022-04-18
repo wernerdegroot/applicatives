@@ -8,6 +8,7 @@
     > [ERROR] -> [Help 1]
 * Make sure that none of the input parameters (Optional<A>, Optional<B>) contain A, B or C
 * Collector applicative
+* Allow for statics (just a single super-class allowed though)
 * Document process to publish
 * Github Actions
 * Code coverage

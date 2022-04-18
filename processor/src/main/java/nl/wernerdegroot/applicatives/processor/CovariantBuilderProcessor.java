@@ -16,7 +16,7 @@ import nl.wernerdegroot.applicatives.processor.logging.Log;
 import nl.wernerdegroot.applicatives.processor.logging.LoggingBackend;
 import nl.wernerdegroot.applicatives.processor.logging.MessagerLoggingBackend;
 import nl.wernerdegroot.applicatives.processor.logging.NoLoggingBackend;
-import nl.wernerdegroot.applicatives.processor.validation.MethodValidator;
+import nl.wernerdegroot.applicatives.processor.validation.TemplateClassWithMethodsValidator;
 import nl.wernerdegroot.applicatives.processor.validation.Validated;
 import nl.wernerdegroot.applicatives.runtime.Accumulator;
 import nl.wernerdegroot.applicatives.runtime.Covariant;
@@ -121,34 +121,39 @@ public class CovariantBuilderProcessor extends AbstractProcessor {
                         throw e;
                     }
 
-                    note("Found method '%s' in package '%s'", accumulator.getName(), accumulator.getContainingClass().getPackageName().raw())
+                    note("Found method '%s' in class '%s'", accumulator.getName(), accumulator.getContainingClass().getFullyQualifiedName().raw())
                             .withDetail("Modifiers", accumulator.getModifiers(), Modifier::toString)
                             .withDetail("Return type", accumulator.getReturnType(), TypeGenerator::generateFrom)
                             .withDetail("Parameters", accumulator.getParameters(), ParameterGenerator::generateFrom)
                             .withDetail("Containing class", accumulator.getContainingClass(), this::containingToString)
                             .append();
 
-                    Validated<AccumulatorMethod> validatedMethod = MethodValidator.validate(accumulator);
-                    if (!validatedMethod.isValid()) {
-                        error("Method '%s' in package '%s' does not meet all criteria for code generation", accumulator.getName(), accumulator.getContainingClass().getPackageName().raw())
-                                .withDetails(validatedMethod.getErrorMessages())
+                    Validated<TemplateClassWithMethods> validatedTemplateClassWithMethods = TemplateClassWithMethodsValidator.validate(accumulator.getContainingClass(), accumulator);
+                    if (!validatedTemplateClassWithMethods.isValid()) {
+                        error("Method '%s' in class '%s' does not meet all criteria for code generation", accumulator.getName(), accumulator.getContainingClass().getFullyQualifiedName().raw())
+                                .withDetails(validatedTemplateClassWithMethods.getErrorMessages())
                                 .append();
                         return;
                     }
 
-                    AccumulatorMethod valid = validatedMethod.getValue();
+                    TemplateClassWithMethods validTemplateClassWithMethods = validatedTemplateClassWithMethods.getValue();
+                    TemplateClass validTemplateClass = validTemplateClassWithMethods.getTemplateClass();
+                    note("Class meets all criteria for code generation")
+                            .withDetail("Type parameters", validTemplateClass.getTypeParameters(), TypeParameterGenerator::generateFrom)
+                            .append();
+
+                    AccumulatorMethod validAccumulatorMethod = validTemplateClassWithMethods.getAccumulatorMethod();
                     note("Method meets all criteria for code generation")
-                            .withDetail("Accumulation type constructor", valid.getAccumulationTypeConstructor(), this::typeConstructorToString)
-                            .withDetail("Permissive accumulation type constructor", valid.getPermissiveAccumulationTypeConstructor(), this::typeConstructorToString)
-                            .withDetail("Input type constructor", valid.getInputTypeConstructor(), this::typeConstructorToString)
-                            .withDetail("Class type parameters", valid.getClassTypeParameters(), TypeParameterGenerator::generateFrom)
+                            .withDetail("Accumulation type constructor", validAccumulatorMethod.getAccumulationTypeConstructor(), this::typeConstructorToString)
+                            .withDetail("Permissive accumulation type constructor", validAccumulatorMethod.getPermissiveAccumulationTypeConstructor(), this::typeConstructorToString)
+                            .withDetail("Input type constructor", validAccumulatorMethod.getInputTypeConstructor(), this::typeConstructorToString)
                             .append();
 
                     ConflictFree conflictFree = ConflictPrevention.preventConflicts(
-                            valid.getClassTypeParameters(),
-                            valid.getAccumulationTypeConstructor(),
-                            valid.getPermissiveAccumulationTypeConstructor(),
-                            valid.getInputTypeConstructor()
+                            validTemplateClass.getTypeParameters(),
+                            validAccumulatorMethod.getAccumulationTypeConstructor(),
+                            validAccumulatorMethod.getPermissiveAccumulationTypeConstructor(),
+                            validAccumulatorMethod.getInputTypeConstructor()
                     );
 
                     note("Resolved (potential) conflicts between existing type parameters and new, generated type parameters")
