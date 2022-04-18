@@ -1,5 +1,6 @@
 package nl.wernerdegroot.applicatives.prelude;
 
+import nl.wernerdegroot.applicatives.runtime.Accumulator;
 import nl.wernerdegroot.applicatives.runtime.Covariant;
 
 import java.util.ArrayList;
@@ -12,13 +13,14 @@ import java.util.function.BiFunction;
  * to avoid many intermediate lists that need to be created and then garbage
  * collected.
  */
+@Covariant.Builder(className = "ListsApplicative")
 public class Lists implements ListsApplicative {
 
     // The fact that we are returning an `ArrayList` (implementation detail)
     // is a temporary situation while we allow the left type constructor and
     // the right type constructor to diverge (work in progress).
     @Override
-    @Covariant(className = "ListsApplicative")
+    @Accumulator
     public <A, B, C> ArrayList<C> combine(ArrayList<? extends A> left, List<? extends B> right, BiFunction<? super A, ? super B, ? extends C> fn) {
         ArrayList<C> result = new ArrayList<>(left.size() * right.size());
         for (A elementFromLeft : left) {

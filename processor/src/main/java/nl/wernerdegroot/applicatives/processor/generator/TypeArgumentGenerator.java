@@ -1,7 +1,6 @@
 package nl.wernerdegroot.applicatives.processor.generator;
 
 import nl.wernerdegroot.applicatives.processor.domain.type.TypeArgument;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import static nl.wernerdegroot.applicatives.processor.generator.Constants.*;
 
@@ -27,7 +26,7 @@ public class TypeArgumentGenerator {
             case CONTRAVARIANT:
                 return String.join(SPACE, QUESTION_MARK, SUPER, generatedType);
             default:
-                throw new NotImplementedException();
+                throw new RuntimeException("Not implemented");
         }
     }
 }

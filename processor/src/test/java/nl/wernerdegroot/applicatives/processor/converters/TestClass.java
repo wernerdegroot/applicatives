@@ -15,6 +15,8 @@ public class TestClass<C> {
 
             // This method has access to the type parameters of `StaticInnerClass` and `InnerClass` both.
             @TestAnnotation
+            @Deprecated
+            @SuppressWarnings(value = "Stuff to suppress")
             public strictfp synchronized <A, B extends Number & Comparable<A>> void someMethod(
                     int primitive,
                     Boolean object,

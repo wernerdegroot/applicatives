@@ -1,9 +1,6 @@
 package nl.wernerdegroot.applicatives.processor.converters;
 
-import nl.wernerdegroot.applicatives.processor.domain.Method;
-import nl.wernerdegroot.applicatives.processor.domain.Modifier;
-import nl.wernerdegroot.applicatives.processor.domain.Parameter;
-import nl.wernerdegroot.applicatives.processor.domain.TypeParameter;
+import nl.wernerdegroot.applicatives.processor.domain.*;
 import nl.wernerdegroot.applicatives.processor.domain.containing.ContainingClass;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 
@@ -13,11 +10,10 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.NoType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.SimpleTypeVisitor8;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.lang.annotation.Annotation;
+import java.util.*;
 
+import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
@@ -31,6 +27,10 @@ public class MethodConverter {
      * @return {@link Method Method}
      */
     public static Method toDomain(Element element) {
+        return toDomain(element, emptySet());
+    }
+
+    public static Method toDomain(Element element, Set<Class<? extends Annotation>> supportedAnnotations) {
         Objects.requireNonNull(element);
 
         if (element.getKind() != ElementKind.METHOD) {
@@ -38,6 +38,8 @@ public class MethodConverter {
         }
 
         ExecutableElement method = (ExecutableElement) element;
+
+        Set<FullyQualifiedName> annotations = getAnnotations(method, supportedAnnotations);
 
         Set<Modifier> modifiers = method.getModifiers().stream().map(ModifierConverter::toDomain).collect(toSet());
 
@@ -59,9 +61,18 @@ public class MethodConverter {
 
         ContainingClass containingClass = ContainingClassConverter.toDomain(method.getEnclosingElement());
 
-        return Method.of(modifiers, typeParameters, returnType, name, parameters, containingClass);
+        return Method.of(annotations, modifiers, typeParameters, returnType, name, parameters, containingClass);
     }
 
+    private static Set<FullyQualifiedName> getAnnotations(ExecutableElement method, Set<Class<? extends Annotation>> supportedAnnotations) {
+        Set<FullyQualifiedName> annotations = new HashSet<>();
+        supportedAnnotations.forEach(annotation -> {
+            if (method.getAnnotation(annotation) != null) {
+                annotations.add(FullyQualifiedName.of(annotation.getCanonicalName()));
+            }
+        });
+        return annotations;
+    }
 
     private static Optional<TypeMirror> returnTypeAsOptional(TypeMirror typeMirror) {
         return typeMirror.accept(
