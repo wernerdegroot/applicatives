@@ -1,9 +1,6 @@
 package nl.wernerdegroot.applicatives.processor.domain.containing;
 
-import nl.wernerdegroot.applicatives.processor.domain.ClassName;
-import nl.wernerdegroot.applicatives.processor.domain.Modifier;
-import nl.wernerdegroot.applicatives.processor.domain.PackageName;
-import nl.wernerdegroot.applicatives.processor.domain.TypeParameter;
+import nl.wernerdegroot.applicatives.processor.domain.*;
 
 import java.util.List;
 import java.util.Objects;
@@ -43,6 +40,13 @@ public class ContainingClass implements Containing {
 
     public static ContainingClass of(PackageName packageName, ClassName className) {
         return ContainingClass.of(packageName, className, emptyList());
+    }
+
+    public FullyQualifiedName getFullyQualifiedName() {
+        return getParent().match(
+                containingPackage -> containingPackage.getPackageName().withClassName(getClassName()),
+                containingClass -> containingClass.getFullyQualifiedName().withClassName(getClassName())
+        );
     }
 
     @Override
