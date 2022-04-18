@@ -4,7 +4,6 @@ import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
 import nl.wernerdegroot.applicatives.processor.domain.Variance;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import nl.wernerdegroot.applicatives.processor.domain.type.TypeArgument;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Map;
 import java.util.Objects;
@@ -39,7 +38,7 @@ public class TypeConstructorArgument {
                 case CONTRAVARIANT:
                     return that.typeConstructor.canAccept(this.typeConstructor);
                 default:
-                    throw new NotImplementedException();
+                    throw new RuntimeException("Not implemented");
             }
         } else {
             return false;

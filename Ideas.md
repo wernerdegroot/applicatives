@@ -1,3 +1,5 @@
+* Validate values of annotation parameters (no -1 overloads)
+* Remove duplication of processors
 * Return type of `lift` does not need to be co- or contravariant in its arguments
 * Solve warnings about missing encoding
 * Provide more context for errors:

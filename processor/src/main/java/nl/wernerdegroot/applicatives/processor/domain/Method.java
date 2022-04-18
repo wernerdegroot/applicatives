@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public class Method {
+    private final Set<FullyQualifiedName> annotations;
     private final Set<Modifier> modifiers;
     private final List<TypeParameter> typeParameters;
     // Empty `Optional` means `void` return type:
@@ -17,7 +18,8 @@ public class Method {
     private final List<Parameter> parameters;
     private final ContainingClass containingClass;
 
-    public Method(Set<Modifier> modifiers, List<TypeParameter> typeParameters, Optional<Type> returnType, String name, List<Parameter> parameters, ContainingClass containingClass) {
+    public Method(Set<FullyQualifiedName> annotations, Set<Modifier> modifiers, List<TypeParameter> typeParameters, Optional<Type> returnType, String name, List<Parameter> parameters, ContainingClass containingClass) {
+        this.annotations = annotations;
         this.modifiers = modifiers;
         this.typeParameters = typeParameters;
         this.returnType = returnType;
@@ -26,8 +28,16 @@ public class Method {
         this.containingClass = containingClass;
     }
 
-    public static Method of(Set<Modifier> modifiers, List<TypeParameter> typeParameters, Optional<Type> returnType, String name, List<Parameter> parameters, ContainingClass containingClass) {
-        return new Method(modifiers, typeParameters, returnType, name, parameters, containingClass);
+    public static Method of(Set<FullyQualifiedName> annotations, Set<Modifier> modifiers, List<TypeParameter> typeParameters, Optional<Type> returnType, String name, List<Parameter> parameters, ContainingClass containingClass) {
+        return new Method(annotations, modifiers, typeParameters, returnType, name, parameters, containingClass);
+    }
+
+    public Set<FullyQualifiedName> getAnnotations() {
+        return annotations;
+    }
+
+    public boolean hasAnnotation(FullyQualifiedName annotation) {
+        return annotations.contains(annotation);
     }
 
     public Set<Modifier> getModifiers() {
@@ -59,23 +69,24 @@ public class Method {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Method method = (Method) o;
-        return getModifiers().equals(method.getModifiers()) && getTypeParameters().equals(method.getTypeParameters()) && getReturnType().equals(method.getReturnType()) && getName().equals(method.getName()) && getParameters().equals(method.getParameters()) && getContainingClass().equals(method.getContainingClass());
+        return getAnnotations().equals(method.getAnnotations()) && getModifiers().equals(method.getModifiers()) && getTypeParameters().equals(method.getTypeParameters()) && getReturnType().equals(method.getReturnType()) && getName().equals(method.getName()) && getParameters().equals(method.getParameters()) && getContainingClass().equals(method.getContainingClass());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getModifiers(), getTypeParameters(), getReturnType(), getName(), getParameters(), getContainingClass());
+        return Objects.hash(getAnnotations(), getModifiers(), getTypeParameters(), getReturnType(), getName(), getParameters(), getContainingClass());
     }
 
     @Override
     public String toString() {
         return "Method{" +
-                "modifiers=" + modifiers +
+                "annotations=" + annotations +
+                ", modifiers=" + modifiers +
                 ", typeParameters=" + typeParameters +
                 ", returnType=" + returnType +
                 ", name='" + name + '\'' +
                 ", parameters=" + parameters +
-                ", containing=" + containingClass +
+                ", containingClass=" + containingClass +
                 '}';
     }
 }

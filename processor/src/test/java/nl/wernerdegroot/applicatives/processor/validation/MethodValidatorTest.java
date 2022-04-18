@@ -31,6 +31,7 @@ public class MethodValidatorTest {
     @Test
     public void validateGivenMethodThatDoesNotReturnAnything() {
         Method toValidate = Method.of(
+                emptySet(),
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
                 Optional.empty(),
@@ -52,6 +53,7 @@ public class MethodValidatorTest {
     @Test
     public void validateGivenStaticMethod() {
         Method toValidate = Method.of(
+                emptySet(),
                 modifiers(STATIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
                 Optional.of(OPTIONAL.with(V)),
@@ -73,6 +75,7 @@ public class MethodValidatorTest {
     @Test
     public void validateGivenPrivateMethod() {
         Method toValidate = Method.of(
+                emptySet(),
                 modifiers(PRIVATE),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
                 Optional.of(OPTIONAL.with(V)),
@@ -94,6 +97,7 @@ public class MethodValidatorTest {
     @Test
     public void validateGivenMethodWithTypeParameterWithUpperBoundOtherThanObject() {
         Method toValidate = Method.of(
+                emptySet(),
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.extending(COMPARABLE.with(U)), V.asTypeParameter()),
                 Optional.of(OPTIONAL.with(V)),
@@ -115,6 +119,7 @@ public class MethodValidatorTest {
     @Test
     public void validateGivenMethodWithTypeParametersThatHaveNoUpperBound() {
         Method toValidate = Method.of(
+                emptySet(),
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.extending(OBJECT), V.asTypeParameter()),
                 Optional.of(OPTIONAL.with(V)),
@@ -141,6 +146,7 @@ public class MethodValidatorTest {
     @Test
     public void validateGivenMethodWithLessThanThreeTypeParameters() {
         Method toValidate = Method.of(
+                emptySet(),
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter()),
                 Optional.of(OPTIONAL.with(T)),
@@ -162,6 +168,7 @@ public class MethodValidatorTest {
     @Test
     public void validateGivenMethodWithMoreThanThreeTypeParameters() {
         Method toValidate = Method.of(
+                emptySet(),
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter(), P.asTypeParameter()),
                 Optional.of(FUNCTION.with(P, V)),
@@ -183,6 +190,7 @@ public class MethodValidatorTest {
     @Test
     public void validateGivenMethodWithLessThanThreeParameters() {
         Method toValidate = Method.of(
+                emptySet(),
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
                 Optional.of(OPTIONAL.with(V)),
@@ -203,6 +211,7 @@ public class MethodValidatorTest {
     @Test
     public void validateGivenMethodWithMoreThanThreeParameters() {
         Method toValidate = Method.of(
+                emptySet(),
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
                 Optional.of(COMPLETABLE_FUTURE.with(V)),
@@ -225,6 +234,7 @@ public class MethodValidatorTest {
     @Test
     public void validateGivenMethodWithThirdParameterThatIsNotABiFunction() {
         Method toValidate = Method.of(
+                emptySet(),
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
                 Optional.of(OPTIONAL.with(V)),
@@ -246,6 +256,7 @@ public class MethodValidatorTest {
     @Test
     public void validateGivenMethodWithThirdParameterThatIsBiFunctionWithWrongTypeArguments() {
         Method toValidate = Method.of(
+                emptySet(),
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
                 Optional.of(OPTIONAL.with(V)),
@@ -267,6 +278,7 @@ public class MethodValidatorTest {
     @Test
     public void validateGivenMethodWithNoSharedTypeConstructorBetweenInputParameters() {
         Method toValidate = Method.of(
+                emptySet(),
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
                 Optional.of(OPTIONAL.with(V)),
@@ -293,6 +305,7 @@ public class MethodValidatorTest {
     @Test
     public void validateGivenMethodWithNoSharedTypeConstructorBetweenLeftInputParameterAndResultType() {
         Method toValidate = Method.of(
+                emptySet(),
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
                 Optional.of(COMPLETABLE_FUTURE.with(V)),
@@ -314,6 +327,7 @@ public class MethodValidatorTest {
     @Test
     public void validateGivenMethodWithAccumulationTypeConstructorThatIsAssignableToPermissiveAccumulationTypeConstructor() {
         Method toValidate = Method.of(
+                emptySet(),
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
                 Optional.of(FUNCTION.with(P, V)),
@@ -340,6 +354,7 @@ public class MethodValidatorTest {
     @Test
     public void validateGivenNonStaticInnerClassAsContainingClass() {
         Method toValidate = Method.of(
+                emptySet(),
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
                 Optional.of(OPTIONAL.with(V)),
@@ -361,6 +376,7 @@ public class MethodValidatorTest {
     @Test
     public void validateGivenStaticInnerClassAsContainingClass() {
         Method toValidate = Method.of(
+                emptySet(),
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
                 Optional.of(OPTIONAL.with(V)),
@@ -387,6 +403,7 @@ public class MethodValidatorTest {
     @Test
     public void validateGivenOuterClassAsContainingClass() {
         Method toValidate = Method.of(
+                emptySet(),
                 modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
                 Optional.of(OPTIONAL.with(V)),

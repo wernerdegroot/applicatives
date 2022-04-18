@@ -35,6 +35,20 @@ public class MethodConverterTest {
     private final TypeParameterName C = TypeParameterName.of("C");
 
     @Test
+    public void shouldExtractAnnotationsCorrectly() {
+        doTest(element -> {
+            Method method = MethodConverter.toDomain(element, Stream.of(TestAnnotation.class, SuppressWarnings.class).collect(toSet()));
+            assertEquals(
+                    Stream.of(
+                            FullyQualifiedName.of("nl.wernerdegroot.applicatives.processor.converters.TestAnnotation"),
+                            FullyQualifiedName.of("java.lang.SuppressWarnings")
+                    ).collect(toSet()),
+                    method.getAnnotations()
+            );
+        });
+    }
+
+    @Test
     public void shouldExtractModifiersCorrectly() {
         doTest(element -> {
             Method method = MethodConverter.toDomain(element);
@@ -50,7 +64,7 @@ public class MethodConverterTest {
     }
 
     @Test
-    public void shouldExtractGenericsCorrectly() {
+    public void shouldExtractTypeParametersCorrectly() {
         doTest(element -> {
             Method method = MethodConverter.toDomain(element);
             assertEquals(
