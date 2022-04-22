@@ -3,26 +3,40 @@ package nl.wernerdegroot.applicatives.processor.logging;
 import java.util.*;
 import java.util.function.Function;
 
+import static java.util.Collections.nCopies;
 import static java.util.stream.Collectors.joining;
 
 public class Log {
-    private final LoggingBackend loggingBackend;
+
+    private static final String LIST_ITEM_PREFIX = " - ";
+    private static final String INDENT = nCopies(LIST_ITEM_PREFIX.length(), " ").stream().collect(joining());
+
     private final String message;
     private final List<String> details = new ArrayList<>();
 
-    public Log(LoggingBackend loggingBackend, String message) {
-        this.loggingBackend = loggingBackend;
-        this.message = message;
+    public Log(String message, Object... arguments) {
+        this.message = String.format(message, arguments);
     }
 
-    public static Log of(LoggingBackend loggingBackend, String message) {
-        return new Log(loggingBackend, message);
+    public static Log of(String message, Object... arguments) {
+        return new Log(message, arguments);
     }
 
     public Log withDetails(Collection<String> toAdd) {
         toAdd.forEach(detail -> {
-            details.add(" - " + detail);
+            details.add(LIST_ITEM_PREFIX + detail);
         });
+
+        return this;
+    }
+
+    public Log withDetail(Log toAdd) {
+        details.add(LIST_ITEM_PREFIX + toAdd.message);
+
+        for (String detailToAdd : toAdd.details) {
+            details.add(INDENT + detailToAdd);
+        }
+
         return this;
     }
 
@@ -30,7 +44,7 @@ public class Log {
         String valuesAsString = values.isEmpty()
                 ? "none"
                 : values.stream().map(printer).collect(joining(", "));
-        details.add(" - " + detail + ": " + valuesAsString);
+        details.add(LIST_ITEM_PREFIX + detail + ": " + valuesAsString);
         return this;
     }
 
@@ -50,7 +64,7 @@ public class Log {
         return withDetail(detail, Collections.singletonList(value), Function.identity());
     }
 
-    public void append() {
+    public void append(LoggingBackend loggingBackend) {
         loggingBackend.log(message);
         details.forEach(loggingBackend::log);
     }
