@@ -67,51 +67,51 @@ public class CovariantProcessor extends AbstractProcessor {
 
                     Covariant covariantAnnotation = element.getAnnotation(Covariant.class);
 
-                    note("Found annotation of type '%s'", COVARIANT_CLASS_NAME)
+                    Log.of("Found annotation of type '%s'", COVARIANT_CLASS_NAME)
                             .withDetail("Class name", covariantAnnotation.className())
                             .withDetail("Method name for `lift`", covariantAnnotation.liftMethodName())
                             .withDetail("Maximum arity", covariantAnnotation.maxArity(), i -> Integer.toString(i))
-                            .append();
+                            .append(asNote());
 
                     Method method;
                     try {
                         method = MethodConverter.toDomain(element);
-                        note("Successfully transformed objects from 'javax.lang.model' to objects from 'nl.wernerdegroot.applicatives.processor.domain'").append();
+                        Log.of("Successfully transformed objects from 'javax.lang.model' to objects from 'nl.wernerdegroot.applicatives.processor.domain'").append(asNote());
                     } catch (Throwable e) {
                         // If we have issues transforming to `nl.wernerdegroot.applicatives.processor.domain`
                         // (which makes it a lot easier to log where the annotation was found) make
                         // sure we log the method's raw signature so the client can troubleshoot.
-                        error("Failure transforming from objects from 'javax.lang.model' to objects from 'nl.wernerdegroot.applicatives.processor.domain' for method with signature '%s'", element).append();
+                        Log.of("Failure transforming from objects from 'javax.lang.model' to objects from 'nl.wernerdegroot.applicatives.processor.domain' for method with signature '%s'", element).append(asError());
                         throw e;
                     }
 
-                    note("Found method '%s' in class '%s'", method.getName(), method.getContainingClass().getFullyQualifiedName().raw())
+                    Log.of("Found method '%s' in class '%s'", method.getName(), method.getContainingClass().getFullyQualifiedName().raw())
                             .withDetail("Modifiers", method.getModifiers(), Modifier::toString)
                             .withDetail("Return type", method.getReturnType(), TypeGenerator::generateFrom)
                             .withDetail("Parameters", method.getParameters(), ParameterGenerator::generateFrom)
                             .withDetail("Containing class", method.getContainingClass(), this::containingToString)
-                            .append();
+                            .append(asNote());
 
                     Validated<TemplateClassWithMethods> validatedTemplateClassWithMethods = TemplateClassWithMethodsValidator.validate(method.getContainingClass(), method);
                     if (!validatedTemplateClassWithMethods.isValid()) {
-                        error("Method '%s' in class '%s' does not meet all criteria for code generation", method.getName(), method.getContainingClass().getFullyQualifiedName().raw())
+                        Log.of("Method '%s' in class '%s' does not meet all criteria for code generation", method.getName(), method.getContainingClass().getFullyQualifiedName().raw())
                                 .withDetails(validatedTemplateClassWithMethods.getErrorMessages())
-                                .append();
+                                .append(asError());
                         return;
                     }
 
                     TemplateClassWithMethods validTemplateClassWithMethods = validatedTemplateClassWithMethods.getValue();
                     TemplateClass validTemplateClass = validTemplateClassWithMethods.getTemplateClass();
-                    note("Class meets all criteria for code generation")
+                    Log.of("Class meets all criteria for code generation")
                             .withDetail("Type parameters", validTemplateClass.getTypeParameters(), TypeParameterGenerator::generateFrom)
-                            .append();
+                            .append(asNote());
 
                     AccumulatorMethod validAccumulatorMethod = validTemplateClassWithMethods.getAccumulatorMethod();
-                    note("Method meets all criteria for code generation")
+                    Log.of("Method meets all criteria for code generation")
                             .withDetail("Accumulation type constructor", validAccumulatorMethod.getAccumulationTypeConstructor(), this::typeConstructorToString)
                             .withDetail("Permissive accumulation type constructor", validAccumulatorMethod.getPermissiveAccumulationTypeConstructor(), this::typeConstructorToString)
                             .withDetail("Input type constructor", validAccumulatorMethod.getInputTypeConstructor(), this::typeConstructorToString)
-                            .append();
+                            .append(asNote());
 
                     ConflictFree conflictFree = ConflictPrevention.preventConflicts(
                             validTemplateClass.getTypeParameters(),
@@ -120,7 +120,7 @@ public class CovariantProcessor extends AbstractProcessor {
                             validAccumulatorMethod.getInputTypeConstructor()
                     );
 
-                    note("Resolved (potential) conflicts between existing type parameters and new, generated type parameters")
+                    Log.of("Resolved (potential) conflicts between existing type parameters and new, generated type parameters")
                             .withDetail("Input type constructor arguments", conflictFree.getInputTypeConstructorArguments(), TypeParameterGenerator::generateFrom)
                             .withDetail("Result type constructor arguments", conflictFree.getResultTypeConstructorArguments(), TypeParameterGenerator::generateFrom)
                             .withDetail("Class type parameters", conflictFree.getClassTypeParameters(), TypeParameterGenerator::generateFrom)
@@ -131,7 +131,7 @@ public class CovariantProcessor extends AbstractProcessor {
                             .withDetail("Accumulation type constructor", conflictFree.getAccumulationTypeConstructor(), this::typeConstructorToString)
                             .withDetail("Permissive accumulation type constructor", conflictFree.getPermissiveAccumulationTypeConstructor(), this::typeConstructorToString)
                             .withDetail("Input type constructor", conflictFree.getInputTypeConstructor(), this::typeConstructorToString)
-                            .append();
+                            .append(asNote());
 
                     String generated = generator()
                             .withPackageName(method.getContainingClass().getPackageName())
@@ -151,22 +151,25 @@ public class CovariantProcessor extends AbstractProcessor {
                             .withMaxArity(covariantAnnotation.maxArity())
                             .generate();
 
-                    note("Done generating code").append();
+                    Log.of("Done generating code").append(asNote());
 
                     FullyQualifiedName fullyQualifiedNameOfGeneratedClass = method.getContainingClass().getPackageName().withClassName(ClassName.of(covariantAnnotation.className()));
                     try {
                         JavaFileObject builderFile = processingEnv.getFiler().createSourceFile(method.getContainingClass().getPackageName().withClassName(ClassName.of(covariantAnnotation.className())).raw());
                         try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
                             out.print(generated);
-                            note("Saved generated code to .java-file on disk (%s)", fullyQualifiedNameOfGeneratedClass.raw()).append();
+                            Log.of("Saved generated code to .java-file on disk (%s)", fullyQualifiedNameOfGeneratedClass.raw()).append(asNote());
                         }
                     } catch (IOException e) {
-                        error("Error saving generated code to .java-file on disk (%s)", fullyQualifiedNameOfGeneratedClass.raw()).append();
+                        Log.of("Error saving generated code to .java-file on disk (%s)", fullyQualifiedNameOfGeneratedClass.raw()).append(asError());
                     }
                 } catch (Throwable t) {
-                    error("Error occurred while processing annotation of type '%s': %s", COVARIANT_CLASS, t.getMessage()).append();
-                    error("(Enable verbose logging to see a stack trace)").append();
-                    printStackTraceToMessagerAsNote(t);
+                    Log.of("Error occurred while processing annotation of type '%s': %s", COVARIANT_CLASS, t.getMessage()).append(asError());
+                    if (shouldLogNotes()) {
+                        printStackTraceToMessagerAsNote(t);
+                    } else {
+                        Log.of("Enable verbose logging to see a stack trace.").append(asError());
+                    }
                 }
             });
         });
@@ -219,17 +222,11 @@ public class CovariantProcessor extends AbstractProcessor {
         return MessagerLoggingBackend.of(processingEnv, diagnosticKind);
     }
 
-    private Log error(String format, Object... arguments) {
-        return Log.of(
-                getMessagerLoggingBackend(Diagnostic.Kind.ERROR),
-                String.format(format, arguments)
-        );
+    private LoggingBackend asNote() {
+        return shouldLogNotes() ? getMessagerLoggingBackend(Diagnostic.Kind.NOTE) : NoLoggingBackend.INSTANCE;
     }
 
-    private Log note(String format, Object... arguments) {
-        return Log.of(
-                shouldLogNotes() ? getMessagerLoggingBackend(Diagnostic.Kind.NOTE) : NoLoggingBackend.INSTANCE,
-                String.format(format, arguments)
-        );
+    private LoggingBackend asError() {
+        return getMessagerLoggingBackend(Diagnostic.Kind.ERROR);
     }
 }
