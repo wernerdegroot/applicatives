@@ -61,6 +61,8 @@ public class MethodValidator {
         // Now that we are sure that there is a return type, extract it from the `Optional`:
         Type resultType = optionalResultType.get();
 
+        String name = method.getName();
+
         // We require exactly three parameters:
         int numberOfParameters = parameters.size();
         if (numberOfParameters != 3) {
@@ -94,6 +96,7 @@ public class MethodValidator {
 
         return Validated.valid(
                 AccumulatorMethod.of(
+                        name,
                         accumulationTypeConstructor,
                         permissiveAccumulationTypeConstructor,
                         inputTypeConstructor

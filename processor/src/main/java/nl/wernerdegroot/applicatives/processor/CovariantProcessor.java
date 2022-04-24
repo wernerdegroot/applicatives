@@ -3,15 +3,15 @@ package nl.wernerdegroot.applicatives.processor;
 import com.google.auto.service.AutoService;
 import nl.wernerdegroot.applicatives.processor.conflicts.ConflictFree;
 import nl.wernerdegroot.applicatives.processor.conflicts.ConflictPrevention;
+import nl.wernerdegroot.applicatives.processor.converters.ContainingClassConverter;
 import nl.wernerdegroot.applicatives.processor.converters.MethodConverter;
 import nl.wernerdegroot.applicatives.processor.domain.*;
-import nl.wernerdegroot.applicatives.processor.domain.containing.Containing;
+import nl.wernerdegroot.applicatives.processor.domain.containing.ContainingClass;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor;
 import nl.wernerdegroot.applicatives.processor.generator.ParameterGenerator;
 import nl.wernerdegroot.applicatives.processor.generator.TypeGenerator;
 import nl.wernerdegroot.applicatives.processor.generator.TypeParameterGenerator;
-import nl.wernerdegroot.applicatives.processor.generator.TypeParametersGenerator;
 import nl.wernerdegroot.applicatives.processor.logging.Log;
 import nl.wernerdegroot.applicatives.processor.logging.LoggingBackend;
 import nl.wernerdegroot.applicatives.processor.logging.MessagerLoggingBackend;
@@ -22,7 +22,6 @@ import nl.wernerdegroot.applicatives.runtime.Covariant;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
@@ -31,9 +30,7 @@ import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 
 import static nl.wernerdegroot.applicatives.processor.generator.Generator.generator;
@@ -68,13 +65,15 @@ public class CovariantProcessor extends AbstractProcessor {
                     Covariant covariantAnnotation = element.getAnnotation(Covariant.class);
 
                     Log.of("Found annotation of type '%s'", COVARIANT_CLASS_NAME)
-                            .withDetail("Class name", covariantAnnotation.className())
+                            .withDetail("Class name to generate", covariantAnnotation.className())
                             .withDetail("Method name for `lift`", covariantAnnotation.liftMethodName())
                             .withDetail("Maximum arity", covariantAnnotation.maxArity(), i -> Integer.toString(i))
                             .append(asNote());
 
+                    ContainingClass containingClass;
                     Method method;
                     try {
+                        containingClass = ContainingClassConverter.toDomain(element.getEnclosingElement());
                         method = MethodConverter.toDomain(element);
                         Log.of("Successfully transformed objects from 'javax.lang.model' to objects from 'nl.wernerdegroot.applicatives.processor.domain'").append(asNote());
                     } catch (Throwable e) {
@@ -85,16 +84,16 @@ public class CovariantProcessor extends AbstractProcessor {
                         throw e;
                     }
 
-                    Log.of("Found method '%s' in class '%s'", method.getName(), method.getContainingClass().getFullyQualifiedName().raw())
+                    Log.of("Found method '%s' in class '%s'", method.getName(), containingClass.getFullyQualifiedName().raw())
+                            .withDetail("Annotations", method.getAnnotations(), FullyQualifiedName::raw)
                             .withDetail("Modifiers", method.getModifiers(), Modifier::toString)
                             .withDetail("Return type", method.getReturnType(), TypeGenerator::generateFrom)
                             .withDetail("Parameters", method.getParameters(), ParameterGenerator::generateFrom)
-                            .withDetail("Containing class", method.getContainingClass(), this::containingToString)
                             .append(asNote());
 
-                    Validated<TemplateClassWithMethods> validatedTemplateClassWithMethods = TemplateClassWithMethodsValidator.validate(method.getContainingClass(), method);
+                    Validated<TemplateClassWithMethods> validatedTemplateClassWithMethods = TemplateClassWithMethodsValidator.validate(containingClass, method);
                     if (!validatedTemplateClassWithMethods.isValid()) {
-                        Log.of("Method '%s' in class '%s' does not meet all criteria for code generation", method.getName(), method.getContainingClass().getFullyQualifiedName().raw())
+                        Log.of("Method '%s' in class '%s' does not meet all criteria for code generation", method.getName(), containingClass.getFullyQualifiedName().raw())
                                 .withDetails(validatedTemplateClassWithMethods.getErrorMessages())
                                 .append(asError());
                         return;
@@ -108,6 +107,7 @@ public class CovariantProcessor extends AbstractProcessor {
 
                     AccumulatorMethod validAccumulatorMethod = validTemplateClassWithMethods.getAccumulatorMethod();
                     Log.of("Method meets all criteria for code generation")
+                            .withDetail("Name", validAccumulatorMethod.getName())
                             .withDetail("Accumulation type constructor", validAccumulatorMethod.getAccumulationTypeConstructor(), this::typeConstructorToString)
                             .withDetail("Permissive accumulation type constructor", validAccumulatorMethod.getPermissiveAccumulationTypeConstructor(), this::typeConstructorToString)
                             .withDetail("Input type constructor", validAccumulatorMethod.getInputTypeConstructor(), this::typeConstructorToString)
@@ -134,7 +134,7 @@ public class CovariantProcessor extends AbstractProcessor {
                             .append(asNote());
 
                     String generated = generator()
-                            .withPackageName(method.getContainingClass().getPackageName())
+                            .withPackageName(containingClass.getPackageName())
                             .withClassNameToGenerate(covariantAnnotation.className())
                             .withClassTypeParameters(conflictFree.getClassTypeParameters())
                             .withInputTypeConstructorArguments(conflictFree.getInputTypeConstructorArguments())
@@ -153,9 +153,9 @@ public class CovariantProcessor extends AbstractProcessor {
 
                     Log.of("Done generating code").append(asNote());
 
-                    FullyQualifiedName fullyQualifiedNameOfGeneratedClass = method.getContainingClass().getPackageName().withClassName(ClassName.of(covariantAnnotation.className()));
+                    FullyQualifiedName fullyQualifiedNameOfGeneratedClass = containingClass.getPackageName().withClassName(ClassName.of(covariantAnnotation.className()));
                     try {
-                        JavaFileObject builderFile = processingEnv.getFiler().createSourceFile(method.getContainingClass().getPackageName().withClassName(ClassName.of(covariantAnnotation.className())).raw());
+                        JavaFileObject builderFile = processingEnv.getFiler().createSourceFile(containingClass.getPackageName().withClassName(ClassName.of(covariantAnnotation.className())).raw());
                         try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
                             out.print(generated);
                             Log.of("Saved generated code to .java-file on disk (%s)", fullyQualifiedNameOfGeneratedClass.raw()).append(asNote());
@@ -176,16 +176,6 @@ public class CovariantProcessor extends AbstractProcessor {
         return true;
     }
 
-    private <C> Optional<C> getAnnotationProperty(AnnotationMirror annotationMirror, String classNamePropertyName, Class<C> clazz) {
-        return annotationMirror.getElementValues()
-                .entrySet()
-                .stream()
-                .filter(entry -> Objects.equals(entry.getKey().getSimpleName().toString(), classNamePropertyName))
-                .map(Map.Entry::getValue)
-                .map(annotationValue -> clazz.cast(annotationValue.getValue()))
-                .findAny();
-    }
-
     private void printStackTraceToMessagerAsNote(Throwable e) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
@@ -197,21 +187,6 @@ public class CovariantProcessor extends AbstractProcessor {
         Type substituteForPlaceholder = FullyQualifiedName.of("*").asType();
         Type typeConstructorAsType = typeConstructor.apply(substituteForPlaceholder);
         return TypeGenerator.generateFrom(typeConstructorAsType);
-    }
-
-    private String containingToString(Containing containing) {
-        return containing.match(
-                p -> p.getPackageName().raw(),
-                c -> {
-                    String parentAsString = containingToString(c.getParent());
-                    String classNameAsString = c.getClassName().raw();
-                    String typeParametersAsString = Optional.of(c.getTypeParameters())
-                            .filter(typeParameters -> !typeParameters.isEmpty())
-                            .map(TypeParametersGenerator::generatoreFrom)
-                            .orElse("");
-                    return parentAsString + "." + classNameAsString + typeParametersAsString;
-                }
-        );
     }
 
     private boolean shouldLogNotes() {

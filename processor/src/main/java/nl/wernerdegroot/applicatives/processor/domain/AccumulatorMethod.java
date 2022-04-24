@@ -1,24 +1,31 @@
 package nl.wernerdegroot.applicatives.processor.domain;
 
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor;
+import org.checkerframework.checker.units.qual.A;
 
 import java.util.List;
 import java.util.Objects;
 
 public class AccumulatorMethod {
 
+    private final String name;
     private final TypeConstructor accumulationTypeConstructor;
     private final TypeConstructor permissiveAccumulationTypeConstructor;
     private final TypeConstructor inputTypeConstructor;
 
-    public AccumulatorMethod(TypeConstructor accumulationTypeConstructor, TypeConstructor permissiveAccumulationTypeConstructor, TypeConstructor inputTypeConstructor) {
+    public AccumulatorMethod(String name, TypeConstructor accumulationTypeConstructor, TypeConstructor permissiveAccumulationTypeConstructor, TypeConstructor inputTypeConstructor) {
+        this.name = name;
         this.accumulationTypeConstructor = accumulationTypeConstructor;
         this.permissiveAccumulationTypeConstructor = permissiveAccumulationTypeConstructor;
         this.inputTypeConstructor = inputTypeConstructor;
     }
 
-    public static AccumulatorMethod of(TypeConstructor accumulationTypeConstructor, TypeConstructor permissiveAccumulationTypeConstructor, TypeConstructor inputTypeConstructor) {
-        return new AccumulatorMethod(accumulationTypeConstructor, permissiveAccumulationTypeConstructor, inputTypeConstructor);
+    public static AccumulatorMethod of(String name, TypeConstructor accumulationTypeConstructor, TypeConstructor permissiveAccumulationTypeConstructor, TypeConstructor inputTypeConstructor) {
+        return new AccumulatorMethod(name, accumulationTypeConstructor, permissiveAccumulationTypeConstructor, inputTypeConstructor);
+    }
+
+    public String getName() {
+        return name;
     }
 
     public TypeConstructor getAccumulationTypeConstructor() {
@@ -38,18 +45,19 @@ public class AccumulatorMethod {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AccumulatorMethod that = (AccumulatorMethod) o;
-        return getAccumulationTypeConstructor().equals(that.getAccumulationTypeConstructor()) && getPermissiveAccumulationTypeConstructor().equals(that.getPermissiveAccumulationTypeConstructor()) && getInputTypeConstructor().equals(that.getInputTypeConstructor());
+        return getName().equals(that.getName()) && getAccumulationTypeConstructor().equals(that.getAccumulationTypeConstructor()) && getPermissiveAccumulationTypeConstructor().equals(that.getPermissiveAccumulationTypeConstructor()) && getInputTypeConstructor().equals(that.getInputTypeConstructor());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getAccumulationTypeConstructor(), getPermissiveAccumulationTypeConstructor(), getInputTypeConstructor());
+        return Objects.hash(getName(), getAccumulationTypeConstructor(), getPermissiveAccumulationTypeConstructor(), getInputTypeConstructor());
     }
 
     @Override
     public String toString() {
         return "AccumulatorMethod{" +
-                "accumulationTypeConstructor=" + accumulationTypeConstructor +
+                "name='" + name + '\'' +
+                ", accumulationTypeConstructor=" + accumulationTypeConstructor +
                 ", permissiveAccumulationTypeConstructor=" + permissiveAccumulationTypeConstructor +
                 ", inputTypeConstructor=" + inputTypeConstructor +
                 '}';

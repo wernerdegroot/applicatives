@@ -3,15 +3,16 @@ package nl.wernerdegroot.applicatives.processor;
 import com.google.auto.service.AutoService;
 import nl.wernerdegroot.applicatives.processor.conflicts.ConflictFree;
 import nl.wernerdegroot.applicatives.processor.conflicts.ConflictPrevention;
+import nl.wernerdegroot.applicatives.processor.converters.ContainingClassConverter;
 import nl.wernerdegroot.applicatives.processor.converters.MethodConverter;
 import nl.wernerdegroot.applicatives.processor.domain.*;
-import nl.wernerdegroot.applicatives.processor.domain.containing.Containing;
+import nl.wernerdegroot.applicatives.processor.domain.containing.ContainingClass;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor;
+import nl.wernerdegroot.applicatives.processor.generator.ContainingClassGenerator;
 import nl.wernerdegroot.applicatives.processor.generator.ParameterGenerator;
 import nl.wernerdegroot.applicatives.processor.generator.TypeGenerator;
 import nl.wernerdegroot.applicatives.processor.generator.TypeParameterGenerator;
-import nl.wernerdegroot.applicatives.processor.generator.TypeParametersGenerator;
 import nl.wernerdegroot.applicatives.processor.logging.Log;
 import nl.wernerdegroot.applicatives.processor.logging.LoggingBackend;
 import nl.wernerdegroot.applicatives.processor.logging.MessagerLoggingBackend;
@@ -31,10 +32,8 @@ import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -53,11 +52,11 @@ public class CovariantBuilderProcessor extends AbstractProcessor {
     public static final String COVARIANT_BUILDER_CLASS_NAME = "nl.wernerdegroot.applicatives.runtime.Covariant$Builder";
     public static final Class<?> COVARIANT_BUILDER_CLASS;
 
-    public static final Set<Class<? extends Annotation>> SUPPORTED_ANNOTATIONS = Stream.of(
-            Accumulator.class
-    ).collect(toSet());
-
     public static final FullyQualifiedName ACCUMULATOR = FullyQualifiedName.of(Accumulator.class.getCanonicalName());
+
+    public static final Set<FullyQualifiedName> SUPPORTED_ANNOTATIONS = Stream.of(
+            ACCUMULATOR
+    ).collect(toSet());
 
     static {
         try {
@@ -84,34 +83,23 @@ public class CovariantBuilderProcessor extends AbstractProcessor {
                     Covariant.Builder covariantBuilderAnnotation = element.getAnnotation(Covariant.Builder.class);
 
                     Log.of("Found annotation of type '%s' on class '%s'", COVARIANT_BUILDER_CANONICAL_NAME, typeElement.getQualifiedName())
-                            .withDetail("Class name", covariantBuilderAnnotation.className())
+                            .withDetail("Class name to generate", covariantBuilderAnnotation.className())
                             .withDetail("Method name for `lift`", covariantBuilderAnnotation.liftMethodName())
                             .withDetail("Maximum arity", covariantBuilderAnnotation.maxArity(), i -> Integer.toString(i))
                             .append(asNote());
 
-                    Method accumulator;
+                    ContainingClass containingClass;
+                    List<Method> methods;
                     try {
-                        List<Method> methods = typeElement
+                        containingClass = ContainingClassConverter.toDomain(typeElement);
+                        methods = typeElement
                                 .getEnclosedElements()
                                 .stream()
                                 .filter(enclosedElement -> enclosedElement.getKind() == METHOD)
-                                .map(methodElement -> MethodConverter.toDomain(methodElement, SUPPORTED_ANNOTATIONS))
+                                .map(MethodConverter::toDomain)
+                                .filter(method -> method.hasAnnotationOf(SUPPORTED_ANNOTATIONS))
                                 .collect(toList());
 
-                        List<Method> accumulatorCandidates = methods
-                                .stream()
-                                .filter(method -> method.hasAnnotation(ACCUMULATOR))
-                                .collect(toList());
-
-                        if (accumulatorCandidates.size() == 0) {
-                            Log.of("No method in '%s' annotated with '%s'", typeElement.getQualifiedName(), ACCUMULATOR.raw()).append(asError());
-                            return;
-                        } else if (accumulatorCandidates.size() > 1) {
-                            Log.of("More than one method in '%s' annotated with '%s'", typeElement.getQualifiedName(), ACCUMULATOR.raw()).append(asError());
-                            return;
-                        }
-
-                        accumulator = accumulatorCandidates.iterator().next();
                         Log.of("Successfully transformed objects from 'javax.lang.model' to objects from 'nl.wernerdegroot.applicatives.processor.domain'").append(asNote());
                     } catch (Throwable e) {
                         // If we have issues transforming to `nl.wernerdegroot.applicatives.processor.domain`
@@ -121,16 +109,19 @@ public class CovariantBuilderProcessor extends AbstractProcessor {
                         throw e;
                     }
 
-                    Log.of("Found method '%s' in class '%s'", accumulator.getName(), accumulator.getContainingClass().getFullyQualifiedName().raw())
-                            .withDetail("Modifiers", accumulator.getModifiers(), Modifier::toString)
-                            .withDetail("Return type", accumulator.getReturnType(), TypeGenerator::generateFrom)
-                            .withDetail("Parameters", accumulator.getParameters(), ParameterGenerator::generateFrom)
-                            .withDetail("Containing class", accumulator.getContainingClass(), this::containingToString)
-                            .append(asNote());
+                    Log.of("Found class '%s'", ContainingClassGenerator.generateFrom(containingClass)).append(asNote());
+                    methods.forEach(method -> {
+                        Log.of("Found method '%s' in class '%s'", method.getName(), containingClass.getFullyQualifiedName().raw())
+                                .withDetail("Annotations", method.getAnnotations(), FullyQualifiedName::raw)
+                                .withDetail("Modifiers", method.getModifiers(), Modifier::toString)
+                                .withDetail("Return type", method.getReturnType(), TypeGenerator::generateFrom)
+                                .withDetail("Parameters", method.getParameters(), ParameterGenerator::generateFrom)
+                                .append(asNote());
+                    });
 
-                    Validated<TemplateClassWithMethods> validatedTemplateClassWithMethods = TemplateClassWithMethodsValidator.validate(accumulator.getContainingClass(), accumulator);
+                    Validated<TemplateClassWithMethods> validatedTemplateClassWithMethods = TemplateClassWithMethodsValidator.validate(containingClass, methods);
                     if (!validatedTemplateClassWithMethods.isValid()) {
-                        Log.of("Method '%s' in class '%s' does not meet all criteria for code generation", accumulator.getName(), accumulator.getContainingClass().getFullyQualifiedName().raw())
+                        Log.of("Class '%s' does not meet all criteria for code generation", containingClass.getFullyQualifiedName().raw())
                                 .withDetails(validatedTemplateClassWithMethods.getErrorMessages())
                                 .append(asError());
                         return;
@@ -143,7 +134,8 @@ public class CovariantBuilderProcessor extends AbstractProcessor {
                             .append(asNote());
 
                     AccumulatorMethod validAccumulatorMethod = validTemplateClassWithMethods.getAccumulatorMethod();
-                    Log.of("Method meets all criteria for code generation")
+                    Log.of("Accumulator method meets all criteria for code generation")
+                            .withDetail("Name", validAccumulatorMethod.getName())
                             .withDetail("Accumulation type constructor", validAccumulatorMethod.getAccumulationTypeConstructor(), this::typeConstructorToString)
                             .withDetail("Permissive accumulation type constructor", validAccumulatorMethod.getPermissiveAccumulationTypeConstructor(), this::typeConstructorToString)
                             .withDetail("Input type constructor", validAccumulatorMethod.getInputTypeConstructor(), this::typeConstructorToString)
@@ -170,12 +162,12 @@ public class CovariantBuilderProcessor extends AbstractProcessor {
                             .append(asNote());
 
                     String generated = generator()
-                            .withPackageName(accumulator.getContainingClass().getPackageName())
+                            .withPackageName(containingClass.getPackageName())
                             .withClassNameToGenerate(covariantBuilderAnnotation.className())
                             .withClassTypeParameters(conflictFree.getClassTypeParameters())
                             .withInputTypeConstructorArguments(conflictFree.getInputTypeConstructorArguments())
                             .withResultTypeConstructorArgument(conflictFree.getResultTypeConstructorArguments())
-                            .withMethodName(accumulator.getName())
+                            .withMethodName(validAccumulatorMethod.getName())
                             .withInputParameterNames(conflictFree.getInputParameterNames())
                             .withSelfParameterName(conflictFree.getSelfParameterName())
                             .withCombinatorParameterName(conflictFree.getCombinatorParameterName())
@@ -189,9 +181,9 @@ public class CovariantBuilderProcessor extends AbstractProcessor {
 
                     Log.of("Done generating code").append(asNote());
 
-                    FullyQualifiedName fullyQualifiedNameOfGeneratedClass = accumulator.getContainingClass().getPackageName().withClassName(ClassName.of(covariantBuilderAnnotation.className()));
+                    FullyQualifiedName fullyQualifiedNameOfGeneratedClass = containingClass.getPackageName().withClassName(ClassName.of(covariantBuilderAnnotation.className()));
                     try {
-                        JavaFileObject builderFile = processingEnv.getFiler().createSourceFile(accumulator.getContainingClass().getPackageName().withClassName(ClassName.of(covariantBuilderAnnotation.className())).raw());
+                        JavaFileObject builderFile = processingEnv.getFiler().createSourceFile(containingClass.getPackageName().withClassName(ClassName.of(covariantBuilderAnnotation.className())).raw());
                         try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
                             out.print(generated);
                             Log.of("Saved generated code to .java-file on disk (%s)", fullyQualifiedNameOfGeneratedClass.raw()).append(asNote());
@@ -240,20 +232,5 @@ public class CovariantBuilderProcessor extends AbstractProcessor {
         Type substituteForPlaceholder = FullyQualifiedName.of("*").asType();
         Type typeConstructorAsType = typeConstructor.apply(substituteForPlaceholder);
         return TypeGenerator.generateFrom(typeConstructorAsType);
-    }
-
-    private String containingToString(Containing containing) {
-        return containing.match(
-                p -> p.getPackageName().raw(),
-                c -> {
-                    String parentAsString = containingToString(c.getParent());
-                    String classNameAsString = c.getClassName().raw();
-                    String typeParametersAsString = Optional.of(c.getTypeParameters())
-                            .filter(typeParameters -> !typeParameters.isEmpty())
-                            .map(TypeParametersGenerator::generatoreFrom)
-                            .orElse("");
-                    return parentAsString + "." + classNameAsString + typeParametersAsString;
-                }
-        );
     }
 }

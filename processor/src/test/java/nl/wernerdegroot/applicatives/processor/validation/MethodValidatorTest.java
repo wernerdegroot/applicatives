@@ -1,7 +1,6 @@
 package nl.wernerdegroot.applicatives.processor.validation;
 
 import nl.wernerdegroot.applicatives.processor.domain.*;
-import nl.wernerdegroot.applicatives.processor.domain.containing.ContainingClass;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -9,7 +8,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toSet;
 import static nl.wernerdegroot.applicatives.processor.domain.Modifier.*;
@@ -40,8 +38,7 @@ public class MethodValidatorTest {
                         Parameter.of(OPTIONAL.with(T), "left"),
                         Parameter.of(OPTIONAL.with(U), "right"),
                         Parameter.of(BI_FUNCTION.with(T.asType().contravariant(), U.asType().contravariant(), V.asType().covariant()), "compose")
-                ),
-                ContainingClass.of(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"))
+                )
         );
 
         Validated<AccumulatorMethod> expected = Validated.invalid("Method needs to return something");
@@ -62,8 +59,7 @@ public class MethodValidatorTest {
                         Parameter.of(OPTIONAL.with(T), "left"),
                         Parameter.of(OPTIONAL.with(U), "right"),
                         Parameter.of(BI_FUNCTION.with(T.asType().contravariant(), U.asType().contravariant(), V.asType().covariant()), "compose")
-                ),
-                ContainingClass.of(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"))
+                )
         );
 
         Validated<AccumulatorMethod> expected = Validated.invalid("Method is static and cannot implement an abstract method");
@@ -84,8 +80,7 @@ public class MethodValidatorTest {
                         Parameter.of(OPTIONAL.with(T), "left"),
                         Parameter.of(OPTIONAL.with(U), "right"),
                         Parameter.of(BI_FUNCTION.with(T.asType().contravariant(), U.asType().contravariant(), V.asType().covariant()), "compose")
-                ),
-                ContainingClass.of(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"))
+                )
         );
 
         Validated<AccumulatorMethod> expected = Validated.invalid("Method is private and cannot implement an abstract method");
@@ -106,8 +101,7 @@ public class MethodValidatorTest {
                         Parameter.of(OPTIONAL.with(T), "left"),
                         Parameter.of(OPTIONAL.with(U), "right"),
                         Parameter.of(BI_FUNCTION.with(T.asType().contravariant(), U.asType().contravariant(), V.asType().covariant()), "compose")
-                ),
-                ContainingClass.of(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"))
+                )
         );
 
         Validated<AccumulatorMethod> expected = Validated.invalid("The type parameters need to be unbounded");
@@ -128,12 +122,12 @@ public class MethodValidatorTest {
                         Parameter.of(OPTIONAL.with(T), "left"),
                         Parameter.of(OPTIONAL.with(U), "right"),
                         Parameter.of(BI_FUNCTION.with(T.asType().contravariant(), U.asType().contravariant(), V.asType().covariant()), "compose")
-                ),
-                ContainingClass.of(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"))
+                )
         );
 
         Validated<AccumulatorMethod> expected = Validated.valid(
                 AccumulatorMethod.of(
+                        "myFunction",
                         OPTIONAL.asTypeConstructor(),
                         OPTIONAL.asTypeConstructor(),
                         OPTIONAL.asTypeConstructor()
@@ -156,8 +150,7 @@ public class MethodValidatorTest {
                         Parameter.of(OPTIONAL.with(T), "left"),
                         Parameter.of(OPTIONAL.with(T), "right"),
                         Parameter.of(BI_FUNCTION.with(T, T, T), "compose")
-                ),
-                ContainingClass.of(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"))
+                )
         );
 
         Validated<AccumulatorMethod> expected = Validated.invalid("Method requires exactly 3 type parameters, but found 1");
@@ -178,8 +171,7 @@ public class MethodValidatorTest {
                         Parameter.of(FUNCTION.with(P, T), "left"),
                         Parameter.of(FUNCTION.with(P, U), "right"),
                         Parameter.of(BI_FUNCTION.with(T.asType().contravariant(), U.asType().contravariant(), V.asType().covariant()), "compose")
-                ),
-                ContainingClass.of(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Functions"))
+                )
         );
 
         Validated<AccumulatorMethod> expected = Validated.invalid("Method requires exactly 3 type parameters, but found 4");
@@ -199,8 +191,7 @@ public class MethodValidatorTest {
                 asList(
                         Parameter.of(OPTIONAL.with(T), "left"),
                         Parameter.of(OPTIONAL.with(U), "right")
-                ),
-                ContainingClass.of(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"))
+                )
         );
 
         Validated<AccumulatorMethod> expected = Validated.invalid("Method requires exactly 3 parameters, but found 2");
@@ -222,8 +213,7 @@ public class MethodValidatorTest {
                         Parameter.of(COMPLETABLE_FUTURE.with(U), "right"),
                         Parameter.of(BI_FUNCTION.with(T.asType().contravariant(), U.asType().contravariant(), V.asType().covariant()), "compose"),
                         Parameter.of(EXECUTOR, "executor")
-                ),
-                ContainingClass.of(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Futures"))
+                )
         );
 
         Validated<AccumulatorMethod> expected = Validated.invalid("Method requires exactly 3 parameters, but found 4");
@@ -244,8 +234,7 @@ public class MethodValidatorTest {
                         Parameter.of(OPTIONAL.with(T), "left"),
                         Parameter.of(OPTIONAL.with(U), "right"),
                         Parameter.of(OBJECT, "someObject")
-                ),
-                ContainingClass.of(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"))
+                )
         );
 
         Validated<AccumulatorMethod> expected = Validated.invalid("Expected third argument to be a java.util.function.BiFunction<? super T, ? super U, ? extends V> but was java.lang.Object");
@@ -266,8 +255,7 @@ public class MethodValidatorTest {
                         Parameter.of(OPTIONAL.with(T), "left"),
                         Parameter.of(OPTIONAL.with(U), "right"),
                         Parameter.of(BI_FUNCTION.with(W, W, W), "compose")
-                ),
-                ContainingClass.of(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"))
+                )
         );
 
         Validated<AccumulatorMethod> expected = Validated.invalid("Expected third argument to be a java.util.function.BiFunction<? super T, ? super U, ? extends V> but was java.util.function.BiFunction<W, W, W>");
@@ -288,12 +276,12 @@ public class MethodValidatorTest {
                         Parameter.of(OPTIONAL.with(T), "left"),
                         Parameter.of(COMPLETABLE_FUTURE.with(U), "right"),
                         Parameter.of(BI_FUNCTION.with(T.asType().contravariant(), U.asType().contravariant(), V.asType().covariant()), "compose")
-                ),
-                ContainingClass.of(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Weird"))
+                )
         );
 
         Validated<AccumulatorMethod> expected = Validated.valid(
                 AccumulatorMethod.of(
+                        "myFunction",
                         OPTIONAL.asTypeConstructor(),
                         OPTIONAL.asTypeConstructor(),
                         COMPLETABLE_FUTURE.asTypeConstructor()
@@ -316,8 +304,7 @@ public class MethodValidatorTest {
                         Parameter.of(OPTIONAL.with(T), "left"),
                         Parameter.of(OPTIONAL.with(U), "right"),
                         Parameter.of(BI_FUNCTION.with(T.asType().contravariant(), U.asType().contravariant(), V.asType().covariant()), "compose")
-                ),
-                ContainingClass.of(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Optionals"), asList(P.asTypeParameter()))
+                )
         );
 
         Validated<AccumulatorMethod> expected = Validated.invalid("No shared type constructor between parameters (java.util.Optional<T> and java.util.Optional<U>) and result (java.util.concurrent.CompletableFuture<V>)");
@@ -338,12 +325,12 @@ public class MethodValidatorTest {
                         Parameter.of(FUNCTION.with(P.asType().contravariant(), T.asType().covariant()), "left"),
                         Parameter.of(FUNCTION.with(P.asType().contravariant(), U.asType().covariant()), "right"),
                         Parameter.of(BI_FUNCTION.with(T.asType().contravariant(), U.asType().contravariant(), V.asType().covariant()), "compose")
-                ),
-                ContainingClass.of(PackageName.of("nl.wernerdegroot.applicatives"), ClassName.of("Functions"), asList(P.asTypeParameter()))
+                )
         );
 
         Validated<AccumulatorMethod> expected = Validated.valid(
                 AccumulatorMethod.of(
+                        "myFunction",
                         FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()),
                         FUNCTION.with(P.asTypeConstructor().contravariant(), placeholder().covariant()),
                         FUNCTION.with(P.asTypeConstructor().contravariant(), placeholder().covariant())
