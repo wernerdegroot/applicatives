@@ -1,9 +1,7 @@
 package nl.wernerdegroot.applicatives.processor.domain;
 
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor;
-import org.checkerframework.checker.units.qual.A;
 
-import java.util.List;
 import java.util.Objects;
 
 public class AccumulatorMethod {

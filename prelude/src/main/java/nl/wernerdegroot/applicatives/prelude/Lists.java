@@ -2,8 +2,11 @@ package nl.wernerdegroot.applicatives.prelude;
 
 import nl.wernerdegroot.applicatives.runtime.Accumulator;
 import nl.wernerdegroot.applicatives.runtime.Covariant;
+import nl.wernerdegroot.applicatives.runtime.Initializer;
 
+import java.sql.Array;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
 
@@ -15,6 +18,13 @@ import java.util.function.BiFunction;
  */
 @Covariant.Builder(className = "ListsApplicative")
 public class Lists implements ListsApplicative {
+
+    @Initializer
+    public <A> ArrayList<A> singleton(A value) {
+        ArrayList<A> result = new ArrayList<>(1);
+        result.add(value);
+        return result;
+    }
 
     // The fact that we are returning an `ArrayList` (implementation detail)
     // is a temporary situation while we allow the left type constructor and
