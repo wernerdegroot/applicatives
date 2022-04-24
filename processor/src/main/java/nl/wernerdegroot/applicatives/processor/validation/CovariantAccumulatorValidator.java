@@ -1,6 +1,6 @@
 package nl.wernerdegroot.applicatives.processor.validation;
 
-import nl.wernerdegroot.applicatives.processor.domain.AccumulatorMethod;
+import nl.wernerdegroot.applicatives.processor.domain.CovariantAccumulator;
 import nl.wernerdegroot.applicatives.processor.domain.Method;
 import nl.wernerdegroot.applicatives.processor.domain.Parameter;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameter;
@@ -17,9 +17,9 @@ import static nl.wernerdegroot.applicatives.processor.domain.type.Type.BI_FUNCTI
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.OBJECT;
 import static nl.wernerdegroot.applicatives.processor.generator.TypeGenerator.generateFrom;
 
-public class MethodValidator {
+public class CovariantAccumulatorValidator {
 
-    public static Validated<AccumulatorMethod> validate(Method method) {
+    public static Validated<CovariantAccumulator> validate(Method method) {
         if (method.getModifiers().contains(STATIC)) {
             return Validated.invalid("Method is static and cannot implement an abstract method");
         }
@@ -95,7 +95,7 @@ public class MethodValidator {
         }
 
         return Validated.valid(
-                AccumulatorMethod.of(
+                CovariantAccumulator.of(
                         name,
                         accumulationTypeConstructor,
                         permissiveAccumulationTypeConstructor,
