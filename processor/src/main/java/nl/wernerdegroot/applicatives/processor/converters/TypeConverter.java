@@ -2,6 +2,7 @@ package nl.wernerdegroot.applicatives.processor.converters;
 
 import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
+import nl.wernerdegroot.applicatives.processor.domain.type.ConcreteType;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import nl.wernerdegroot.applicatives.processor.domain.type.TypeArgument;
 
@@ -74,42 +75,7 @@ public class TypeConverter {
 
                     @Override
                     public Type visitDeclared(DeclaredType declaredType, Void unused) {
-                        if (declaredType.getEnclosingType().getKind() != TypeKind.NONE) {
-                            throw new IllegalArgumentException("Use of (non-static) inner classes is currently not supported.");
-                        }
-
-                        Element element = declaredType.asElement();
-                        TypeElement typeElement = (TypeElement) element;
-                        FullyQualifiedName fullyQualifiedName = FullyQualifiedName.of(typeElement.getQualifiedName().toString());
-                        List<TypeArgument> typeArguments = declaredType.getTypeArguments()
-                                .stream()
-                                .map(typeArgument ->
-                                        typeArgument.accept(
-                                                new SimpleTypeVisitor8<TypeArgument, Void>() {
-
-                                                    @Override
-                                                    public TypeArgument visitWildcard(WildcardType wildcardType, Void unused) {
-                                                        if (wildcardType.getExtendsBound() != null && wildcardType.getSuperBound() != null) {
-                                                            throw new IllegalArgumentException(String.format("Unexpected wildcard type %s with both lower bound %s and upper bound %s", wildcardType, wildcardType.getSuperBound(), wildcardType.getExtendsBound()));
-                                                        } else if (wildcardType.getExtendsBound() != null) {
-                                                            return TypeArgument.of(COVARIANT, toDomain(wildcardType.getExtendsBound()));
-                                                        } else if (wildcardType.getSuperBound() != null) {
-                                                            return TypeArgument.of(CONTRAVARIANT, toDomain(wildcardType.getSuperBound()));
-                                                        } else {
-                                                            return TypeArgument.of(COVARIANT, OBJECT);
-                                                        }
-                                                    }
-
-                                                    @Override
-                                                    protected TypeArgument defaultAction(TypeMirror type, Void unused) {
-                                                        return TypeArgument.of(INVARIANT, toDomain(type));
-                                                    }
-                                                },
-                                                null
-                                        )
-                                )
-                                .collect(toList());
-                        return Type.concrete(fullyQualifiedName, typeArguments);
+                        return toDomain(declaredType);
                     }
 
                     @Override
@@ -144,5 +110,44 @@ public class TypeConverter {
                 },
                 null
         );
+    }
+
+    public static ConcreteType toDomain(DeclaredType declaredType) {
+        if (declaredType.getEnclosingType().getKind() != TypeKind.NONE) {
+            throw new IllegalArgumentException("Use of (non-static) inner classes is currently not supported.");
+        }
+
+        Element element = declaredType.asElement();
+        TypeElement typeElement = (TypeElement) element;
+        FullyQualifiedName fullyQualifiedName = FullyQualifiedName.of(typeElement.getQualifiedName().toString());
+        List<TypeArgument> typeArguments = declaredType.getTypeArguments()
+                .stream()
+                .map(typeArgument ->
+                        typeArgument.accept(
+                                new SimpleTypeVisitor8<TypeArgument, Void>() {
+
+                                    @Override
+                                    public TypeArgument visitWildcard(WildcardType wildcardType, Void unused) {
+                                        if (wildcardType.getExtendsBound() != null && wildcardType.getSuperBound() != null) {
+                                            throw new IllegalArgumentException(String.format("Unexpected wildcard type %s with both lower bound %s and upper bound %s", wildcardType, wildcardType.getSuperBound(), wildcardType.getExtendsBound()));
+                                        } else if (wildcardType.getExtendsBound() != null) {
+                                            return TypeArgument.of(COVARIANT, toDomain(wildcardType.getExtendsBound()));
+                                        } else if (wildcardType.getSuperBound() != null) {
+                                            return TypeArgument.of(CONTRAVARIANT, toDomain(wildcardType.getSuperBound()));
+                                        } else {
+                                            return TypeArgument.of(COVARIANT, OBJECT);
+                                        }
+                                    }
+
+                                    @Override
+                                    protected TypeArgument defaultAction(TypeMirror type, Void unused) {
+                                        return TypeArgument.of(INVARIANT, toDomain(type));
+                                    }
+                                },
+                                null
+                        )
+                )
+                .collect(toList());
+        return Type.concrete(fullyQualifiedName, typeArguments);
     }
 }
