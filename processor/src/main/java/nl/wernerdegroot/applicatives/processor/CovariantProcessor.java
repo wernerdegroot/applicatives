@@ -91,21 +91,21 @@ public class CovariantProcessor extends AbstractProcessor {
                         return;
                     }
 
-                    TemplateClassWithMethods validTemplateClassWithMethods = validatedTemplateClassWithMethods.getValue();
+                    TemplateClassWithMethods templateClassWithMethods = validatedTemplateClassWithMethods.getValue();
                     Log.of("All criteria for code generation satisfied")
-                            .withDetail("Class type parameters", validTemplateClassWithMethods.getClassTypeParameters(), TypeParameterGenerator::generateFrom)
-                            .withDetail("Accumulation type constructor", validTemplateClassWithMethods.getAccumulationTypeConstructor(), this::typeConstructorToString)
-                            .withDetail("Permissive accumulation type constructor", validTemplateClassWithMethods.getPermissiveAccumulationTypeConstructor(), this::typeConstructorToString)
-                            .withDetail("Input type constructor", validTemplateClassWithMethods.getInputTypeConstructor(), this::typeConstructorToString)
-                            .withDetail("Name of initializer method", validTemplateClassWithMethods.getInitializerMethodName())
-                            .withDetail("Name of accumulator method", validTemplateClassWithMethods.getAccumulatorMethodName())
+                            .withDetail("Class type parameters", templateClassWithMethods.getClassTypeParameters(), TypeParameterGenerator::generateFrom)
+                            .withDetail("Accumulation type constructor", templateClassWithMethods.getAccumulationTypeConstructor(), this::typeConstructorToString)
+                            .withDetail("Permissive accumulation type constructor", templateClassWithMethods.getPermissiveAccumulationTypeConstructor(), this::typeConstructorToString)
+                            .withDetail("Input type constructor", templateClassWithMethods.getInputTypeConstructor(), this::typeConstructorToString)
+                            .withDetail("Name of initializer method", templateClassWithMethods.getInitializerMethodName())
+                            .withDetail("Name of accumulator method", templateClassWithMethods.getAccumulatorMethodName())
                             .append(asNote());
 
                     ConflictFree conflictFree = ConflictPrevention.preventConflicts(
-                            validTemplateClassWithMethods.getClassTypeParameters(),
-                            validTemplateClassWithMethods.getAccumulationTypeConstructor(),
-                            validTemplateClassWithMethods.getPermissiveAccumulationTypeConstructor(),
-                            validTemplateClassWithMethods.getInputTypeConstructor()
+                            templateClassWithMethods.getClassTypeParameters(),
+                            templateClassWithMethods.getAccumulationTypeConstructor(),
+                            templateClassWithMethods.getPermissiveAccumulationTypeConstructor(),
+                            templateClassWithMethods.getInputTypeConstructor()
                     );
 
                     Log.of("Resolved (potential) conflicts between existing type parameters and new, generated type parameters")
@@ -127,7 +127,7 @@ public class CovariantProcessor extends AbstractProcessor {
                             .withClassTypeParameters(conflictFree.getClassTypeParameters())
                             .withInputTypeConstructorArguments(conflictFree.getInputTypeConstructorArguments())
                             .withResultTypeConstructorArgument(conflictFree.getResultTypeConstructorArguments())
-                            .withMethodName(validTemplateClassWithMethods.getAccumulatorMethodName())
+                            .withMethodName(templateClassWithMethods.getAccumulatorMethodName())
                             .withInputParameterNames(conflictFree.getInputParameterNames())
                             .withSelfParameterName(conflictFree.getSelfParameterName())
                             .withCombinatorParameterName(conflictFree.getCombinatorParameterName())
