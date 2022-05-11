@@ -5,7 +5,10 @@ import nl.wernerdegroot.applicatives.processor.conflicts.ConflictFree;
 import nl.wernerdegroot.applicatives.processor.conflicts.ConflictPrevention;
 import nl.wernerdegroot.applicatives.processor.converters.ContainingClassConverter;
 import nl.wernerdegroot.applicatives.processor.converters.MethodConverter;
-import nl.wernerdegroot.applicatives.processor.domain.*;
+import nl.wernerdegroot.applicatives.processor.domain.ClassName;
+import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
+import nl.wernerdegroot.applicatives.processor.domain.Method;
+import nl.wernerdegroot.applicatives.processor.domain.Modifier;
 import nl.wernerdegroot.applicatives.processor.domain.containing.ContainingClass;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor;
@@ -17,9 +20,9 @@ import nl.wernerdegroot.applicatives.processor.logging.Log;
 import nl.wernerdegroot.applicatives.processor.logging.LoggingBackend;
 import nl.wernerdegroot.applicatives.processor.logging.MessagerLoggingBackend;
 import nl.wernerdegroot.applicatives.processor.logging.NoLoggingBackend;
+import nl.wernerdegroot.applicatives.processor.validation.TemplateClassWithMethods;
 import nl.wernerdegroot.applicatives.processor.validation.TemplateClassWithMethodsValidator;
 import nl.wernerdegroot.applicatives.processor.validation.Validated;
-import nl.wernerdegroot.applicatives.runtime.Accumulator;
 import nl.wernerdegroot.applicatives.runtime.Covariant;
 
 import javax.annotation.processing.*;
@@ -40,34 +43,19 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static javax.lang.model.element.ElementKind.METHOD;
+import static nl.wernerdegroot.applicatives.processor.Classes.*;
 import static nl.wernerdegroot.applicatives.processor.generator.Generator.generator;
 
 @SupportedOptions({Options.VERBOSE_ARGUMENT})
-@SupportedAnnotationTypes(CovariantBuilderProcessor.COVARIANT_BUILDER_CANONICAL_NAME)
+@SupportedAnnotationTypes(COVARIANT_BUILDER_CANONICAL_NAME)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @AutoService(Processor.class)
 public class CovariantBuilderProcessor extends AbstractProcessor {
 
-    public static final String COVARIANT_BUILDER_CANONICAL_NAME = "nl.wernerdegroot.applicatives.runtime.Covariant.Builder";
-    public static final String COVARIANT_BUILDER_CLASS_NAME = "nl.wernerdegroot.applicatives.runtime.Covariant$Builder";
-    public static final Class<?> COVARIANT_BUILDER_CLASS;
-
-    public static final FullyQualifiedName ACCUMULATOR = FullyQualifiedName.of(Accumulator.class.getCanonicalName());
-
     public static final Set<FullyQualifiedName> SUPPORTED_ANNOTATIONS = Stream.of(
+            INITIALIZER,
             ACCUMULATOR
     ).collect(toSet());
-
-    static {
-        try {
-            COVARIANT_BUILDER_CLASS = Class.forName(COVARIANT_BUILDER_CLASS_NAME);
-            if (!Objects.equals(COVARIANT_BUILDER_CANONICAL_NAME, COVARIANT_BUILDER_CLASS.getCanonicalName())) {
-                throw new RuntimeException(String.format("Can't find annotation class %s", COVARIANT_BUILDER_CANONICAL_NAME));
-            }
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(String.format("Can't find annotation class %s", COVARIANT_BUILDER_CLASS_NAME), e);
-        }
-    }
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
@@ -127,25 +115,21 @@ public class CovariantBuilderProcessor extends AbstractProcessor {
                         return;
                     }
 
-                    TemplateClassWithMethods validTemplateClassWithMethods = validatedTemplateClassWithMethods.getValue();
-                    TemplateClass validTemplateClass = validTemplateClassWithMethods.getTemplateClass();
-                    Log.of("Class meets all criteria for code generation")
-                            .withDetail("Type parameters", validTemplateClass.getTypeParameters(), TypeParameterGenerator::generateFrom)
-                            .append(asNote());
-
-                    AccumulatorMethod validAccumulatorMethod = validTemplateClassWithMethods.getAccumulatorMethod();
-                    Log.of("Accumulator method meets all criteria for code generation")
-                            .withDetail("Name", validAccumulatorMethod.getName())
-                            .withDetail("Accumulation type constructor", validAccumulatorMethod.getAccumulationTypeConstructor(), this::typeConstructorToString)
-                            .withDetail("Permissive accumulation type constructor", validAccumulatorMethod.getPermissiveAccumulationTypeConstructor(), this::typeConstructorToString)
-                            .withDetail("Input type constructor", validAccumulatorMethod.getInputTypeConstructor(), this::typeConstructorToString)
+                    TemplateClassWithMethods templateClassWithMethods = validatedTemplateClassWithMethods.getValue();
+                    Log.of("All criteria for code generation satisfied")
+                            .withDetail("Class type parameters", templateClassWithMethods.getClassTypeParameters(), TypeParameterGenerator::generateFrom)
+                            .withDetail("Accumulation type constructor", templateClassWithMethods.getAccumulationTypeConstructor(), this::typeConstructorToString)
+                            .withDetail("Permissive accumulation type constructor", templateClassWithMethods.getPermissiveAccumulationTypeConstructor(), this::typeConstructorToString)
+                            .withDetail("Input type constructor", templateClassWithMethods.getInputTypeConstructor(), this::typeConstructorToString)
+                            .withDetail("Name of initializer method", templateClassWithMethods.getInitializerMethodName())
+                            .withDetail("Name of accumulator method", templateClassWithMethods.getAccumulatorMethodName())
                             .append(asNote());
 
                     ConflictFree conflictFree = ConflictPrevention.preventConflicts(
-                            validTemplateClass.getTypeParameters(),
-                            validAccumulatorMethod.getAccumulationTypeConstructor(),
-                            validAccumulatorMethod.getPermissiveAccumulationTypeConstructor(),
-                            validAccumulatorMethod.getInputTypeConstructor()
+                            templateClassWithMethods.getClassTypeParameters(),
+                            templateClassWithMethods.getAccumulationTypeConstructor(),
+                            templateClassWithMethods.getPermissiveAccumulationTypeConstructor(),
+                            templateClassWithMethods.getInputTypeConstructor()
                     );
 
                     Log.of("Resolved (potential) conflicts between existing type parameters and new, generated type parameters")
@@ -167,7 +151,7 @@ public class CovariantBuilderProcessor extends AbstractProcessor {
                             .withClassTypeParameters(conflictFree.getClassTypeParameters())
                             .withInputTypeConstructorArguments(conflictFree.getInputTypeConstructorArguments())
                             .withResultTypeConstructorArgument(conflictFree.getResultTypeConstructorArguments())
-                            .withMethodName(validAccumulatorMethod.getName())
+                            .withMethodName(templateClassWithMethods.getAccumulatorMethodName())
                             .withInputParameterNames(conflictFree.getInputParameterNames())
                             .withSelfParameterName(conflictFree.getSelfParameterName())
                             .withCombinatorParameterName(conflictFree.getCombinatorParameterName())

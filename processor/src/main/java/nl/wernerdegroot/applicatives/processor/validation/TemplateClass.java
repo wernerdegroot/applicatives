@@ -1,4 +1,6 @@
-package nl.wernerdegroot.applicatives.processor.domain;
+package nl.wernerdegroot.applicatives.processor.validation;
+
+import nl.wernerdegroot.applicatives.processor.domain.TypeParameter;
 
 import java.util.List;
 import java.util.Objects;

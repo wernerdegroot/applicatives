@@ -1,6 +1,5 @@
 package nl.wernerdegroot.applicatives.processor.validation;
 
-import nl.wernerdegroot.applicatives.processor.domain.AccumulatorMethod;
 import nl.wernerdegroot.applicatives.processor.domain.Method;
 import nl.wernerdegroot.applicatives.processor.domain.Parameter;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameter;
@@ -17,9 +16,9 @@ import static nl.wernerdegroot.applicatives.processor.domain.type.Type.BI_FUNCTI
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.OBJECT;
 import static nl.wernerdegroot.applicatives.processor.generator.TypeGenerator.generateFrom;
 
-public class MethodValidator {
+public class CovariantAccumulatorValidator {
 
-    public static Validated<AccumulatorMethod> validate(Method method) {
+    public static Validated<CovariantAccumulator> validate(Method method) {
         if (method.getModifiers().contains(STATIC)) {
             return Validated.invalid("Method is static and cannot implement an abstract method");
         }
@@ -29,7 +28,7 @@ public class MethodValidator {
         }
 
         List<TypeParameter> typeParameters = method.getTypeParameters();
-        Optional<Type> optionalResultType = method.getReturnType();
+        Optional<Type> optionalReturnType = method.getReturnType();
         List<Parameter> parameters = method.getParameters();
 
         // We require exactly three type parameters:
@@ -51,15 +50,15 @@ public class MethodValidator {
         // Assign a meaningful name to each of the (three) type parameters:
         TypeParameter leftInputTypeConstructorArgument = typeParameters.get(0);
         TypeParameter rightInputTypeConstructorArgument = typeParameters.get(1);
-        TypeParameter resultTypeConstructorArgument = typeParameters.get(2);
+        TypeParameter returnTypeConstructorArgument = typeParameters.get(2);
 
         // We require the method to have a return type:
-        if (!optionalResultType.isPresent()) {
+        if (!optionalReturnType.isPresent()) {
             return Validated.invalid("Method needs to return something");
         }
 
         // Now that we are sure that there is a return type, extract it from the `Optional`:
-        Type resultType = optionalResultType.get();
+        Type returnType = optionalReturnType.get();
 
         String name = method.getName();
 
@@ -75,12 +74,12 @@ public class MethodValidator {
         Parameter combinatorParameter = parameters.get(2);
 
         // Check if the third parameter is as expected:
-        Type expectedCombinatorParameter = BI_FUNCTION.with(leftInputTypeConstructorArgument.contravariant(), rightInputTypeConstructorArgument.contravariant(), resultTypeConstructorArgument.covariant());
+        Type expectedCombinatorParameter = BI_FUNCTION.with(leftInputTypeConstructorArgument.contravariant(), rightInputTypeConstructorArgument.contravariant(), returnTypeConstructorArgument.covariant());
         if (!Objects.equals(combinatorParameter.getType(), expectedCombinatorParameter)) {
             return Validated.invalid("Expected third argument to be a " + generateFrom(expectedCombinatorParameter) + " but was " + generateFrom(combinatorParameter.getType()));
         }
 
-        TypeConstructor accumulationTypeConstructor = resultType.asTypeConstructorWithPlaceholderFor(resultTypeConstructorArgument.getName());
+        TypeConstructor accumulationTypeConstructor = returnType.asTypeConstructorWithPlaceholderFor(returnTypeConstructorArgument.getName());
         TypeConstructor permissiveAccumulationTypeConstructor = leftParameter.getType().asTypeConstructorWithPlaceholderFor(leftInputTypeConstructorArgument.getName());
         TypeConstructor inputTypeConstructor = rightParameter.getType().asTypeConstructorWithPlaceholderFor(rightInputTypeConstructorArgument.getName());
 
@@ -88,16 +87,17 @@ public class MethodValidator {
             // Tweak the error message to not confuse people using the simple case where
             // parameter types and result type should be identical:
             if (Objects.equals(permissiveAccumulationTypeConstructor, inputTypeConstructor)) {
-                return Validated.invalid("No shared type constructor between parameters (" + generateFrom(leftParameter.getType()) + " and " + generateFrom(rightParameter.getType()) + ") and result (" + generateFrom(resultType) + ")");
+                return Validated.invalid("No shared type constructor between parameters (" + generateFrom(leftParameter.getType()) + " and " + generateFrom(rightParameter.getType()) + ") and result (" + generateFrom(returnType) + ")");
             } else {
-                return Validated.invalid("No shared type constructor between left parameter (" + generateFrom(leftParameter.getType()) + ") and result (" + generateFrom(resultType) + ")");
+                return Validated.invalid("No shared type constructor between first parameter (" + generateFrom(leftParameter.getType()) + ") and result (" + generateFrom(returnType) + ")");
             }
         }
 
         return Validated.valid(
-                AccumulatorMethod.of(
+                CovariantAccumulator.of(
                         name,
                         accumulationTypeConstructor,
+                        leftParameter.getType(),
                         permissiveAccumulationTypeConstructor,
                         inputTypeConstructor
                 )

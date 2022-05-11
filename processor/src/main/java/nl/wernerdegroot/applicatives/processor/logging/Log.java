@@ -60,6 +60,10 @@ public class Log {
         return withDetail(detail, value, Function.identity());
     }
 
+    public Log withDetail(String detail, Optional<String> value) {
+        return withDetail(detail, value, Function.identity());
+    }
+
     public Log withDetail(String detail, String value) {
         return withDetail(detail, Collections.singletonList(value), Function.identity());
     }
