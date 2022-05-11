@@ -71,6 +71,14 @@ public class Validated<T> {
         }
     }
 
+    public <U> Validated<U> flatMap(Function<T, Validated<U>> fn) {
+        if (isValid()) {
+            return fn.apply(getValue());
+        } else {
+            return Validated.invalid(getErrorMessages());
+        }
+    }
+
     public Set<String> getErrorMessages() {
         if (isValid) {
             throw new NoSuchElementException();

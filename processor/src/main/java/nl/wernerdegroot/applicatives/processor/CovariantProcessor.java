@@ -16,6 +16,7 @@ import nl.wernerdegroot.applicatives.processor.logging.Log;
 import nl.wernerdegroot.applicatives.processor.logging.LoggingBackend;
 import nl.wernerdegroot.applicatives.processor.logging.MessagerLoggingBackend;
 import nl.wernerdegroot.applicatives.processor.logging.NoLoggingBackend;
+import nl.wernerdegroot.applicatives.processor.validation.TemplateClassWithMethods;
 import nl.wernerdegroot.applicatives.processor.validation.TemplateClassWithMethodsValidator;
 import nl.wernerdegroot.applicatives.processor.validation.Validated;
 import nl.wernerdegroot.applicatives.runtime.Covariant;
@@ -33,24 +34,15 @@ import java.io.StringWriter;
 import java.util.Objects;
 import java.util.Set;
 
+import static nl.wernerdegroot.applicatives.processor.Classes.COVARIANT_CLASS;
+import static nl.wernerdegroot.applicatives.processor.Classes.COVARIANT_CLASS_NAME;
 import static nl.wernerdegroot.applicatives.processor.generator.Generator.generator;
 
 @SupportedOptions({Options.VERBOSE_ARGUMENT})
-@SupportedAnnotationTypes(CovariantProcessor.COVARIANT_CLASS_NAME)
+@SupportedAnnotationTypes(COVARIANT_CLASS_NAME)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @AutoService(Processor.class)
 public class CovariantProcessor extends AbstractProcessor {
-
-    public static final String COVARIANT_CLASS_NAME = "nl.wernerdegroot.applicatives.runtime.Covariant";
-    public static final Class<?> COVARIANT_CLASS;
-
-    static {
-        try {
-            COVARIANT_CLASS = Class.forName(COVARIANT_CLASS_NAME);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(String.format("Can't find annotation class %s", COVARIANT_CLASS_NAME), e);
-        }
-    }
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {

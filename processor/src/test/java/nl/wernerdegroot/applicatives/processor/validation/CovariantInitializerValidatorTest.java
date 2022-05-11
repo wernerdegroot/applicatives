@@ -1,6 +1,5 @@
 package nl.wernerdegroot.applicatives.processor.validation;
 
-import nl.wernerdegroot.applicatives.processor.domain.CovariantInitializer;
 import nl.wernerdegroot.applicatives.processor.domain.Method;
 import nl.wernerdegroot.applicatives.processor.domain.Parameter;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
@@ -186,7 +185,7 @@ public class CovariantInitializerValidatorTest {
                 asList(Parameter.of(T.asType(), "value"))
         );
 
-        Validated<CovariantInitializer> expected = Validated.valid(CovariantInitializer.of("myFunction", OPTIONAL.asTypeConstructor()));
+        Validated<CovariantInitializer> expected = Validated.valid(CovariantInitializer.of("myFunction", OPTIONAL.with(T), OPTIONAL.asTypeConstructor()));
         Validated<CovariantInitializer> toVerify = CovariantInitializerValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);

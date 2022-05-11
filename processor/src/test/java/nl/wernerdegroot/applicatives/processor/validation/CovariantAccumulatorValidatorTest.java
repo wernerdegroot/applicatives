@@ -126,6 +126,7 @@ public class CovariantAccumulatorValidatorTest {
                 CovariantAccumulator.of(
                         "myFunction",
                         OPTIONAL.asTypeConstructor(),
+                        OPTIONAL.with(T),
                         OPTIONAL.asTypeConstructor(),
                         OPTIONAL.asTypeConstructor()
                 )
@@ -280,6 +281,7 @@ public class CovariantAccumulatorValidatorTest {
                 CovariantAccumulator.of(
                         "myFunction",
                         OPTIONAL.asTypeConstructor(),
+                        OPTIONAL.with(T),
                         OPTIONAL.asTypeConstructor(),
                         COMPLETABLE_FUTURE.asTypeConstructor()
                 )
@@ -329,6 +331,7 @@ public class CovariantAccumulatorValidatorTest {
                 CovariantAccumulator.of(
                         "myFunction",
                         FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()),
+                        FUNCTION.with(P.asType().contravariant(), T.asType().covariant()),
                         FUNCTION.with(P.asTypeConstructor().contravariant(), placeholder().covariant()),
                         FUNCTION.with(P.asTypeConstructor().contravariant(), placeholder().covariant())
                 )

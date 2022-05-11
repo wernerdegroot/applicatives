@@ -1,6 +1,5 @@
 package nl.wernerdegroot.applicatives.processor.validation;
 
-import nl.wernerdegroot.applicatives.processor.domain.CovariantInitializer;
 import nl.wernerdegroot.applicatives.processor.domain.Method;
 import nl.wernerdegroot.applicatives.processor.domain.Parameter;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameter;
@@ -29,7 +28,7 @@ public class CovariantInitializerValidator {
 
         String name = method.getName();
         List<TypeParameter> typeParameters = method.getTypeParameters();
-        Optional<Type> optionalResultType = method.getReturnType();
+        Optional<Type> optionalReturnType = method.getReturnType();
         List<Parameter> parameters = method.getParameters();
 
         // We require exactly one type parameter:
@@ -50,13 +49,13 @@ public class CovariantInitializerValidator {
             return Validated.invalid("The type parameter needs to be unbounded");
         }
 
-        // We require the method to have a result type:
-        if (!optionalResultType.isPresent()) {
+        // We require the method to have a return type:
+        if (!optionalReturnType.isPresent()) {
             return Validated.invalid("Method needs to return something");
         }
 
         // Now that we are sure that there is a result type, extract it from the `Optional`:
-        Type resultType = optionalResultType.get();
+        Type returnType = optionalReturnType.get();
 
         // We require exactly one parameter:
         int numberOfParameters = parameters.size();
@@ -72,8 +71,8 @@ public class CovariantInitializerValidator {
             return Validated.invalid("Expected parameter to be " + generateFrom(expectedParameterType) + " but was " + generateFrom(parameter.getType()));
         }
 
-        TypeConstructor inputTypeConstructor = resultType.asTypeConstructorWithPlaceholderFor(typeParameter.getName());
+        TypeConstructor permissiveAccumulationTypeConstructor = returnType.asTypeConstructorWithPlaceholderFor(typeParameter.getName());
 
-        return Validated.valid(CovariantInitializer.of(name, inputTypeConstructor));
+        return Validated.valid(CovariantInitializer.of(name, returnType, permissiveAccumulationTypeConstructor));
     }
 }

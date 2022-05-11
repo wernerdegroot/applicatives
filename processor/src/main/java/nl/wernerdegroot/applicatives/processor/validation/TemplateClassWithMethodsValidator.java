@@ -5,32 +5,49 @@ import nl.wernerdegroot.applicatives.processor.domain.containing.ContainingClass
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 import static java.util.stream.Collectors.toList;
-import static nl.wernerdegroot.applicatives.processor.CovariantBuilderProcessor.ACCUMULATOR;
-import static nl.wernerdegroot.applicatives.processor.CovariantBuilderProcessor.INITIALIZER;
+import static nl.wernerdegroot.applicatives.processor.Classes.ACCUMULATOR;
+import static nl.wernerdegroot.applicatives.processor.Classes.INITIALIZER;
+import static nl.wernerdegroot.applicatives.processor.generator.TypeGenerator.generateFrom;
 
 public class TemplateClassWithMethodsValidator {
 
-    public static Validated<TemplateClassWithMethods> validate(ContainingClass containingClass, Method accumulatorMethod) {
+    public static Validated<TemplateClassWithMethods> validate(ContainingClass containingClass, Method method) {
         return Validated.combine(
-                TemplateClassValidator.validate(containingClass),
-                Validated.valid(Optional.empty()),
-                CovariantAccumulatorValidator.validate(accumulatorMethod),
-                TemplateClassWithMethodsValidator::templateClassWithMethods
+                validateTemplateClass(containingClass),
+                validateAccumulator(method),
+                (templateClass, accumulator) -> {
+                    return templateClassWithMethods(templateClass, Optional.empty(), accumulator);
+                }
         );
     }
 
     public static Validated<TemplateClassWithMethods> validate(ContainingClass containingClass, List<Method> methods) {
         return Validated.combine(
-                TemplateClassValidator.validate(containingClass),
-                validateInitializerMethod(methods),
-                validateAccumulatorMethod(methods),
-                TemplateClassWithMethodsValidator::templateClassWithMethods
-        );
+                validateTemplateClass(containingClass),
+                validateInitializer(methods),
+                validateAccumulator(methods),
+                (templateClass, optionalInitializer, accumulator) -> {
+                    if (optionalInitializer.isPresent()) {
+                        CovariantInitializer initializer = optionalInitializer.get();
+                        if (!accumulator.getPermissiveAccumulationTypeConstructor().canAccept(initializer.getPermissiveAccumulationTypeConstructor())) {
+                            String message = String.format("No shared type constructor between return type of '%s' (%s) and first parameter of '%s' (%s)", accumulator.getName(), generateFrom(accumulator.getFirstParameterType()), initializer.getName(), generateFrom(initializer.getReturnType()));
+                            return Validated.<TemplateClassWithMethods>invalid(message);
+                        }
+                    }
+
+                    return Validated.valid(templateClassWithMethods(templateClass, optionalInitializer, accumulator));
+                }
+        ).flatMap(Function.identity());
     }
 
-    private static Validated<Optional<CovariantInitializer>> validateInitializerMethod(List<Method> methods) {
+    private static Validated<TemplateClass> validateTemplateClass(ContainingClass containingClass) {
+        return TemplateClassValidator.validate(containingClass);
+    }
+
+    private static Validated<Optional<CovariantInitializer>> validateInitializer(List<Method> methods) {
         List<Method> candidates = methods
                 .stream()
                 .filter(method -> method.hasAnnotation(INITIALIZER))
@@ -45,7 +62,11 @@ public class TemplateClassWithMethodsValidator {
         }
     }
 
-    private static Validated<CovariantAccumulator> validateAccumulatorMethod(List<Method> methods) {
+    private static Validated<CovariantAccumulator> validateAccumulator(Method method) {
+        return CovariantAccumulatorValidator.validate(method);
+    }
+
+    private static Validated<CovariantAccumulator> validateAccumulator(List<Method> methods) {
         List<Method> candidates = methods
                 .stream()
                 .filter(method -> method.hasAnnotation(ACCUMULATOR))
