@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Optional;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -50,7 +51,8 @@ public class GeneratorTest {
                 .withClassTypeParameters(emptyList())
                 .withInputTypeConstructorArguments(INPUT_TYPE_CONSTRUCTOR_ARGUMENTS)
                 .withResultTypeConstructorArgument(RESULT_TYPE_CONSTRUCTOR_ARGUMENT)
-                .withMethodName("compose")
+                .withOptionalInitializerMethodName(Optional.empty())
+                .withAccumulatorMethodName("compose")
                 .withInputParameterNames(INPUT_PARAMETER_NAMES)
                 .withSelfParameterName(SELF_PARAMETER_NAME)
                 .withCombinatorParameterName(COMBINATOR_PARAMETER_NAME)
@@ -74,7 +76,8 @@ public class GeneratorTest {
                 .withClassTypeParameters(emptyList())
                 .withInputTypeConstructorArguments(INPUT_TYPE_CONSTRUCTOR_ARGUMENTS)
                 .withResultTypeConstructorArgument(RESULT_TYPE_CONSTRUCTOR_ARGUMENT)
-                .withMethodName("compose")
+                .withOptionalInitializerMethodName(Optional.of("singleton"))
+                .withAccumulatorMethodName("compose")
                 .withInputParameterNames(INPUT_PARAMETER_NAMES)
                 .withSelfParameterName(SELF_PARAMETER_NAME)
                 .withCombinatorParameterName(COMBINATOR_PARAMETER_NAME)
@@ -100,7 +103,8 @@ public class GeneratorTest {
                 .withClassTypeParameters(asList(P.extending(OBJECT)))
                 .withInputTypeConstructorArguments(INPUT_TYPE_CONSTRUCTOR_ARGUMENTS)
                 .withResultTypeConstructorArgument(RESULT_TYPE_CONSTRUCTOR_ARGUMENT)
-                .withMethodName("compose")
+                .withOptionalInitializerMethodName(Optional.empty())
+                .withAccumulatorMethodName("compose")
                 .withInputParameterNames(INPUT_PARAMETER_NAMES)
                 .withSelfParameterName(SELF_PARAMETER_NAME)
                 .withCombinatorParameterName(COMBINATOR_PARAMETER_NAME)

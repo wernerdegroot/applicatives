@@ -10,6 +10,7 @@ import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstr
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 import static java.util.Collections.nCopies;
@@ -20,6 +21,7 @@ import static nl.wernerdegroot.applicatives.processor.domain.type.Type.*;
 import static nl.wernerdegroot.applicatives.processor.generator.ClassOrInterfaceGenerator.classOrInterface;
 import static nl.wernerdegroot.applicatives.processor.generator.Constants.*;
 import static nl.wernerdegroot.applicatives.processor.generator.LambdaGenerator.lambda;
+import static nl.wernerdegroot.applicatives.processor.generator.Lines.lines;
 import static nl.wernerdegroot.applicatives.processor.generator.MethodCallGenerator.methodCall;
 import static nl.wernerdegroot.applicatives.processor.generator.MethodGenerator.method;
 import static nl.wernerdegroot.applicatives.processor.generator.MethodReferenceGenerator.methodReference;
@@ -38,7 +40,8 @@ public class Generator {
     private List<TypeParameter> classTypeParameters;
     private List<TypeParameter> inputTypeConstructorArguments;
     private TypeParameter resultTypeConstructorArgument;
-    private String methodName;
+    private Optional<String> optionalInitializerMethodName;
+    private String accumulatorMethodName;
     private List<String> inputParameterNames;
     private String selfParameterName;
     private String combinatorParameterName;
@@ -146,8 +149,13 @@ public class Generator {
         return resultTypeConstructorArgument.asType().using(accumulationTypeConstructor);
     }
 
-    public Generator withMethodName(String methodName) {
-        this.methodName = methodName;
+    public Generator withAccumulatorMethodName(String accumulatorMethodName) {
+        this.accumulatorMethodName = accumulatorMethodName;
+        return this;
+    }
+
+    public Generator withOptionalInitializerMethodName(Optional<String> initializerMethodName) {
+        this.optionalInitializerMethodName = initializerMethodName;
         return this;
     }
 
@@ -201,29 +209,55 @@ public class Generator {
     }
 
     public String generate() {
-        List<String> lines = new ArrayList<>();
-        lines.add(PACKAGE + SPACE + packageName.raw() + SEMICOLON);
-        lines.add(EMPTY_LINE);
+        Lines lines = lines();
+        lines.append(PACKAGE + SPACE + packageName.raw() + SEMICOLON);
+        lines.append(EMPTY_LINE);
 
-        classOrInterface()
-                .asInterface()
-                .withModifiers(PUBLIC)
-                .withName(classNameToGenerate)
-                .withTypeParameters(classTypeParameters)
-                .withBody(combineMethods())
-                .withBody(EMPTY_LINE)
-                .withBody(liftMethods())
-                .withBody(EMPTY_LINE)
-                .withBody(
-                        classOrInterface()
-                                .asClass()
-                                .withName(TUPLE_CLASS_NAME.raw())
-                                .withBody(tupleMethods())
-                                .lines()
-                )
-                .lines()
-                .forEach(lines::add);
+        // Place to gather methods:
+        Lines methods = lines();
+
+        // If the client supplied an initializer, generate a abstract
+        // initializer method and append it to the methods (and a new line).
+        optionalAbstractInitializerMethod().ifPresent(abstractInitializerMethod -> {
+            methods.append(abstractInitializerMethod).append(EMPTY_LINE);
+        });
+
+        // Continue adding the combine- and lift-methods.
+        methods
+                .append(combineMethods())
+                .append(EMPTY_LINE)
+                .append(liftMethods());
+
+        lines.append(
+                classOrInterface()
+                        .asInterface()
+                        .withModifiers(PUBLIC)
+                        .withName(classNameToGenerate)
+                        .withTypeParameters(classTypeParameters)
+                        .withBody(methods)
+                        .withBody(EMPTY_LINE)
+                        .withBody(
+                                classOrInterface()
+                                        .asClass()
+                                        .withName(TUPLE_CLASS_NAME.raw())
+                                        .withBody(tupleMethods())
+                                        .lines()
+                        )
+                        .lines()
+        );
+
         return String.join(LINE_FEED, lines);
+    }
+
+    private Optional<List<String>> optionalAbstractInitializerMethod() {
+        return optionalInitializerMethodName.map(initializerMethodName -> {
+            return method()
+                    .withTypeParameters(resultTypeConstructorArgument.getName())
+                    .withReturnType(resultTypeConstructorArgument.asType().using(permissiveAccumulationTypeConstructor))
+                    .withName(initializerMethodName)
+                    .withParameter(resultTypeConstructorArgument.asType(), "value")
+                    .lines();
+        });
     }
 
     private List<String> combineMethods() {
@@ -243,7 +277,7 @@ public class Generator {
                 .withTypeParameters(takeInputTypeConstructorArguments(arity))
                 .withTypeParameters(resultTypeConstructorArgument.getName())
                 .withReturnType(getResultType())
-                .withName(methodName)
+                .withName(accumulatorMethodName)
                 .withParameterTypes(takeInputParameterTypes(arity))
                 .andParameterNames(takeInputParameterNames(arity))
                 .withParameter(
@@ -263,14 +297,14 @@ public class Generator {
                 .withTypeParameters(takeInputTypeConstructorArguments(arity))
                 .withTypeParameters(resultTypeConstructorArgument.getName())
                 .withReturnType(getResultType())
-                .withName(methodName)
+                .withName(accumulatorMethodName)
                 .withParameterTypes(takeInputParameterTypes(arity))
                 .andParameterNames(takeInputParameterNames(arity))
                 .withParameter(lambdaType(TypeConstructor.placeholder(), TypeConstructor.placeholder(), TypeConstructor.placeholder(), arity), combinatorParameterName)
                 .withReturnStatement(
                         methodCall()
                                 .withObjectPath(THIS)
-                                .withMethodName(methodName)
+                                .withMethodName(accumulatorMethodName)
                                 .withArguments(
                                         methodCall()
                                                 .withType(getFullyQualifiedTupleClass())
@@ -308,7 +342,7 @@ public class Generator {
                 arity,
                 methodCall()
                         .withObjectPath(THIS)
-                        .withMethodName(methodName)
+                        .withMethodName(accumulatorMethodName)
                         .withArguments(takeInputParameterNames(arity))
                         .withArguments(combinatorParameterName)
                         .generate()
@@ -350,7 +384,7 @@ public class Generator {
                 2,
                 methodCall()
                         .withObjectPath(selfParameterName)
-                        .withMethodName(methodName)
+                        .withMethodName(accumulatorMethodName)
                         .withArguments(
                                 inputParameterNames.get(0),
                                 inputParameterNames.get(1),
@@ -369,7 +403,7 @@ public class Generator {
                 arity,
                 methodCall()
                         .withObjectPath(selfParameterName)
-                        .withMethodName(methodName)
+                        .withMethodName(accumulatorMethodName)
                         .withArguments(
                                 methodCall()
                                         .withType(getFullyQualifiedTupleClass())

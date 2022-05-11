@@ -121,7 +121,7 @@ public class CovariantBuilderProcessor extends AbstractProcessor {
                             .withDetail("Accumulation type constructor", templateClassWithMethods.getAccumulationTypeConstructor(), this::typeConstructorToString)
                             .withDetail("Permissive accumulation type constructor", templateClassWithMethods.getPermissiveAccumulationTypeConstructor(), this::typeConstructorToString)
                             .withDetail("Input type constructor", templateClassWithMethods.getInputTypeConstructor(), this::typeConstructorToString)
-                            .withDetail("Name of initializer method", templateClassWithMethods.getInitializerMethodName())
+                            .withDetail("Name of initializer method", templateClassWithMethods.getOptionalInitializerMethodName())
                             .withDetail("Name of accumulator method", templateClassWithMethods.getAccumulatorMethodName())
                             .append(asNote());
 
@@ -151,7 +151,8 @@ public class CovariantBuilderProcessor extends AbstractProcessor {
                             .withClassTypeParameters(conflictFree.getClassTypeParameters())
                             .withInputTypeConstructorArguments(conflictFree.getInputTypeConstructorArguments())
                             .withResultTypeConstructorArgument(conflictFree.getResultTypeConstructorArguments())
-                            .withMethodName(templateClassWithMethods.getAccumulatorMethodName())
+                            .withOptionalInitializerMethodName(templateClassWithMethods.getOptionalInitializerMethodName())
+                            .withAccumulatorMethodName(templateClassWithMethods.getAccumulatorMethodName())
                             .withInputParameterNames(conflictFree.getInputParameterNames())
                             .withSelfParameterName(conflictFree.getSelfParameterName())
                             .withCombinatorParameterName(conflictFree.getCombinatorParameterName())
