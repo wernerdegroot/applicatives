@@ -34,6 +34,7 @@ public class Generator {
     private static final String COMPOSITION_FUNCTION_APPLY_METHOD = "apply";
     private static final FullyQualifiedName FAST_TUPLE = FullyQualifiedName.of("nl.wernerdegroot.applicatives.runtime.FastTuple");
     private static final String FAST_TUPLE_WITH_MAX_SIZE_METHOD_NAME = "withMaxSize";
+    private static final String FAST_TUPLE_EMPTY_WITH_MAX_SIZE_METHOD_NAME = "emptyWithMaxSize";
 
     private PackageName packageName;
     private String classNameToGenerate;
@@ -157,6 +158,10 @@ public class Generator {
     public Generator withOptionalInitializerMethodName(Optional<String> initializerMethodName) {
         this.optionalInitializerMethodName = initializerMethodName;
         return this;
+    }
+
+    public boolean hasInitializer() {
+        return optionalInitializerMethodName.isPresent();
     }
 
     public Generator withInputParameterNames(List<String> inputParameterNames) {
@@ -367,16 +372,54 @@ public class Generator {
     }
 
     private List<String> tupleMethods() {
+
+        Lines init = lines();
+        tupleMethodWithArityZero().ifPresent(t -> {
+            init.append(t).append(EMPTY_LINE);
+        });
+        init.append(tupleMethodWithArityTwo());
+
         return IntStream.rangeClosed(3, maxArity - 1)
                 .boxed()
                 .collect(
-                        this::tupleMethodWithArityTwo,
+                        () -> init,
                         (acc, i) -> {
                             acc.add(EMPTY_LINE);
                             acc.addAll(tupleMethodWithArity(i));
                         },
                         List::addAll
                 );
+    }
+
+    private Optional<List<String>> tupleMethodWithArityZero() {
+        return optionalInitializerMethodName.map(initializerMethodName -> {
+            return method()
+                    .withModifiers(PUBLIC, STATIC)
+                    .withTypeParameters(inputTypeConstructorArguments)
+                    // Since these are all static methods, that don't have access to any class type parameters
+                    // we need to make sure that the class type parameters are available as additional method
+                    // type parameters:
+                    .withTypeParameters(classTypeParameters)
+                    .withReturnType(FAST_TUPLE.with(getInputTypeConstructorArgumentsAsTypeArguments()).using(permissiveAccumulationTypeConstructor))
+                    .withName(TUPLE_METHOD_NAME)
+                    .withParameter(getFullyQualifiedClassNameToGenerate().with(getClassTypeParametersAsTypeArguments()), selfParameterName)
+                    .withParameter(INT, maxTupleSizeParameterName)
+                    .withReturnStatement(
+                            methodCall()
+                                    .withObjectPath(selfParameterName)
+                                    .withMethodName(initializerMethodName)
+                                    .withArguments(
+                                            methodCall()
+                                                    .withType(FAST_TUPLE)
+                                                    .withMethodName(FAST_TUPLE_EMPTY_WITH_MAX_SIZE_METHOD_NAME)
+                                                    .withArguments(maxTupleSizeParameterName)
+                                                    .generate()
+                                    )
+                                    .generate()
+
+                    )
+                    .lines();
+        });
     }
 
     private List<String> tupleMethodWithArityTwo() {

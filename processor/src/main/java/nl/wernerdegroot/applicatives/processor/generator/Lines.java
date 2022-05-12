@@ -2,7 +2,6 @@ package nl.wernerdegroot.applicatives.processor.generator;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static java.util.Arrays.asList;
@@ -34,6 +33,21 @@ public class Lines extends AbstractList<String> {
     @Override
     public int size() {
         return lines.size();
+    }
+
+    @Override
+    public String set(int index, String element) {
+        return lines.set(index, element);
+    }
+
+    @Override
+    public void add(int index, String element) {
+        lines.add(index, element);
+    }
+
+    @Override
+    public String remove(int index) {
+        return lines.remove(index);
     }
 
     public Lines append(List<String> toAppend) {
