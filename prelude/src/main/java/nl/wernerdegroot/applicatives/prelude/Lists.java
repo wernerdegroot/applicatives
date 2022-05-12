@@ -19,24 +19,6 @@ import java.util.function.BiFunction;
 @Covariant.Builder(className = "ListsApplicative")
 public class Lists implements ListsApplicative {
 
-    /*
-        public static <P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26> java.util.ArrayList<? extends nl.wernerdegroot.applicatives.runtime.FastTuple<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26>> tuple(nl.wernerdegroot.applicatives.prelude.ListsApplicative self, int maxSize) {
-            return self.singleton(new FastTuple<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26>(maxSize));
-        }
-
-        public static <P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26> java.util.ArrayList<? extends nl.wernerdegroot.applicatives.runtime.FastTuple<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26>> tuple(nl.wernerdegroot.applicatives.prelude.ListsApplicative self, java.util.ArrayList<? extends P1> first, int maxSize) {
-            return self.combine(nl.wernerdegroot.applicatives.prelude.ListsApplicative.Tuples.<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26>tuple(self, maxSize), first, nl.wernerdegroot.applicatives.runtime.FastTuple::withFirst);
-        }
-
-        public static <P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26> java.util.ArrayList<? extends nl.wernerdegroot.applicatives.runtime.FastTuple<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26>> tuple(nl.wernerdegroot.applicatives.prelude.ListsApplicative self, java.util.ArrayList<? extends P1> first, java.util.List<? extends P2> second, int maxSize) {
-            return self.combine(nl.wernerdegroot.applicatives.prelude.ListsApplicative.Tuples.<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26>tuple(self, first, maxSize), second, nl.wernerdegroot.applicatives.runtime.FastTuple::withSecond);
-        }
-
-        public static <P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26> java.util.ArrayList<nl.wernerdegroot.applicatives.runtime.FastTuple<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26>> tuple(nl.wernerdegroot.applicatives.prelude.ListsApplicative self, java.util.ArrayList<? extends P1> first, java.util.List<? extends P2> second, java.util.List<? extends P3> third, int maxSize) {
-            return self.combine(nl.wernerdegroot.applicatives.prelude.ListsApplicative.Tuples.<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26>tuple(self, first, second, maxSize), third, nl.wernerdegroot.applicatives.runtime.FastTuple::withThird);
-        }
-     */
-
     @Override
     @Initializer
     public <A> ArrayList<A> singleton(A value) {

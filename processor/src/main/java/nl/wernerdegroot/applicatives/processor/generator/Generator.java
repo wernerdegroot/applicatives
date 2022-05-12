@@ -122,21 +122,26 @@ public class Generator {
     }
 
     public List<Type> takeInputParameterTypes(int toTake) {
-        return takeInputParameterTypes(toTake, permissiveAccumulationTypeConstructor, inputTypeConstructor);
+        TypeConstructor headParameterTypeConstructor = hasInitializer()
+                ? inputTypeConstructor
+                : permissiveAccumulationTypeConstructor;
+        TypeConstructor tailParameterTypeConstructor = inputTypeConstructor;
+        return takeInputParameterTypes(toTake, headParameterTypeConstructor, tailParameterTypeConstructor);
     }
 
-    public List<Type> takeInputParameterTypes(int toTake, TypeConstructor permissiveAccumulationTypeConstructor, TypeConstructor inputTypeConstructor) {
+    public List<Type> takeInputParameterTypes(int toTake, TypeConstructor headParameterTypeConstructor, TypeConstructor tailParameterTypeConstructor) {
         List<Type> result = new ArrayList<>();
+
         getInputTypeConstructorArgumentsAsTypes()
                 .stream()
                 .limit(1)
-                .map(permissiveAccumulationTypeConstructor::apply)
+                .map(headParameterTypeConstructor::apply)
                 .forEachOrdered(result::add);
         getInputTypeConstructorArgumentsAsTypes()
                 .stream()
                 .limit(toTake)
                 .skip(1)
-                .map(inputTypeConstructor::apply)
+                .map(tailParameterTypeConstructor::apply)
                 .forEachOrdered(result::add);
         return result;
     }
@@ -267,7 +272,7 @@ public class Generator {
 
     private List<String> combineMethods() {
         List<String> lines = new ArrayList<>();
-        lines.addAll(combineMethodWithArityTwo());
+        lines.addAll(abstractCombineMethodWithArityTwo());
         IntStream.rangeClosed(3, maxArity).forEach(arity -> {
             lines.add(EMPTY_LINE);
             lines.addAll(combineMethodWithArity(arity));
@@ -275,7 +280,7 @@ public class Generator {
         return lines;
     }
 
-    private List<String> combineMethodWithArityTwo() {
+    private List<String> abstractCombineMethodWithArityTwo() {
         int arity = 2;
 
         return method()
@@ -283,7 +288,7 @@ public class Generator {
                 .withTypeParameters(resultTypeConstructorArgument.getName())
                 .withReturnType(getResultType())
                 .withName(accumulatorMethodName)
-                .withParameterTypes(takeInputParameterTypes(arity))
+                .withParameterTypes(takeInputParameterTypes(arity, permissiveAccumulationTypeConstructor, inputTypeConstructor))
                 .andParameterNames(takeInputParameterNames(arity))
                 .withParameter(
                         BI_FUNCTION.with(
@@ -376,8 +381,12 @@ public class Generator {
         Lines init = lines();
         tupleMethodWithArityZero().ifPresent(t -> {
             init.append(t).append(EMPTY_LINE);
+            init.append(tupleMethodWithArity(1)).append(EMPTY_LINE);
+            init.append(tupleMethodWithArity(2));
         });
-        init.append(tupleMethodWithArityTwo());
+        if (!tupleMethodWithArityZero().isPresent()) {
+            init.append(tupleMethodWithArityTwo());
+        }
 
         return IntStream.rangeClosed(3, maxArity - 1)
                 .boxed()
