@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static nl.wernerdegroot.applicatives.processor.conflicts.ConflictFinder.findClassTypeParameterNameReplacements;
-import static nl.wernerdegroot.applicatives.processor.conflicts.Conflicts.*;
 
 /**
  * In the process of generating overloads, we will be introducing new parameters and type parameters.
@@ -49,13 +48,7 @@ public class ConflictPrevention {
         TypeConstructor conflictFreeInputTypeConstructor = inputTypeConstructor.replaceAllTypeParameterNames(classTypeParameterNameReplacements);
 
         return ConflictFree.of(
-                PARAMETER_TYPE_CONSTRUCTOR_ARGUMENTS,
-                RETURN_TYPE_CONSTRUCTOR_ARGUMENT,
                 conflictFreeClassTypeParameters,
-                INPUT_PARAMETER_NAMES,
-                SELF_PARAMETER_NAME,
-                COMBINATOR_PARAMETER_NAME,
-                MAX_TUPLE_SIZE_PARAMETER_NAME,
                 conflictFreeAccumulationTypeConstructor,
                 conflictFreePermissiveAccumulationTypeConstructor,
                 conflictFreeInputTypeConstructor

@@ -47,6 +47,8 @@ public final class Conflicts {
 
     public static final TypeParameter RETURN_TYPE_CONSTRUCTOR_ARGUMENT = TypeParameter.of(RETURN_TYPE_CONSTRUCTOR_ARGUMENT_NAME);
 
+    public static final String VALUE_PARAMETER_NAME = "value";
+
     public static final String SELF_PARAMETER_NAME = "self";
 
     public static final String COMBINATOR_PARAMETER_NAME = "fn";

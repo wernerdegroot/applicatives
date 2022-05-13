@@ -10,7 +10,8 @@ import java.util.List;
 
 import static java.util.Arrays.asList;
 import static nl.wernerdegroot.applicatives.processor.Ordinals.ORDINALS;
-import static nl.wernerdegroot.applicatives.processor.conflicts.Conflicts.*;
+import static nl.wernerdegroot.applicatives.processor.conflicts.Conflicts.PARAMETER_TYPE_CONSTRUCTOR_ARGUMENT_NAMES;
+import static nl.wernerdegroot.applicatives.processor.conflicts.Conflicts.RETURN_TYPE_CONSTRUCTOR_ARGUMENT_NAME;
 import static nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor.placeholder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -43,17 +44,8 @@ public class ConflictPreventionTest {
                     ARDUOUS.with(conflictingTypeParameter.asTypeConstructor().contravariant(), placeholder().invariant(), U.asTypeConstructor().covariant())
             );
 
-            // Input type constructor arguments:
-            assertEquals(PARAMETER_TYPE_CONSTRUCTOR_ARGUMENTS, conflictFree.getParameterTypeConstructorArguments());
-
-            // Result type constructor argument:
-            assertEquals(RETURN_TYPE_CONSTRUCTOR_ARGUMENT, conflictFree.getReturnTypeConstructorArguments());
-
             // Class type parameters:
             assertEquals(asList(C1.asTypeParameter(), C2.extending(PROFUSE.with(C1, C2, C3)), C3.asTypeParameter()), conflictFree.getClassTypeParameters());
-
-            // Input parameters:
-            assertEquals(EXPECTED_INPUT_PARAMETER_NAMES, conflictFree.getInputParameterNames());
 
             // Accumulation type constructor:
             assertEquals(VOLUBLE.with(C3.asTypeConstructor().invariant(), C2.asTypeConstructor().covariant(), placeholder().contravariant()), conflictFree.getAccumulationTypeConstructor());

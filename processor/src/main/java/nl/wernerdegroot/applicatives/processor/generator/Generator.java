@@ -29,7 +29,6 @@ import static nl.wernerdegroot.applicatives.processor.generator.MethodReferenceG
 public class Generator {
 
     private static final int NUMBER_OF_TUPLE_TYPE_PARAMETERS = 26;
-    private static final String VALUE_PARAMETER_NAME = "value";
     private static final ClassName TUPLE_CLASS_NAME = ClassName.of("Tuples");
     private static final String TUPLE_METHOD_NAME = "tuple";
     private static final FullyQualifiedName FAST_TUPLE = FullyQualifiedName.of("nl.wernerdegroot.applicatives.runtime.FastTuple");
@@ -46,6 +45,7 @@ public class Generator {
     private Optional<String> optionalInitializerMethodName;
     private String accumulatorMethodName;
     private List<String> inputParameterNames;
+    private String valueParameterName;
     private String selfParameterName;
     private String combinatorParameterName;
     private String maxTupleSizeParameterName;
@@ -189,6 +189,11 @@ public class Generator {
         return inputParameterNames.subList(0, toTake);
     }
 
+    public Generator withValueParameterName(String valueParameterName) {
+        this.valueParameterName = valueParameterName;
+        return this;
+    }
+
     public Generator withSelfParameterName(String selfParameterName) {
         this.selfParameterName = selfParameterName;
         return this;
@@ -276,7 +281,7 @@ public class Generator {
                     .withTypeParameters(returnTypeConstructorArgument.getName())
                     .withReturnType(returnTypeConstructorArgument.asType().using(permissiveAccumulationTypeConstructor))
                     .withName(initializerMethodName)
-                    .withParameter(returnTypeConstructorArgument.asType(), VALUE_PARAMETER_NAME)
+                    .withParameter(returnTypeConstructorArgument.asType(), valueParameterName)
                     .lines();
         });
     }
