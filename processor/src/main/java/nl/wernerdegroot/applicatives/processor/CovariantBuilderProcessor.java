@@ -3,6 +3,7 @@ package nl.wernerdegroot.applicatives.processor;
 import com.google.auto.service.AutoService;
 import nl.wernerdegroot.applicatives.processor.conflicts.ConflictFree;
 import nl.wernerdegroot.applicatives.processor.conflicts.ConflictPrevention;
+import nl.wernerdegroot.applicatives.processor.conflicts.Conflicts;
 import nl.wernerdegroot.applicatives.processor.converters.ContainingClassConverter;
 import nl.wernerdegroot.applicatives.processor.converters.MethodConverter;
 import nl.wernerdegroot.applicatives.processor.domain.ClassName;
@@ -121,7 +122,7 @@ public class CovariantBuilderProcessor extends AbstractProcessor {
                             .withDetail("Accumulation type constructor", templateClassWithMethods.getAccumulationTypeConstructor(), this::typeConstructorToString)
                             .withDetail("Permissive accumulation type constructor", templateClassWithMethods.getPermissiveAccumulationTypeConstructor(), this::typeConstructorToString)
                             .withDetail("Input type constructor", templateClassWithMethods.getInputTypeConstructor(), this::typeConstructorToString)
-                            .withDetail("Name of initializer method", templateClassWithMethods.getInitializerMethodName())
+                            .withDetail("Name of initializer method", templateClassWithMethods.getOptionalInitializerMethodName())
                             .withDetail("Name of accumulator method", templateClassWithMethods.getAccumulatorMethodName())
                             .append(asNote());
 
@@ -133,13 +134,7 @@ public class CovariantBuilderProcessor extends AbstractProcessor {
                     );
 
                     Log.of("Resolved (potential) conflicts between existing type parameters and new, generated type parameters")
-                            .withDetail("Input type constructor arguments", conflictFree.getInputTypeConstructorArguments(), TypeParameterGenerator::generateFrom)
-                            .withDetail("Result type constructor arguments", conflictFree.getResultTypeConstructorArguments(), TypeParameterGenerator::generateFrom)
                             .withDetail("Class type parameters", conflictFree.getClassTypeParameters(), TypeParameterGenerator::generateFrom)
-                            .withDetail("Input parameter names", conflictFree.getInputParameterNames())
-                            .withDetail("Self parameter name", conflictFree.getSelfParameterName())
-                            .withDetail("Combinator parameter name", conflictFree.getCombinatorParameterName())
-                            .withDetail("Maximum tuple size parameter name", conflictFree.getMaxTupleSizeParameterName())
                             .withDetail("Accumulation type constructor", conflictFree.getAccumulationTypeConstructor(), this::typeConstructorToString)
                             .withDetail("Permissive accumulation type constructor", conflictFree.getPermissiveAccumulationTypeConstructor(), this::typeConstructorToString)
                             .withDetail("Input type constructor", conflictFree.getInputTypeConstructor(), this::typeConstructorToString)
@@ -149,13 +144,15 @@ public class CovariantBuilderProcessor extends AbstractProcessor {
                             .withPackageName(containingClass.getPackageName())
                             .withClassNameToGenerate(covariantBuilderAnnotation.className())
                             .withClassTypeParameters(conflictFree.getClassTypeParameters())
-                            .withInputTypeConstructorArguments(conflictFree.getInputTypeConstructorArguments())
-                            .withResultTypeConstructorArgument(conflictFree.getResultTypeConstructorArguments())
-                            .withMethodName(templateClassWithMethods.getAccumulatorMethodName())
-                            .withInputParameterNames(conflictFree.getInputParameterNames())
-                            .withSelfParameterName(conflictFree.getSelfParameterName())
-                            .withCombinatorParameterName(conflictFree.getCombinatorParameterName())
-                            .withMaxTupleSizeParameterName(conflictFree.getMaxTupleSizeParameterName())
+                            .withParameterTypeConstructorArguments(Conflicts.PARAMETER_TYPE_CONSTRUCTOR_ARGUMENTS)
+                            .withReturnTypeConstructorArgument(Conflicts.RETURN_TYPE_CONSTRUCTOR_ARGUMENT)
+                            .withOptionalInitializerMethodName(templateClassWithMethods.getOptionalInitializerMethodName())
+                            .withAccumulatorMethodName(templateClassWithMethods.getAccumulatorMethodName())
+                            .withInputParameterNames(Conflicts.INPUT_PARAMETER_NAMES)
+                            .withValueParameterName(Conflicts.VALUE_PARAMETER_NAME)
+                            .withSelfParameterName(Conflicts.SELF_PARAMETER_NAME)
+                            .withCombinatorParameterName(Conflicts.COMBINATOR_PARAMETER_NAME)
+                            .withMaxTupleSizeParameterName(Conflicts.MAX_TUPLE_SIZE_PARAMETER_NAME)
                             .withAccumulationTypeConstructor(conflictFree.getAccumulationTypeConstructor())
                             .withPermissiveAccumulationTypeConstructor(conflictFree.getPermissiveAccumulationTypeConstructor())
                             .withInputTypeConstructor(conflictFree.getInputTypeConstructor())

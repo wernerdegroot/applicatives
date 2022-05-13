@@ -29,10 +29,18 @@ public class LambdaGenerator {
         return this;
     }
 
-    public List<String> lines() {
+    public List<String> multiline() {
         return asList(
-                parameterNames.stream().collect(joining(SEPARATOR, OPEN_PARENTHESIS, CLOSE_PARENTHESIS)) + SPACE + ARROW,
+                generateArgumentList() + SPACE + ARROW,
                 INDENT + INDENT + expression
         );
+    }
+
+    public String generate() {
+        return generateArgumentList() + SPACE + ARROW + SPACE + expression;
+    }
+
+    private String generateArgumentList() {
+        return parameterNames.stream().collect(joining(SEPARATOR, OPEN_PARENTHESIS, CLOSE_PARENTHESIS));
     }
 }

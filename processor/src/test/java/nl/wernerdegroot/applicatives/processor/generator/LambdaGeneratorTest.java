@@ -11,16 +11,28 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class LambdaGeneratorTest {
 
     @Test
-    public void lambdaWithSingleExpressionAsBody() {
+    public void lambdaWithSingleExpressionAsMultipleLines() {
         List<String> toVerify = lambda()
                 .withParameterNames("capacity", "hasPower")
                 .withExpression("new Device(capacity, hasPower)")
-                .lines();
+                .multiline();
 
         List<String> expected = asList(
                 "(capacity, hasPower) ->",
                 "        new Device(capacity, hasPower)"
         );
+
+        assertEquals(expected, toVerify);
+    }
+
+    @Test
+    public void lambdaWithSingleExpressionAsSingleLine() {
+        String toVerify = lambda()
+                .withParameterNames("capacity", "hasPower")
+                .withExpression("new Device(capacity, hasPower)")
+                .generate();
+
+        String expected = "(capacity, hasPower) -> new Device(capacity, hasPower)";
 
         assertEquals(expected, toVerify);
     }

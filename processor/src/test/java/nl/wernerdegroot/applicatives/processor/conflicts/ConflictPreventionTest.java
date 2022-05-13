@@ -10,7 +10,8 @@ import java.util.List;
 
 import static java.util.Arrays.asList;
 import static nl.wernerdegroot.applicatives.processor.Ordinals.ORDINALS;
-import static nl.wernerdegroot.applicatives.processor.conflicts.Conflicts.*;
+import static nl.wernerdegroot.applicatives.processor.conflicts.Conflicts.PARAMETER_TYPE_CONSTRUCTOR_ARGUMENT_NAMES;
+import static nl.wernerdegroot.applicatives.processor.conflicts.Conflicts.RETURN_TYPE_CONSTRUCTOR_ARGUMENT_NAME;
 import static nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor.placeholder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -43,17 +44,8 @@ public class ConflictPreventionTest {
                     ARDUOUS.with(conflictingTypeParameter.asTypeConstructor().contravariant(), placeholder().invariant(), U.asTypeConstructor().covariant())
             );
 
-            // Input type constructor arguments:
-            assertEquals(INPUT_TYPE_CONSTRUCTOR_ARGUMENTS, conflictFree.getInputTypeConstructorArguments());
-
-            // Result type constructor argument:
-            assertEquals(RESULT_TYPE_CONSTRUCTOR_ARGUMENT, conflictFree.getResultTypeConstructorArguments());
-
             // Class type parameters:
             assertEquals(asList(C1.asTypeParameter(), C2.extending(PROFUSE.with(C1, C2, C3)), C3.asTypeParameter()), conflictFree.getClassTypeParameters());
-
-            // Input parameters:
-            assertEquals(EXPECTED_INPUT_PARAMETER_NAMES, conflictFree.getInputParameterNames());
 
             // Accumulation type constructor:
             assertEquals(VOLUBLE.with(C3.asTypeConstructor().invariant(), C2.asTypeConstructor().covariant(), placeholder().contravariant()), conflictFree.getAccumulationTypeConstructor());
@@ -81,8 +73,8 @@ public class ConflictPreventionTest {
 
     static {
         INPUT_AND_RESULT_TYPE_CONSTRUCTOR_ARGUMENT_NAMES = new ArrayList<>();
-        INPUT_AND_RESULT_TYPE_CONSTRUCTOR_ARGUMENT_NAMES.addAll(INPUT_TYPE_CONSTRUCTOR_ARGUMENT_NAMES);
-        INPUT_AND_RESULT_TYPE_CONSTRUCTOR_ARGUMENT_NAMES.add(RESULT_TYPE_CONSTRUCTOR_ARGUMENT_NAME);
+        INPUT_AND_RESULT_TYPE_CONSTRUCTOR_ARGUMENT_NAMES.addAll(PARAMETER_TYPE_CONSTRUCTOR_ARGUMENT_NAMES);
+        INPUT_AND_RESULT_TYPE_CONSTRUCTOR_ARGUMENT_NAMES.add(RETURN_TYPE_CONSTRUCTOR_ARGUMENT_NAME);
     }
 
     private static final List<String> EXPECTED_INPUT_PARAMETER_NAMES = ORDINALS;

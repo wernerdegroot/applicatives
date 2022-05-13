@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Optional;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -48,10 +49,12 @@ public class GeneratorTest {
                 .withPackageName(PackageName.of("nl.wernerdegroot.applicatives"))
                 .withClassNameToGenerate("OptionalsMixin")
                 .withClassTypeParameters(emptyList())
-                .withInputTypeConstructorArguments(INPUT_TYPE_CONSTRUCTOR_ARGUMENTS)
-                .withResultTypeConstructorArgument(RESULT_TYPE_CONSTRUCTOR_ARGUMENT)
-                .withMethodName("compose")
+                .withParameterTypeConstructorArguments(PARAMETER_TYPE_CONSTRUCTOR_ARGUMENTS)
+                .withReturnTypeConstructorArgument(RETURN_TYPE_CONSTRUCTOR_ARGUMENT)
+                .withOptionalInitializerMethodName(Optional.empty())
+                .withAccumulatorMethodName("compose")
                 .withInputParameterNames(INPUT_PARAMETER_NAMES)
+                .withValueParameterName(VALUE_PARAMETER_NAME)
                 .withSelfParameterName(SELF_PARAMETER_NAME)
                 .withCombinatorParameterName(COMBINATOR_PARAMETER_NAME)
                 .withMaxTupleSizeParameterName(MAX_TUPLE_SIZE_PARAMETER_NAME)
@@ -72,10 +75,12 @@ public class GeneratorTest {
                 .withPackageName(PackageName.of("nl.wernerdegroot.applicatives"))
                 .withClassNameToGenerate("ListsMixin")
                 .withClassTypeParameters(emptyList())
-                .withInputTypeConstructorArguments(INPUT_TYPE_CONSTRUCTOR_ARGUMENTS)
-                .withResultTypeConstructorArgument(RESULT_TYPE_CONSTRUCTOR_ARGUMENT)
-                .withMethodName("compose")
+                .withParameterTypeConstructorArguments(PARAMETER_TYPE_CONSTRUCTOR_ARGUMENTS)
+                .withReturnTypeConstructorArgument(RETURN_TYPE_CONSTRUCTOR_ARGUMENT)
+                .withOptionalInitializerMethodName(Optional.of("singleton"))
+                .withAccumulatorMethodName("compose")
                 .withInputParameterNames(INPUT_PARAMETER_NAMES)
+                .withValueParameterName(VALUE_PARAMETER_NAME)
                 .withSelfParameterName(SELF_PARAMETER_NAME)
                 .withCombinatorParameterName(COMBINATOR_PARAMETER_NAME)
                 .withMaxTupleSizeParameterName(MAX_TUPLE_SIZE_PARAMETER_NAME)
@@ -98,10 +103,12 @@ public class GeneratorTest {
                 .withPackageName(PackageName.of("nl.wernerdegroot.applicatives"))
                 .withClassNameToGenerate("FunctionsMixin")
                 .withClassTypeParameters(asList(P.extending(OBJECT)))
-                .withInputTypeConstructorArguments(INPUT_TYPE_CONSTRUCTOR_ARGUMENTS)
-                .withResultTypeConstructorArgument(RESULT_TYPE_CONSTRUCTOR_ARGUMENT)
-                .withMethodName("compose")
+                .withParameterTypeConstructorArguments(PARAMETER_TYPE_CONSTRUCTOR_ARGUMENTS)
+                .withReturnTypeConstructorArgument(RETURN_TYPE_CONSTRUCTOR_ARGUMENT)
+                .withOptionalInitializerMethodName(Optional.empty())
+                .withAccumulatorMethodName("compose")
                 .withInputParameterNames(INPUT_PARAMETER_NAMES)
+                .withValueParameterName(VALUE_PARAMETER_NAME)
                 .withSelfParameterName(SELF_PARAMETER_NAME)
                 .withCombinatorParameterName(COMBINATOR_PARAMETER_NAME)
                 .withMaxTupleSizeParameterName(MAX_TUPLE_SIZE_PARAMETER_NAME)

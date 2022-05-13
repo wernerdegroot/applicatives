@@ -19,6 +19,7 @@ import java.util.function.BiFunction;
 @Covariant.Builder(className = "ListsApplicative")
 public class Lists implements ListsApplicative {
 
+    @Override
     @Initializer
     public <A> ArrayList<A> singleton(A value) {
         ArrayList<A> result = new ArrayList<>(1);
