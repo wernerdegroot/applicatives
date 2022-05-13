@@ -1,3 +1,5 @@
+* Rename INPUT_TYPE_CONSTRUCTOR_ARGUMENTS to parametertypeconstructorarguments
+* Move parameter names and such to Generator
 * Validate values of annotation parameters (no -1 overloads)
 * Validate that type constructors for accumulator contain only one of the type parameter (no `C` in first parameter for example)
 * Remove duplication of processors

@@ -29,13 +29,14 @@ import static nl.wernerdegroot.applicatives.processor.generator.MethodReferenceG
 public class Generator {
 
     private static final int NUMBER_OF_TUPLE_TYPE_PARAMETERS = 26;
+    private static final String VALUE_PARAMETER_NAME = "value";
     private static final ClassName TUPLE_CLASS_NAME = ClassName.of("Tuples");
     private static final String TUPLE_METHOD_NAME = "tuple";
-    private static final String COMPOSITION_FUNCTION_APPLY_METHOD = "apply";
     private static final FullyQualifiedName FAST_TUPLE = FullyQualifiedName.of("nl.wernerdegroot.applicatives.runtime.FastTuple");
     private static final String FAST_TUPLE_WITH_MAX_SIZE_METHOD_NAME = "withMaxSize";
     private static final String FAST_TUPLE_EMPTY_WITH_MAX_SIZE_METHOD_NAME = "emptyWithMaxSize";
-    private static final String FROM_BI_FUNCTION_METHOD_NAME = "fromBiFunction";
+    private static final String FUNCTION_2_FROM_BI_FUNCTION_METHOD_NAME = "fromBiFunction";
+    private static final String FUNCTION_N_APPLY_METHOD = "apply";
 
     private PackageName packageName;
     private String classNameToGenerate;
@@ -122,33 +123,36 @@ public class Generator {
                 .collect(toList());
     }
 
-    public List<Type> takeInputParameterTypes(int toTake) {
-        return takeInputParameterTypes(toTake, getHeadParameterTypeConstructor(), getTailParameterTypeConstructor());
+    public List<Type> takeParameterTypes(int toTake) {
+        return takeParameterTypes(toTake, getFirstParameterTypeConstructor(), getOtherParametersTypeConstructor());
     }
 
-    public TypeConstructor getHeadParameterTypeConstructor() {
+    public TypeConstructor getFirstParameterTypeConstructor() {
+        // If we have an Initializer, all parameters use the same type constructor (`inputTypeConstructor`).
+        // If we don't have an Initializer, the first parameter uses a different type constructor than the
+        // other parameters (`permissiveAccumulationTypeConstructor`).
         return hasInitializer()
-                ? inputTypeConstructor
+                ? getOtherParametersTypeConstructor()
                 : permissiveAccumulationTypeConstructor;
     }
 
-    public TypeConstructor getTailParameterTypeConstructor() {
+    public TypeConstructor getOtherParametersTypeConstructor() {
         return inputTypeConstructor;
     }
 
-    public List<Type> takeInputParameterTypes(int toTake, TypeConstructor headParameterTypeConstructor, TypeConstructor tailParameterTypeConstructor) {
+    public List<Type> takeParameterTypes(int toTake, TypeConstructor firstParameterTypeConstructor, TypeConstructor otherParametersTypeConstructor) {
         List<Type> result = new ArrayList<>();
 
         getInputTypeConstructorArgumentsAsTypes()
                 .stream()
                 .limit(1)
-                .map(headParameterTypeConstructor::apply)
+                .map(firstParameterTypeConstructor::apply)
                 .forEachOrdered(result::add);
         getInputTypeConstructorArgumentsAsTypes()
                 .stream()
                 .limit(toTake)
                 .skip(1)
-                .map(tailParameterTypeConstructor::apply)
+                .map(otherParametersTypeConstructor::apply)
                 .forEachOrdered(result::add);
         return result;
     }
@@ -233,8 +237,8 @@ public class Generator {
         // Place to gather methods:
         Lines methods = lines();
 
-        // If the client supplied an initializer, generate a abstract
-        // initializer method and append it to the methods (and a new line).
+        // If the client provided an Initializer, generate an abstract
+        // method for it and append it to the methods.
         optionalAbstractInitializerMethod().ifPresent(abstractInitializerMethod -> {
             methods.append(abstractInitializerMethod).append(EMPTY_LINE);
         });
@@ -272,7 +276,7 @@ public class Generator {
                     .withTypeParameters(resultTypeConstructorArgument.getName())
                     .withReturnType(resultTypeConstructorArgument.asType().using(permissiveAccumulationTypeConstructor))
                     .withName(initializerMethodName)
-                    .withParameter(resultTypeConstructorArgument.asType(), "value")
+                    .withParameter(resultTypeConstructorArgument.asType(), VALUE_PARAMETER_NAME)
                     .lines();
         });
     }
@@ -280,10 +284,17 @@ public class Generator {
     private List<String> combineMethods() {
         List<String> lines = new ArrayList<>();
         lines.addAll(abstractCombineMethodWithArityTwo());
+
+        // If we have an Initializer, we need to generate an addition `combine`-method with
+        // arity two. Both `combine`-method have different parameters. The abstract method
+        // may use a different type constructor for its first parameter and its second parameter
+        // (`permissiveAccumulationTypeConstructor` and `inputTypeConstructor` respectively). The
+        // concrete method's parameters all use the same type constructor (`inputTypeConstructor`).
         if (hasInitializer()) {
             lines.add(EMPTY_LINE);
-            lines.addAll(combineMethodWithArityTwo());
+            lines.addAll(combineMethodWithArity(2));
         }
+
         IntStream.rangeClosed(3, maxArity).forEach(arity -> {
             lines.add(EMPTY_LINE);
             lines.addAll(combineMethodWithArity(arity));
@@ -297,9 +308,9 @@ public class Generator {
         return method()
                 .withTypeParameters(takeInputTypeConstructorArguments(arity))
                 .withTypeParameters(resultTypeConstructorArgument.getName())
-                .withReturnType(getResultType())
+                .withReturnType(resultTypeConstructorArgument.asType().using(accumulationTypeConstructor))
                 .withName(accumulatorMethodName)
-                .withParameterTypes(takeInputParameterTypes(arity, permissiveAccumulationTypeConstructor, inputTypeConstructor))
+                .withParameterTypes(takeParameterTypes(arity, permissiveAccumulationTypeConstructor, inputTypeConstructor))
                 .andParameterNames(takeInputParameterNames(arity))
                 .withParameter(
                         BI_FUNCTION.with(
@@ -312,41 +323,20 @@ public class Generator {
                 .lines();
     }
 
-    private List<String> combineMethodWithArityTwo() {
-        int arity = 2;
-        return combineMethodWithArity(
-                arity,
-                methodCall()
-                        .withObjectPath(THIS)
-                        .withMethodName(accumulatorMethodName)
-                        .withArguments(
-                                methodCall()
-                                        .withType(getFullyQualifiedTupleClass())
-                                        .withTypeArguments(takeInputTypeConstructorArgumentsAsTypeArguments(arity))
-                                        .withTypeArguments(nCopies(NUMBER_OF_TUPLE_TYPE_PARAMETERS - arity, OBJECT.invariant()))
-                                        .withTypeArguments(getClassTypeParametersAsTypeArguments())
-                                        .withMethodName(TUPLE_METHOD_NAME)
-                                        .withArguments(THIS)
-                                        .withArguments(takeInputParameterNames(arity - 1))
-                                        .withArguments(Integer.toString(arity))
-                                        .generate(),
-                                inputParameterNames.get(arity - 1),
-                                methodReference()
-                                        .withObjectPath(
-                                                methodCall()
-                                                        .withObjectPath(fullyQualifiedNameOfArbitraryArityFunction(2))
-                                                        .withMethodName(FROM_BI_FUNCTION_METHOD_NAME)
-                                                        .withArguments(combinatorParameterName)
-                                                        .generate()
-                                        )
-                                        .withMethodName(COMPOSITION_FUNCTION_APPLY_METHOD)
-                                        .generate()
-                        )
-                        .generate()
-        );
-    }
-
     private List<String> combineMethodWithArity(int arity) {
+
+        // If the arity is equal to two, we are not dealing with a `Function2` like we want,
+        // but a `BiFunction` (to stay as close as possible to the Java standard library).
+        // To call the proper `apply`-method, we need to convert it to a `Function2` first.
+        String function = combinatorParameterName;
+        if (arity == 2) {
+            function = methodCall()
+                    .withObjectPath(fullyQualifiedNameOfArbitraryArityFunction(2))
+                    .withMethodName(FUNCTION_2_FROM_BI_FUNCTION_METHOD_NAME)
+                    .withArguments(combinatorParameterName)
+                    .generate();
+        }
+
         return combineMethodWithArity(
                 arity,
                 methodCall()
@@ -364,7 +354,7 @@ public class Generator {
                                         .withArguments(Integer.toString(arity))
                                         .generate(),
                                 inputParameterNames.get(arity - 1),
-                                methodReference().withObjectPath(combinatorParameterName).withMethodName(COMPOSITION_FUNCTION_APPLY_METHOD).generate()
+                                methodReference().withObjectPath(function).withMethodName(FUNCTION_N_APPLY_METHOD).generate()
                         )
                         .generate()
         );
@@ -377,7 +367,7 @@ public class Generator {
                 .withTypeParameters(resultTypeConstructorArgument.getName())
                 .withReturnType(getResultType())
                 .withName(accumulatorMethodName)
-                .withParameterTypes(takeInputParameterTypes(arity))
+                .withParameterTypes(takeParameterTypes(arity))
                 .andParameterNames(takeInputParameterNames(arity))
                 .withParameter(lambdaType(TypeConstructor.placeholder(), TypeConstructor.placeholder(), TypeConstructor.placeholder(), arity), combinatorParameterName)
                 .withReturnStatement(returnStatement)
@@ -414,7 +404,7 @@ public class Generator {
                 .withModifiers(DEFAULT)
                 .withTypeParameters(takeInputTypeConstructorArguments(arity))
                 .withTypeParameters(resultTypeConstructorArgument.getName())
-                .withReturnType(lambdaType(accumulationTypeConstructor, getTailParameterTypeConstructor(), getHeadParameterTypeConstructor(), arity))
+                .withReturnType(lambdaType(accumulationTypeConstructor, getOtherParametersTypeConstructor(), getFirstParameterTypeConstructor(), arity))
                 .withName(liftMethodName)
                 .withParameter(lambdaType(TypeConstructor.placeholder(), TypeConstructor.placeholder(), TypeConstructor.placeholder(), arity), combinatorParameterName)
                 .withReturnStatement(
@@ -428,57 +418,41 @@ public class Generator {
 
     private List<String> tupleMethods() {
 
-        Lines init = lines();
-        tupleMethodWithArityZero().ifPresent(t -> {
-            init.append(t).append(EMPTY_LINE);
-            init.append(tupleMethodWithArity(1)).append(EMPTY_LINE);
-            init.append(tupleMethodWithArity(2));
-        });
-        if (!tupleMethodWithArityZero().isPresent()) {
-            init.append(tupleMethodWithArityTwo());
+        Lines lines = lines();
+        if (hasInitializer()) {
+            String initializerMethodName = optionalInitializerMethodName.get();
+
+            lines.append(tupleMethodWithArityZero(initializerMethodName)).append(EMPTY_LINE);
+            lines.append(tupleMethodWithArity(1)).append(EMPTY_LINE);
+            lines.append(tupleMethodWithArity(2));
+        } else {
+            lines.append(tupleMethodWithArityTwo());
         }
 
-        return IntStream.rangeClosed(3, maxArity - 1)
-                .boxed()
-                .collect(
-                        () -> init,
-                        (acc, i) -> {
-                            acc.add(EMPTY_LINE);
-                            acc.addAll(tupleMethodWithArity(i));
-                        },
-                        List::addAll
-                );
+        for (int arity = 3; arity < maxArity; arity++) {
+            lines.append(EMPTY_LINE);
+            lines.append(tupleMethodWithArity(arity));
+        }
+
+        return lines;
     }
 
-    private Optional<List<String>> tupleMethodWithArityZero() {
-        return optionalInitializerMethodName.map(initializerMethodName -> {
-            return method()
-                    .withModifiers(PUBLIC, STATIC)
-                    .withTypeParameters(inputTypeConstructorArguments)
-                    // Since these are all static methods, that don't have access to any class type parameters
-                    // we need to make sure that the class type parameters are available as additional method
-                    // type parameters:
-                    .withTypeParameters(classTypeParameters)
-                    .withReturnType(FAST_TUPLE.with(getInputTypeConstructorArgumentsAsTypeArguments()).using(permissiveAccumulationTypeConstructor))
-                    .withName(TUPLE_METHOD_NAME)
-                    .withParameter(getFullyQualifiedClassNameToGenerate().with(getClassTypeParametersAsTypeArguments()), selfParameterName)
-                    .withParameter(INT, maxTupleSizeParameterName)
-                    .withReturnStatement(
-                            methodCall()
-                                    .withObjectPath(selfParameterName)
-                                    .withMethodName(initializerMethodName)
-                                    .withArguments(
-                                            methodCall()
-                                                    .withType(FAST_TUPLE)
-                                                    .withMethodName(FAST_TUPLE_EMPTY_WITH_MAX_SIZE_METHOD_NAME)
-                                                    .withArguments(maxTupleSizeParameterName)
-                                                    .generate()
-                                    )
-                                    .generate()
+    private List<String> tupleMethodWithArityZero(String initializerMethodName) {
+        return tupleMethodWithArity(
+                0,
+                methodCall()
+                        .withObjectPath(selfParameterName)
+                        .withMethodName(initializerMethodName)
+                        .withArguments(
+                                methodCall()
+                                        .withType(FAST_TUPLE)
+                                        .withMethodName(FAST_TUPLE_EMPTY_WITH_MAX_SIZE_METHOD_NAME)
+                                        .withArguments(maxTupleSizeParameterName)
+                                        .generate()
+                        )
+                        .generate()
 
-                    )
-                    .lines();
-        });
+        );
     }
 
     private List<String> tupleMethodWithArityTwo() {
@@ -527,6 +501,12 @@ public class Generator {
     }
 
     private List<String> tupleMethodWithArity(int arity, String methodBody) {
+        // TODO: when superfluous type arguments are removed from the tuple-methods, this can perhaps be simplified by skipping arity 0 and plugging the implementation of arity 0 directly into arity 1. Since the method body is already parameterized here, we can dispense with the `if` completely.
+        // If the arity is equal to zero, we are dealing with a special case. We use the Initializer method
+        // to wrap an empty tuple using the `permissiveAccumulationTypeConstructor`. We can pass that as the
+        // input to the Accumulator method that the user defined.
+        TypeConstructor returnTypeConstructor = arity == 0 ? permissiveAccumulationTypeConstructor : accumulationTypeConstructor;
+
         return method()
                 .withModifiers(PUBLIC, STATIC)
                 .withTypeParameters(inputTypeConstructorArguments)
@@ -534,19 +514,19 @@ public class Generator {
                 // we need to make sure that the class type parameters are available as additional method
                 // type parameters:
                 .withTypeParameters(classTypeParameters)
-                .withReturnType(FAST_TUPLE.with(getInputTypeConstructorArgumentsAsTypeArguments()).using(accumulationTypeConstructor))
+                .withReturnType(FAST_TUPLE.with(getInputTypeConstructorArgumentsAsTypeArguments()).using(returnTypeConstructor))
                 .withName(TUPLE_METHOD_NAME)
                 .withParameter(getFullyQualifiedClassNameToGenerate().with(getClassTypeParametersAsTypeArguments()), selfParameterName)
-                .withParameterTypes(takeInputParameterTypes(arity))
+                .withParameterTypes(takeParameterTypes(arity))
                 .andParameterNames(takeInputParameterNames(arity))
                 .withParameter(INT, maxTupleSizeParameterName)
                 .withReturnStatement(methodBody)
                 .lines();
     }
 
-    private Type lambdaType(TypeConstructor returnTypeConstructor, TypeConstructor headParameterTypeConstructor, TypeConstructor tailParameterTypeConstructor, int arity) {
+    private Type lambdaType(TypeConstructor returnTypeConstructor, TypeConstructor firstParameterTypeConstructor, TypeConstructor otherParametersTypeConstructor, int arity) {
         List<TypeArgument> typeArguments = new ArrayList<>();
-        takeInputParameterTypes(arity, headParameterTypeConstructor, tailParameterTypeConstructor)
+        takeParameterTypes(arity, firstParameterTypeConstructor, otherParametersTypeConstructor)
                 .stream()
                 .map(Type::contravariant)
                 .forEachOrdered(typeArguments::add);
