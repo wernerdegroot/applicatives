@@ -6,16 +6,20 @@ public interface ListsMixin {
 
     <P1, P2, R> java.util.ArrayList<R> compose(java.util.ArrayList<? extends P1> first, java.util.List<? extends P2> second, java.util.function.BiFunction<? super P1, ? super P2, ? extends R> fn);
 
+    default <P1, P2, R> java.util.ArrayList<R> compose(java.util.List<? extends P1> first, java.util.List<? extends P2> second, java.util.function.BiFunction<? super P1, ? super P2, ? extends R> fn) {
+        return this.compose(nl.wernerdegroot.applicatives.ListsMixin.Tuples.<P1, P2, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object>tuple(this, first, 2), second, nl.wernerdegroot.applicatives.runtime.Function2.fromBiFunction(fn)::apply);
+    }
+
     default <P1, P2, P3, R> java.util.ArrayList<R> compose(java.util.List<? extends P1> first, java.util.List<? extends P2> second, java.util.List<? extends P3> third, nl.wernerdegroot.applicatives.runtime.Function3<? super P1, ? super P2, ? super P3, ? extends R> fn) {
         return this.compose(nl.wernerdegroot.applicatives.ListsMixin.Tuples.<P1, P2, P3, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object>tuple(this, first, second, 3), third, fn::apply);
     }
 
-    default <P1, P2, R> java.util.function.BiFunction<? super java.util.ArrayList<? extends P1>, ? super java.util.List<? extends P2>, ? extends java.util.ArrayList<R>> lift(java.util.function.BiFunction<? super P1, ? super P2, ? extends R> fn) {
+    default <P1, P2, R> java.util.function.BiFunction<? super java.util.List<? extends P1>, ? super java.util.List<? extends P2>, ? extends java.util.ArrayList<R>> lift(java.util.function.BiFunction<? super P1, ? super P2, ? extends R> fn) {
         return (first, second) ->
                 this.compose(first, second, fn);
     }
 
-    default <P1, P2, P3, R> nl.wernerdegroot.applicatives.runtime.Function3<? super java.util.ArrayList<? extends P1>, ? super java.util.List<? extends P2>, ? super java.util.List<? extends P3>, ? extends java.util.ArrayList<R>> lift(nl.wernerdegroot.applicatives.runtime.Function3<? super P1, ? super P2, ? super P3, ? extends R> fn) {
+    default <P1, P2, P3, R> nl.wernerdegroot.applicatives.runtime.Function3<? super java.util.List<? extends P1>, ? super java.util.List<? extends P2>, ? super java.util.List<? extends P3>, ? extends java.util.ArrayList<R>> lift(nl.wernerdegroot.applicatives.runtime.Function3<? super P1, ? super P2, ? super P3, ? extends R> fn) {
         return (first, second, third) ->
                 this.compose(first, second, third, fn);
     }

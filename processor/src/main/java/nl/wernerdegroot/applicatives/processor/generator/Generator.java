@@ -35,6 +35,7 @@ public class Generator {
     private static final FullyQualifiedName FAST_TUPLE = FullyQualifiedName.of("nl.wernerdegroot.applicatives.runtime.FastTuple");
     private static final String FAST_TUPLE_WITH_MAX_SIZE_METHOD_NAME = "withMaxSize";
     private static final String FAST_TUPLE_EMPTY_WITH_MAX_SIZE_METHOD_NAME = "emptyWithMaxSize";
+    private static final String FROM_BI_FUNCTION_METHOD_NAME = "fromBiFunction";
 
     private PackageName packageName;
     private String classNameToGenerate;
@@ -122,11 +123,17 @@ public class Generator {
     }
 
     public List<Type> takeInputParameterTypes(int toTake) {
-        TypeConstructor headParameterTypeConstructor = hasInitializer()
+        return takeInputParameterTypes(toTake, getHeadParameterTypeConstructor(), getTailParameterTypeConstructor());
+    }
+
+    public TypeConstructor getHeadParameterTypeConstructor() {
+        return hasInitializer()
                 ? inputTypeConstructor
                 : permissiveAccumulationTypeConstructor;
-        TypeConstructor tailParameterTypeConstructor = inputTypeConstructor;
-        return takeInputParameterTypes(toTake, headParameterTypeConstructor, tailParameterTypeConstructor);
+    }
+
+    public TypeConstructor getTailParameterTypeConstructor() {
+        return inputTypeConstructor;
     }
 
     public List<Type> takeInputParameterTypes(int toTake, TypeConstructor headParameterTypeConstructor, TypeConstructor tailParameterTypeConstructor) {
@@ -273,6 +280,10 @@ public class Generator {
     private List<String> combineMethods() {
         List<String> lines = new ArrayList<>();
         lines.addAll(abstractCombineMethodWithArityTwo());
+        if (hasInitializer()) {
+            lines.add(EMPTY_LINE);
+            lines.addAll(combineMethodWithArityTwo());
+        }
         IntStream.rangeClosed(3, maxArity).forEach(arity -> {
             lines.add(EMPTY_LINE);
             lines.addAll(combineMethodWithArity(arity));
@@ -301,7 +312,65 @@ public class Generator {
                 .lines();
     }
 
+    private List<String> combineMethodWithArityTwo() {
+        int arity = 2;
+        return combineMethodWithArity(
+                arity,
+                methodCall()
+                        .withObjectPath(THIS)
+                        .withMethodName(accumulatorMethodName)
+                        .withArguments(
+                                methodCall()
+                                        .withType(getFullyQualifiedTupleClass())
+                                        .withTypeArguments(takeInputTypeConstructorArgumentsAsTypeArguments(arity))
+                                        .withTypeArguments(nCopies(NUMBER_OF_TUPLE_TYPE_PARAMETERS - arity, OBJECT.invariant()))
+                                        .withTypeArguments(getClassTypeParametersAsTypeArguments())
+                                        .withMethodName(TUPLE_METHOD_NAME)
+                                        .withArguments(THIS)
+                                        .withArguments(takeInputParameterNames(arity - 1))
+                                        .withArguments(Integer.toString(arity))
+                                        .generate(),
+                                inputParameterNames.get(arity - 1),
+                                methodReference()
+                                        .withObjectPath(
+                                                methodCall()
+                                                        .withObjectPath(fullyQualifiedNameOfArbitraryArityFunction(2))
+                                                        .withMethodName(FROM_BI_FUNCTION_METHOD_NAME)
+                                                        .withArguments(combinatorParameterName)
+                                                        .generate()
+                                        )
+                                        .withMethodName(COMPOSITION_FUNCTION_APPLY_METHOD)
+                                        .generate()
+                        )
+                        .generate()
+        );
+    }
+
     private List<String> combineMethodWithArity(int arity) {
+        return combineMethodWithArity(
+                arity,
+                methodCall()
+                        .withObjectPath(THIS)
+                        .withMethodName(accumulatorMethodName)
+                        .withArguments(
+                                methodCall()
+                                        .withType(getFullyQualifiedTupleClass())
+                                        .withTypeArguments(takeInputTypeConstructorArgumentsAsTypeArguments(arity))
+                                        .withTypeArguments(nCopies(NUMBER_OF_TUPLE_TYPE_PARAMETERS - arity, OBJECT.invariant()))
+                                        .withTypeArguments(getClassTypeParametersAsTypeArguments())
+                                        .withMethodName(TUPLE_METHOD_NAME)
+                                        .withArguments(THIS)
+                                        .withArguments(takeInputParameterNames(arity - 1))
+                                        .withArguments(Integer.toString(arity))
+                                        .generate(),
+                                inputParameterNames.get(arity - 1),
+                                methodReference().withObjectPath(combinatorParameterName).withMethodName(COMPOSITION_FUNCTION_APPLY_METHOD).generate()
+                        )
+                        .generate()
+        );
+    }
+
+    private List<String> combineMethodWithArity(int arity, String returnStatement) {
         return method()
                 .withModifiers(DEFAULT)
                 .withTypeParameters(takeInputTypeConstructorArguments(arity))
@@ -311,26 +380,7 @@ public class Generator {
                 .withParameterTypes(takeInputParameterTypes(arity))
                 .andParameterNames(takeInputParameterNames(arity))
                 .withParameter(lambdaType(TypeConstructor.placeholder(), TypeConstructor.placeholder(), TypeConstructor.placeholder(), arity), combinatorParameterName)
-                .withReturnStatement(
-                        methodCall()
-                                .withObjectPath(THIS)
-                                .withMethodName(accumulatorMethodName)
-                                .withArguments(
-                                        methodCall()
-                                                .withType(getFullyQualifiedTupleClass())
-                                                .withTypeArguments(takeInputTypeConstructorArgumentsAsTypeArguments(arity))
-                                                .withTypeArguments(nCopies(NUMBER_OF_TUPLE_TYPE_PARAMETERS - arity, OBJECT.invariant()))
-                                                .withTypeArguments(getClassTypeParametersAsTypeArguments())
-                                                .withMethodName(TUPLE_METHOD_NAME)
-                                                .withArguments(THIS)
-                                                .withArguments(takeInputParameterNames(arity - 1))
-                                                .withArguments(Integer.toString(arity))
-                                                .generate(),
-                                        inputParameterNames.get(arity - 1),
-                                        methodReference().withObjectPath(combinatorParameterName).withMethodName(COMPOSITION_FUNCTION_APPLY_METHOD).generate()
-                                )
-                                .generate()
-                )
+                .withReturnStatement(returnStatement)
                 .lines();
     }
 
@@ -364,14 +414,14 @@ public class Generator {
                 .withModifiers(DEFAULT)
                 .withTypeParameters(takeInputTypeConstructorArguments(arity))
                 .withTypeParameters(resultTypeConstructorArgument.getName())
-                .withReturnType(lambdaType(accumulationTypeConstructor, permissiveAccumulationTypeConstructor, inputTypeConstructor, arity))
+                .withReturnType(lambdaType(accumulationTypeConstructor, getTailParameterTypeConstructor(), getHeadParameterTypeConstructor(), arity))
                 .withName(liftMethodName)
                 .withParameter(lambdaType(TypeConstructor.placeholder(), TypeConstructor.placeholder(), TypeConstructor.placeholder(), arity), combinatorParameterName)
                 .withReturnStatement(
                         lambda()
                                 .withParameterNames(takeInputParameterNames(arity))
                                 .withExpression(lambdaBody)
-                                .lines()
+                                .multiline()
                 )
                 .lines();
     }
@@ -494,20 +544,22 @@ public class Generator {
                 .lines();
     }
 
-    private Type lambdaType(TypeConstructor accumulationTypeConstructor, TypeConstructor permissiveAccumulationTypeConstructor, TypeConstructor inputTypeConstructor, int arity) {
+    private Type lambdaType(TypeConstructor returnTypeConstructor, TypeConstructor headParameterTypeConstructor, TypeConstructor tailParameterTypeConstructor, int arity) {
         List<TypeArgument> typeArguments = new ArrayList<>();
-        takeInputParameterTypes(arity, permissiveAccumulationTypeConstructor, inputTypeConstructor)
+        takeInputParameterTypes(arity, headParameterTypeConstructor, tailParameterTypeConstructor)
                 .stream()
                 .map(Type::contravariant)
                 .forEachOrdered(typeArguments::add);
-        typeArguments.add(resultTypeConstructorArgument.asType().using(accumulationTypeConstructor).covariant());
+        typeArguments.add(resultTypeConstructorArgument.asType().using(returnTypeConstructor).covariant());
 
         return Type.concrete(fullyQualifiedNameOfFunction(arity), typeArguments);
     }
 
     private static FullyQualifiedName fullyQualifiedNameOfFunction(int arity) {
-        return arity == 2
-                ? BI_FUNCTION.getFullyQualifiedName()
-                : FullyQualifiedName.of("nl.wernerdegroot.applicatives.runtime.Function" + arity);
+        return arity == 2 ? BI_FUNCTION.getFullyQualifiedName() : fullyQualifiedNameOfArbitraryArityFunction(arity);
+    }
+
+    private static FullyQualifiedName fullyQualifiedNameOfArbitraryArityFunction(int arity) {
+        return FullyQualifiedName.of("nl.wernerdegroot.applicatives.runtime.Function" + arity);
     }
 }

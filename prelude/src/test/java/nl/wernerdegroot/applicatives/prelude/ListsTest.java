@@ -13,7 +13,7 @@ public class ListsTest {
 
     @Test
     public void combine() {
-        ArrayList<String> name = arrayList("Bulbasaur", "Charmander", "Squirtle");
+        List<String> name = asList("Bulbasaur", "Charmander", "Squirtle");
         List<Integer> hp = asList(10);
         List<EnergyType> energyType = asList(EnergyType.GRASS, EnergyType.FIRE);
         List<List<Move>> moves = asList(
@@ -25,7 +25,7 @@ public class ListsTest {
                         Move.of(asList(EnergyType.FIRE, EnergyType.COLORLESS), "Ember", 30)
                 )
         );
-        ArrayList<PokemonCard> expected = arrayList(
+        List<PokemonCard> expected = asList(
                 PokemonCard.of(
                         "Bulbasaur",
                         10,
@@ -131,9 +131,5 @@ public class ListsTest {
         );
         List<PokemonCard> toVerify = new Lists().combine(name, hp, energyType, moves, PokemonCard::new);
         assertEquals(expected, toVerify);
-    }
-
-    private static <T> ArrayList<T> arrayList(T... elements) {
-        return new ArrayList<>(asList(elements));
     }
 }
