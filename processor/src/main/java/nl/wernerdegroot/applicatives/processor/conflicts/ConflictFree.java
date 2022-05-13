@@ -15,8 +15,8 @@ public class ConflictFree {
 
     // For an explanation of these fields, check `README.md` in the `domain` package.
 
-    private final List<TypeParameter> inputTypeConstructorArguments;
-    private final TypeParameter resultTypeConstructorArguments;
+    private final List<TypeParameter> parameterTypeConstructorArguments;
+    private final TypeParameter returnTypeConstructorArguments;
     private final List<TypeParameter> classTypeParameters;
     private final List<String> inputParameterNames;
     private final String selfParameterName;
@@ -26,9 +26,9 @@ public class ConflictFree {
     private final TypeConstructor permissiveAccumulationTypeConstructor;
     private final TypeConstructor inputTypeConstructor;
 
-    public ConflictFree(List<TypeParameter> inputTypeConstructorArguments, TypeParameter resultTypeConstructorArguments, List<TypeParameter> classTypeParameters, List<String> inputParameterNames, String selfParameterName, String combinatorParameterName, String maxTupleSizeParameterName, TypeConstructor accumulationTypeConstructor, TypeConstructor permissiveAccumulationTypeConstructor, TypeConstructor inputTypeConstructor) {
-        this.inputTypeConstructorArguments = inputTypeConstructorArguments;
-        this.resultTypeConstructorArguments = resultTypeConstructorArguments;
+    public ConflictFree(List<TypeParameter> parameterTypeConstructorArguments, TypeParameter returnTypeConstructorArguments, List<TypeParameter> classTypeParameters, List<String> inputParameterNames, String selfParameterName, String combinatorParameterName, String maxTupleSizeParameterName, TypeConstructor accumulationTypeConstructor, TypeConstructor permissiveAccumulationTypeConstructor, TypeConstructor inputTypeConstructor) {
+        this.parameterTypeConstructorArguments = parameterTypeConstructorArguments;
+        this.returnTypeConstructorArguments = returnTypeConstructorArguments;
         this.classTypeParameters = classTypeParameters;
         this.inputParameterNames = inputParameterNames;
         this.selfParameterName = selfParameterName;
@@ -39,16 +39,16 @@ public class ConflictFree {
         this.inputTypeConstructor = inputTypeConstructor;
     }
 
-    public static ConflictFree of(List<TypeParameter> inputTypeConstructorArguments, TypeParameter resultTypeConstructorArgument, List<TypeParameter> classTypeParameters, List<String> inputParameterNames, String selfParameterName, String combinatorParameterName, String maxTupleSizeParameterName, TypeConstructor accumulationTypeConstructor, TypeConstructor permissiveAccumulationTypeConstructor, TypeConstructor inputTypeConstructor) {
-        return new ConflictFree(inputTypeConstructorArguments, resultTypeConstructorArgument, classTypeParameters, inputParameterNames, selfParameterName, combinatorParameterName, maxTupleSizeParameterName, accumulationTypeConstructor, permissiveAccumulationTypeConstructor, inputTypeConstructor);
+    public static ConflictFree of(List<TypeParameter> parameterTypeConstructorArguments, TypeParameter returnTypeConstructorArgument, List<TypeParameter> classTypeParameters, List<String> inputParameterNames, String selfParameterName, String combinatorParameterName, String maxTupleSizeParameterName, TypeConstructor accumulationTypeConstructor, TypeConstructor permissiveAccumulationTypeConstructor, TypeConstructor inputTypeConstructor) {
+        return new ConflictFree(parameterTypeConstructorArguments, returnTypeConstructorArgument, classTypeParameters, inputParameterNames, selfParameterName, combinatorParameterName, maxTupleSizeParameterName, accumulationTypeConstructor, permissiveAccumulationTypeConstructor, inputTypeConstructor);
     }
 
-    public List<TypeParameter> getInputTypeConstructorArguments() {
-        return inputTypeConstructorArguments;
+    public List<TypeParameter> getParameterTypeConstructorArguments() {
+        return parameterTypeConstructorArguments;
     }
 
-    public TypeParameter getResultTypeConstructorArguments() {
-        return resultTypeConstructorArguments;
+    public TypeParameter getReturnTypeConstructorArguments() {
+        return returnTypeConstructorArguments;
     }
 
     public List<TypeParameter> getClassTypeParameters() {
@@ -88,19 +88,19 @@ public class ConflictFree {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ConflictFree that = (ConflictFree) o;
-        return getInputTypeConstructorArguments().equals(that.getInputTypeConstructorArguments()) && getResultTypeConstructorArguments().equals(that.getResultTypeConstructorArguments()) && getClassTypeParameters().equals(that.getClassTypeParameters()) && getInputParameterNames().equals(that.getInputParameterNames()) && getSelfParameterName().equals(that.getSelfParameterName()) && getCombinatorParameterName().equals(that.getCombinatorParameterName()) && getMaxTupleSizeParameterName().equals(that.getMaxTupleSizeParameterName()) && getAccumulationTypeConstructor().equals(that.getAccumulationTypeConstructor()) && getPermissiveAccumulationTypeConstructor().equals(that.getPermissiveAccumulationTypeConstructor()) && getInputTypeConstructor().equals(that.getInputTypeConstructor());
+        return getParameterTypeConstructorArguments().equals(that.getParameterTypeConstructorArguments()) && getReturnTypeConstructorArguments().equals(that.getReturnTypeConstructorArguments()) && getClassTypeParameters().equals(that.getClassTypeParameters()) && getInputParameterNames().equals(that.getInputParameterNames()) && getSelfParameterName().equals(that.getSelfParameterName()) && getCombinatorParameterName().equals(that.getCombinatorParameterName()) && getMaxTupleSizeParameterName().equals(that.getMaxTupleSizeParameterName()) && getAccumulationTypeConstructor().equals(that.getAccumulationTypeConstructor()) && getPermissiveAccumulationTypeConstructor().equals(that.getPermissiveAccumulationTypeConstructor()) && getInputTypeConstructor().equals(that.getInputTypeConstructor());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getInputTypeConstructorArguments(), getResultTypeConstructorArguments(), getClassTypeParameters(), getInputParameterNames(), getSelfParameterName(), getCombinatorParameterName(), getMaxTupleSizeParameterName(), getAccumulationTypeConstructor(), getPermissiveAccumulationTypeConstructor(), getInputTypeConstructor());
+        return Objects.hash(getParameterTypeConstructorArguments(), getReturnTypeConstructorArguments(), getClassTypeParameters(), getInputParameterNames(), getSelfParameterName(), getCombinatorParameterName(), getMaxTupleSizeParameterName(), getAccumulationTypeConstructor(), getPermissiveAccumulationTypeConstructor(), getInputTypeConstructor());
     }
 
     @Override
     public String toString() {
         return "ConflictFree{" +
-                "inputTypeConstructorArguments=" + inputTypeConstructorArguments +
-                ", resultTypeConstructorArguments=" + resultTypeConstructorArguments +
+                "parameterTypeConstructorArguments=" + parameterTypeConstructorArguments +
+                ", returnTypeConstructorArguments=" + returnTypeConstructorArguments +
                 ", classTypeParameters=" + classTypeParameters +
                 ", inputParameterNames=" + inputParameterNames +
                 ", selfParameterName='" + selfParameterName + '\'' +

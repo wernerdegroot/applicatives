@@ -7,8 +7,8 @@ import java.util.*;
 import java.util.function.IntFunction;
 
 import static java.util.stream.Collectors.toSet;
-import static nl.wernerdegroot.applicatives.processor.conflicts.Conflicts.INPUT_TYPE_CONSTRUCTOR_ARGUMENTS;
-import static nl.wernerdegroot.applicatives.processor.conflicts.Conflicts.RESULT_TYPE_CONSTRUCTOR_ARGUMENT;
+import static nl.wernerdegroot.applicatives.processor.conflicts.Conflicts.PARAMETER_TYPE_CONSTRUCTOR_ARGUMENTS;
+import static nl.wernerdegroot.applicatives.processor.conflicts.Conflicts.RETURN_TYPE_CONSTRUCTOR_ARGUMENT;
 
 /**
  * In the process of generating overloads, we will be introducing new type parameters.
@@ -32,8 +32,8 @@ public class ConflictFinder {
      */
     public static Map<TypeParameterName, TypeParameterName> findClassTypeParameterNameReplacements(List<TypeParameter> classTypeParameters) {
         List<TypeParameter> typeParametersThatCanCauseConflicts = new ArrayList<>();
-        typeParametersThatCanCauseConflicts.addAll(INPUT_TYPE_CONSTRUCTOR_ARGUMENTS);
-        typeParametersThatCanCauseConflicts.add(RESULT_TYPE_CONSTRUCTOR_ARGUMENT);
+        typeParametersThatCanCauseConflicts.addAll(PARAMETER_TYPE_CONSTRUCTOR_ARGUMENTS);
+        typeParametersThatCanCauseConflicts.add(RETURN_TYPE_CONSTRUCTOR_ARGUMENT);
 
         Map<TypeParameterName, TypeParameterName> classTypeParameterReplacements = typeParametersHaveConflicts(classTypeParameters, typeParametersThatCanCauseConflicts)
                 ? generateTypeParameterNameReplacements(classTypeParameters, Conflicts::alternativeClassTypeParameterName)

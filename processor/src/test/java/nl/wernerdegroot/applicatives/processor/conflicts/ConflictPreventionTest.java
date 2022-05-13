@@ -44,10 +44,10 @@ public class ConflictPreventionTest {
             );
 
             // Input type constructor arguments:
-            assertEquals(INPUT_TYPE_CONSTRUCTOR_ARGUMENTS, conflictFree.getInputTypeConstructorArguments());
+            assertEquals(PARAMETER_TYPE_CONSTRUCTOR_ARGUMENTS, conflictFree.getParameterTypeConstructorArguments());
 
             // Result type constructor argument:
-            assertEquals(RESULT_TYPE_CONSTRUCTOR_ARGUMENT, conflictFree.getResultTypeConstructorArguments());
+            assertEquals(RETURN_TYPE_CONSTRUCTOR_ARGUMENT, conflictFree.getReturnTypeConstructorArguments());
 
             // Class type parameters:
             assertEquals(asList(C1.asTypeParameter(), C2.extending(PROFUSE.with(C1, C2, C3)), C3.asTypeParameter()), conflictFree.getClassTypeParameters());
@@ -81,8 +81,8 @@ public class ConflictPreventionTest {
 
     static {
         INPUT_AND_RESULT_TYPE_CONSTRUCTOR_ARGUMENT_NAMES = new ArrayList<>();
-        INPUT_AND_RESULT_TYPE_CONSTRUCTOR_ARGUMENT_NAMES.addAll(INPUT_TYPE_CONSTRUCTOR_ARGUMENT_NAMES);
-        INPUT_AND_RESULT_TYPE_CONSTRUCTOR_ARGUMENT_NAMES.add(RESULT_TYPE_CONSTRUCTOR_ARGUMENT_NAME);
+        INPUT_AND_RESULT_TYPE_CONSTRUCTOR_ARGUMENT_NAMES.addAll(PARAMETER_TYPE_CONSTRUCTOR_ARGUMENT_NAMES);
+        INPUT_AND_RESULT_TYPE_CONSTRUCTOR_ARGUMENT_NAMES.add(RETURN_TYPE_CONSTRUCTOR_ARGUMENT_NAME);
     }
 
     private static final List<String> EXPECTED_INPUT_PARAMETER_NAMES = ORDINALS;

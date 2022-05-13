@@ -24,28 +24,28 @@ public final class Conflicts {
      * and always try to prevent conflicts will all 26 possible input type
      * constructor arguments (whether they are used or not).
      */
-    public static final int NUMBER_OF_INPUT_TYPE_CONSTRUCTOR_ARGUMENTS = 26;
+    public static final int NUMBER_OF_PARAMETER_TYPE_CONSTRUCTOR_ARGUMENTS = 26;
 
-    public static final List<TypeParameterName> INPUT_TYPE_CONSTRUCTOR_ARGUMENT_NAMES = IntStream
-            .range(0, NUMBER_OF_INPUT_TYPE_CONSTRUCTOR_ARGUMENTS)
-            .mapToObj(Conflicts::inputTypeConstructorArgumentName)
+    public static final List<TypeParameterName> PARAMETER_TYPE_CONSTRUCTOR_ARGUMENT_NAMES = IntStream
+            .range(0, NUMBER_OF_PARAMETER_TYPE_CONSTRUCTOR_ARGUMENTS)
+            .mapToObj(Conflicts::parameterTypeConstructorArgumentName)
             .collect(toList());
 
-    public static final List<TypeParameter> INPUT_TYPE_CONSTRUCTOR_ARGUMENTS = INPUT_TYPE_CONSTRUCTOR_ARGUMENT_NAMES
+    public static final List<TypeParameter> PARAMETER_TYPE_CONSTRUCTOR_ARGUMENTS = PARAMETER_TYPE_CONSTRUCTOR_ARGUMENT_NAMES
             .stream()
             .map(TypeParameter::of)
             .collect(toList());
 
     public static final List<String> INPUT_PARAMETER_NAMES = IntStream
-            .range(0, NUMBER_OF_INPUT_TYPE_CONSTRUCTOR_ARGUMENTS)
+            .range(0, NUMBER_OF_PARAMETER_TYPE_CONSTRUCTOR_ARGUMENTS)
             .mapToObj(Conflicts::inputParameterName)
             .collect(toList());
 
     public static final String INPUT_TYPE_CONSTRUCTOR_ARGUMENT_PREFIX = "P";
 
-    public static final TypeParameterName RESULT_TYPE_CONSTRUCTOR_ARGUMENT_NAME = TypeParameterName.of("R");
+    public static final TypeParameterName RETURN_TYPE_CONSTRUCTOR_ARGUMENT_NAME = TypeParameterName.of("R");
 
-    public static final TypeParameter RESULT_TYPE_CONSTRUCTOR_ARGUMENT = TypeParameter.of(RESULT_TYPE_CONSTRUCTOR_ARGUMENT_NAME);
+    public static final TypeParameter RETURN_TYPE_CONSTRUCTOR_ARGUMENT = TypeParameter.of(RETURN_TYPE_CONSTRUCTOR_ARGUMENT_NAME);
 
     public static final String SELF_PARAMETER_NAME = "self";
 
@@ -59,7 +59,7 @@ public final class Conflicts {
         return ORDINALS.get(i);
     }
 
-    public static TypeParameterName inputTypeConstructorArgumentName(int i) {
+    public static TypeParameterName parameterTypeConstructorArgumentName(int i) {
         String name = INPUT_TYPE_CONSTRUCTOR_ARGUMENT_PREFIX + (i + 1);
         return TypeParameterName.of(name);
     }

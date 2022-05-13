@@ -133,8 +133,8 @@ public class CovariantBuilderProcessor extends AbstractProcessor {
                     );
 
                     Log.of("Resolved (potential) conflicts between existing type parameters and new, generated type parameters")
-                            .withDetail("Input type constructor arguments", conflictFree.getInputTypeConstructorArguments(), TypeParameterGenerator::generateFrom)
-                            .withDetail("Result type constructor arguments", conflictFree.getResultTypeConstructorArguments(), TypeParameterGenerator::generateFrom)
+                            .withDetail("Input type constructor arguments", conflictFree.getParameterTypeConstructorArguments(), TypeParameterGenerator::generateFrom)
+                            .withDetail("Result type constructor arguments", conflictFree.getReturnTypeConstructorArguments(), TypeParameterGenerator::generateFrom)
                             .withDetail("Class type parameters", conflictFree.getClassTypeParameters(), TypeParameterGenerator::generateFrom)
                             .withDetail("Input parameter names", conflictFree.getInputParameterNames())
                             .withDetail("Self parameter name", conflictFree.getSelfParameterName())
@@ -149,8 +149,8 @@ public class CovariantBuilderProcessor extends AbstractProcessor {
                             .withPackageName(containingClass.getPackageName())
                             .withClassNameToGenerate(covariantBuilderAnnotation.className())
                             .withClassTypeParameters(conflictFree.getClassTypeParameters())
-                            .withInputTypeConstructorArguments(conflictFree.getInputTypeConstructorArguments())
-                            .withResultTypeConstructorArgument(conflictFree.getResultTypeConstructorArguments())
+                            .withParameterTypeConstructorArguments(conflictFree.getParameterTypeConstructorArguments())
+                            .withReturnTypeConstructorArgument(conflictFree.getReturnTypeConstructorArguments())
                             .withOptionalInitializerMethodName(templateClassWithMethods.getOptionalInitializerMethodName())
                             .withAccumulatorMethodName(templateClassWithMethods.getAccumulatorMethodName())
                             .withInputParameterNames(conflictFree.getInputParameterNames())

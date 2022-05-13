@@ -49,8 +49,8 @@ public class ConflictPrevention {
         TypeConstructor conflictFreeInputTypeConstructor = inputTypeConstructor.replaceAllTypeParameterNames(classTypeParameterNameReplacements);
 
         return ConflictFree.of(
-                INPUT_TYPE_CONSTRUCTOR_ARGUMENTS,
-                RESULT_TYPE_CONSTRUCTOR_ARGUMENT,
+                PARAMETER_TYPE_CONSTRUCTOR_ARGUMENTS,
+                RETURN_TYPE_CONSTRUCTOR_ARGUMENT,
                 conflictFreeClassTypeParameters,
                 INPUT_PARAMETER_NAMES,
                 SELF_PARAMETER_NAME,
