@@ -2,7 +2,7 @@ package nl.wernerdegroot.applicatives.runtime;
 
 import java.util.function.BiFunction;
 
-interface Tuple2<First, Second> {
+public interface Tuple2<First, Second> {
 
     First getFirst();
 

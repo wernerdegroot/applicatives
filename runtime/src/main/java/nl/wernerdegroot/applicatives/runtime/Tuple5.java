@@ -1,6 +1,6 @@
 package nl.wernerdegroot.applicatives.runtime;
 
-interface Tuple5<First, Second, Third, Fourth, Fifth> {
+public interface Tuple5<First, Second, Third, Fourth, Fifth> {
 
     First getFirst();
 

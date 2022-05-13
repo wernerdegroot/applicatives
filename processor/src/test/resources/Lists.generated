@@ -7,11 +7,11 @@ public interface ListsMixin {
     <P1, P2, R> java.util.ArrayList<R> compose(java.util.ArrayList<? extends P1> first, java.util.List<? extends P2> second, java.util.function.BiFunction<? super P1, ? super P2, ? extends R> fn);
 
     default <P1, P2, R> java.util.ArrayList<R> compose(java.util.List<? extends P1> first, java.util.List<? extends P2> second, java.util.function.BiFunction<? super P1, ? super P2, ? extends R> fn) {
-        return this.compose(nl.wernerdegroot.applicatives.ListsMixin.Tuples.<P1, P2, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object>tuple(this, first, 2), second, nl.wernerdegroot.applicatives.runtime.Function2.fromBiFunction(fn)::apply);
+        return this.compose(nl.wernerdegroot.applicatives.ListsMixin.Tuples.<P1>tuple(this, first, 2), second, nl.wernerdegroot.applicatives.runtime.Function2.fromBiFunction(fn)::apply);
     }
 
     default <P1, P2, P3, R> java.util.ArrayList<R> compose(java.util.List<? extends P1> first, java.util.List<? extends P2> second, java.util.List<? extends P3> third, nl.wernerdegroot.applicatives.runtime.Function3<? super P1, ? super P2, ? super P3, ? extends R> fn) {
-        return this.compose(nl.wernerdegroot.applicatives.ListsMixin.Tuples.<P1, P2, P3, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object>tuple(this, first, second, 3), third, fn::apply);
+        return this.compose(nl.wernerdegroot.applicatives.ListsMixin.Tuples.<P1, P2>tuple(this, first, second, 3), third, fn::apply);
     }
 
     default <P1, P2, R> java.util.function.BiFunction<? super java.util.List<? extends P1>, ? super java.util.List<? extends P2>, ? extends java.util.ArrayList<R>> lift(java.util.function.BiFunction<? super P1, ? super P2, ? extends R> fn) {
@@ -26,16 +26,16 @@ public interface ListsMixin {
 
     class Tuples {
 
-        public static <P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26> java.util.ArrayList<? extends nl.wernerdegroot.applicatives.runtime.FastTuple<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26>> tuple(nl.wernerdegroot.applicatives.ListsMixin self, int maxSize) {
+        public static java.util.ArrayList<? extends nl.wernerdegroot.applicatives.runtime.Tuple0> tuple(nl.wernerdegroot.applicatives.ListsMixin self, int maxSize) {
             return self.singleton(nl.wernerdegroot.applicatives.runtime.FastTuple.emptyWithMaxSize(maxSize));
         }
 
-        public static <P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26> java.util.ArrayList<nl.wernerdegroot.applicatives.runtime.FastTuple<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26>> tuple(nl.wernerdegroot.applicatives.ListsMixin self, java.util.List<? extends P1> first, int maxSize) {
-            return self.compose(nl.wernerdegroot.applicatives.ListsMixin.Tuples.<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26>tuple(self, maxSize), first, nl.wernerdegroot.applicatives.runtime.FastTuple::withFirst);
+        public static <P1> java.util.ArrayList<nl.wernerdegroot.applicatives.runtime.Tuple1<P1>> tuple(nl.wernerdegroot.applicatives.ListsMixin self, java.util.List<? extends P1> first, int maxSize) {
+            return self.compose(nl.wernerdegroot.applicatives.ListsMixin.Tuples.tuple(self, maxSize), first, nl.wernerdegroot.applicatives.runtime.Tuple0::withFirst);
         }
 
-        public static <P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26> java.util.ArrayList<nl.wernerdegroot.applicatives.runtime.FastTuple<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26>> tuple(nl.wernerdegroot.applicatives.ListsMixin self, java.util.List<? extends P1> first, java.util.List<? extends P2> second, int maxSize) {
-            return self.compose(nl.wernerdegroot.applicatives.ListsMixin.Tuples.<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26>tuple(self, first, maxSize), second, nl.wernerdegroot.applicatives.runtime.FastTuple::withSecond);
+        public static <P1, P2> java.util.ArrayList<nl.wernerdegroot.applicatives.runtime.Tuple2<P1, P2>> tuple(nl.wernerdegroot.applicatives.ListsMixin self, java.util.List<? extends P1> first, java.util.List<? extends P2> second, int maxSize) {
+            return self.compose(nl.wernerdegroot.applicatives.ListsMixin.Tuples.<P1>tuple(self, first, maxSize), second, nl.wernerdegroot.applicatives.runtime.Tuple1::withSecond);
         }
 
     }

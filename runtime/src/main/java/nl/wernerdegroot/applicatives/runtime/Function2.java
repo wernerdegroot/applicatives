@@ -11,7 +11,7 @@ public interface Function2<A, B, Result> {
 
     Result apply(A first, B second);
 
-    default Result apply(FastTuple<? extends A, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?> tuple, B second) {
+    default Result apply(Tuple1<? extends A> tuple, B second) {
         return apply(tuple.getFirst(), second);
     }
 }

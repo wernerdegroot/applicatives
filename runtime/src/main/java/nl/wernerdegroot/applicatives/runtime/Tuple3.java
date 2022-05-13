@@ -1,6 +1,6 @@
 package nl.wernerdegroot.applicatives.runtime;
 
-interface Tuple3<First, Second, Third> {
+public interface Tuple3<First, Second, Third> {
 
     First getFirst();
 
