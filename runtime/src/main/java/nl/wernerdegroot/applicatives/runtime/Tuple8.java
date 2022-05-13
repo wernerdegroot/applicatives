@@ -1,6 +1,6 @@
 package nl.wernerdegroot.applicatives.runtime;
 
-interface Tuple8<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth> {
+public interface Tuple8<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth> {
 
     First getFirst();
 

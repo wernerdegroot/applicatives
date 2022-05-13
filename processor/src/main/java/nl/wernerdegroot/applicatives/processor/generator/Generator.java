@@ -350,8 +350,7 @@ public class Generator {
                         .withArguments(
                                 methodCall()
                                         .withType(getFullyQualifiedTupleClass())
-                                        .withTypeArguments(takeParameterTypeConstructorArgumentsAsTypeArguments(arity))
-                                        .withTypeArguments(nCopies(NUMBER_OF_TUPLE_TYPE_PARAMETERS - arity, OBJECT.invariant()))
+                                        .withTypeArguments(takeParameterTypeConstructorArgumentsAsTypeArguments(arity - 1))
                                         .withTypeArguments(getClassTypeParametersAsTypeArguments())
                                         .withMethodName(TUPLE_METHOD_NAME)
                                         .withArguments(THIS)
@@ -488,7 +487,7 @@ public class Generator {
                         .withArguments(
                                 methodCall()
                                         .withType(getFullyQualifiedTupleClass())
-                                        .withTypeArguments(getParameterTypeConstructorArgumentsAsTypeArguments())
+                                        .withTypeArguments(takeParameterTypeConstructorArgumentsAsTypeArguments(arity - 1))
                                         .withTypeArguments(getClassTypeParametersAsTypeArguments())
                                         .withMethodName(TUPLE_METHOD_NAME)
                                         .withArguments(selfParameterName)
@@ -497,7 +496,7 @@ public class Generator {
                                         .generate(),
                                 inputParameterNames.get(arity - 1),
                                 methodReference()
-                                        .withType(FAST_TUPLE)
+                                        .withType(fullyQualifiedNameOfTupleWithArity(arity - 1))
                                         .withMethodName(witherForIndex(arity - 1))
                                         .generate()
                         )
@@ -514,12 +513,12 @@ public class Generator {
 
         return method()
                 .withModifiers(PUBLIC, STATIC)
-                .withTypeParameters(parameterTypeConstructorArguments)
+                .withTypeParameters(takeParameterTypeConstructorArguments(arity))
                 // Since these are all static methods, that don't have access to any class type parameters
                 // we need to make sure that the class type parameters are available as additional method
                 // type parameters:
                 .withTypeParameters(classTypeParameters)
-                .withReturnType(FAST_TUPLE.with(getParameterTypeConstructorArgumentsAsTypeArguments()).using(returnTypeConstructor))
+                .withReturnType(Type.concrete(fullyQualifiedNameOfTupleWithArity(arity), takeParameterTypeConstructorArgumentsAsTypeArguments(arity)).using(returnTypeConstructor))
                 .withName(TUPLE_METHOD_NAME)
                 .withParameter(getFullyQualifiedClassNameToGenerate().with(getClassTypeParametersAsTypeArguments()), selfParameterName)
                 .withParameterTypes(takeParameterTypes(arity))
@@ -546,5 +545,9 @@ public class Generator {
 
     private static FullyQualifiedName fullyQualifiedNameOfArbitraryArityFunction(int arity) {
         return FullyQualifiedName.of("nl.wernerdegroot.applicatives.runtime.Function" + arity);
+    }
+
+    private static FullyQualifiedName fullyQualifiedNameOfTupleWithArity(int arity) {
+        return FullyQualifiedName.of("nl.wernerdegroot.applicatives.runtime.Tuple" + arity);
     }
 }
