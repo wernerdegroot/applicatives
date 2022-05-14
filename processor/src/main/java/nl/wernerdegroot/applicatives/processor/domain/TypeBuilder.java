@@ -21,12 +21,20 @@ public class TypeBuilder {
         return fullyQualifiedName;
     }
 
+    public Type with(Type... types) {
+        return Type.concrete(fullyQualifiedName, Stream.of(types).map(Type::invariant).collect(toList()));
+    }
+
     public Type with(TypeArgument... typeArguments) {
         return Type.concrete(fullyQualifiedName, asList(typeArguments));
     }
 
     public Type with(TypeParameterName... typeArguments) {
         return Type.concrete(fullyQualifiedName, Stream.of(typeArguments).map(Type::generic).map(Type::invariant).collect(toList()));
+    }
+
+    public Type asType() {
+        return Type.concrete(fullyQualifiedName);
     }
 
     public TypeConstructor asTypeConstructor() {
