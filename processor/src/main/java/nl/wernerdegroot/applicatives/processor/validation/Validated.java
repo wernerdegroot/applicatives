@@ -2,6 +2,7 @@ package nl.wernerdegroot.applicatives.processor.validation;
 
 import nl.wernerdegroot.applicatives.runtime.FastTuple;
 import nl.wernerdegroot.applicatives.runtime.Function3;
+import nl.wernerdegroot.applicatives.runtime.Function4;
 
 import java.util.HashSet;
 import java.util.NoSuchElementException;
@@ -56,11 +57,19 @@ public class Validated<T> {
     }
 
     public static <A, B, C, D> Validated<D> combine(Validated<A> first, Validated<B> second, Validated<C> third, Function3<? super A, ? super B, ? super C, ? extends D> fn) {
-        return combine(Validated.tuple(first, second, 3), third, fn::apply);
+        return combine(Validated.tuple(first, second, 2), third, fn::apply);
+    }
+
+    public static <A, B, C, D, E> Validated<E> combine(Validated<A> first, Validated<B> second, Validated<C> third, Validated<D> fourth, Function4<? super A, ? super B, ? super C, ? super D, ? extends E> fn) {
+        return combine(Validated.tuple(first, second, third, 3), fourth, fn::apply);
     }
 
     private static <P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26> Validated<FastTuple<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26>> tuple(Validated<P1> first, Validated<P2> second, int maxSize) {
         return combine(first, second, FastTuple.withMaxSize(maxSize));
+    }
+
+    private static <P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26> Validated<FastTuple<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26>> tuple(Validated<P1> first, Validated<P2> second, Validated<P3> third, int maxSize) {
+        return combine(Validated.<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26>tuple(first, second, maxSize), third, FastTuple::withThird);
     }
 
     public <U> Validated<U> map(Function<T, U> fn) {

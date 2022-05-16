@@ -1,3 +1,4 @@
+* Type constructors shouldn't have to be exactly the same. Pass both variations to generator.
 * Validate values of annotation parameters (no -1 overloads)
 * Validate that type constructors for accumulator contain only one of the type parameter (no `C` in first parameter for example)
 * Remove duplication of processors

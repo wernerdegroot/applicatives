@@ -3,6 +3,7 @@ package nl.wernerdegroot.applicatives.processor;
 import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
 import nl.wernerdegroot.applicatives.runtime.Accumulator;
 import nl.wernerdegroot.applicatives.runtime.Covariant;
+import nl.wernerdegroot.applicatives.runtime.Finalizer;
 import nl.wernerdegroot.applicatives.runtime.Initializer;
 
 import java.util.Objects;
@@ -27,6 +28,7 @@ public class Classes {
 
     public static final FullyQualifiedName INITIALIZER = FullyQualifiedName.of(Initializer.class.getCanonicalName());
     public static final FullyQualifiedName ACCUMULATOR = FullyQualifiedName.of(Accumulator.class.getCanonicalName());
+    public static final FullyQualifiedName FINALIZER = FullyQualifiedName.of(Finalizer.class.getCanonicalName());
 
     static {
         try {

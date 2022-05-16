@@ -55,7 +55,8 @@ public class CovariantBuilderProcessor extends AbstractProcessor {
 
     public static final Set<FullyQualifiedName> SUPPORTED_ANNOTATIONS = Stream.of(
             INITIALIZER,
-            ACCUMULATOR
+            ACCUMULATOR,
+            FINALIZER
     ).collect(toSet());
 
     @Override
