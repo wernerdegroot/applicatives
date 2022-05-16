@@ -17,9 +17,7 @@ public class TemplateClassWithMethodsValidator {
         return Validated.combine(
                 validateTemplateClass(containingClass),
                 validateAccumulator(method),
-                (templateClass, accumulator) -> {
-                    return templateClassWithMethods(templateClass, Optional.empty(), accumulator);
-                }
+                (templateClass, accumulator) -> templateClassWithMethods(templateClass, Optional.empty(), accumulator, Optional.empty())
         );
     }
 
@@ -46,7 +44,7 @@ public class TemplateClassWithMethodsValidator {
                         }
                     }
 
-                    return Validated.valid(templateClassWithMethods(templateClass, optionalInitializer, accumulator));
+                    return Validated.valid(templateClassWithMethods(templateClass, optionalInitializer, accumulator, optionalFinalizer));
                 }
         ).flatMap(Function.identity());
     }
@@ -104,14 +102,15 @@ public class TemplateClassWithMethodsValidator {
         }
     }
 
-    private static TemplateClassWithMethods templateClassWithMethods(TemplateClass templateClass, Optional<CovariantInitializer> covariantInitializer, CovariantAccumulator covariantAccumulator) {
+    private static TemplateClassWithMethods templateClassWithMethods(TemplateClass templateClass, Optional<CovariantInitializer> covariantInitializer, CovariantAccumulator covariantAccumulator, Optional<CovariantFinalizer> covariantFinalizer) {
         return TemplateClassWithMethods.of(
                 templateClass.getTypeParameters(),
                 covariantAccumulator.getAccumulationTypeConstructor(),
                 covariantAccumulator.getPermissiveAccumulationTypeConstructor(),
                 covariantAccumulator.getInputTypeConstructor(),
                 covariantInitializer.map(CovariantInitializer::getName),
-                covariantAccumulator.getName()
+                covariantAccumulator.getName(),
+                covariantFinalizer.map(CovariantFinalizer::getName)
         );
     }
 }
