@@ -53,6 +53,7 @@ public class GeneratorTest {
                 .withReturnTypeConstructorArgument(RETURN_TYPE_CONSTRUCTOR_ARGUMENT)
                 .withOptionalInitializerMethodName(Optional.empty())
                 .withAccumulatorMethodName("compose")
+                .withOptionalFinalizerMethodName(Optional.empty())
                 .withInputParameterNames(INPUT_PARAMETER_NAMES)
                 .withValueParameterName(VALUE_PARAMETER_NAME)
                 .withSelfParameterName(SELF_PARAMETER_NAME)
@@ -61,6 +62,7 @@ public class GeneratorTest {
                 .withPermissiveAccumulationTypeConstructor(OPTIONAL.with(placeholder().covariant()))
                 .withInputTypeConstructor(OPTIONAL.with(placeholder().covariant()))
                 .withAccumulationTypeConstructor(OPTIONAL.with(placeholder().invariant()))
+                .withOptionalResultTypeConstructor(Optional.empty())
                 .withLiftMethodName("lift")
                 .withMaxArity(2)
                 .generate();
@@ -79,6 +81,7 @@ public class GeneratorTest {
                 .withReturnTypeConstructorArgument(RETURN_TYPE_CONSTRUCTOR_ARGUMENT)
                 .withOptionalInitializerMethodName(Optional.of("singleton"))
                 .withAccumulatorMethodName("compose")
+                .withOptionalFinalizerMethodName(Optional.of("finalize"))
                 .withInputParameterNames(INPUT_PARAMETER_NAMES)
                 .withValueParameterName(VALUE_PARAMETER_NAME)
                 .withSelfParameterName(SELF_PARAMETER_NAME)
@@ -87,6 +90,7 @@ public class GeneratorTest {
                 .withPermissiveAccumulationTypeConstructor(ARRAY_LIST.with(placeholder().covariant()))
                 .withInputTypeConstructor(LIST.with(placeholder().covariant()))
                 .withAccumulationTypeConstructor(ARRAY_LIST.with(placeholder().invariant()))
+                .withOptionalResultTypeConstructor(Optional.of(LIST.with(placeholder().invariant())))
                 .withLiftMethodName("lift")
                 .withMaxArity(3)
                 .generate();
@@ -107,6 +111,7 @@ public class GeneratorTest {
                 .withReturnTypeConstructorArgument(RETURN_TYPE_CONSTRUCTOR_ARGUMENT)
                 .withOptionalInitializerMethodName(Optional.empty())
                 .withAccumulatorMethodName("compose")
+                .withOptionalFinalizerMethodName(Optional.empty())
                 .withInputParameterNames(INPUT_PARAMETER_NAMES)
                 .withValueParameterName(VALUE_PARAMETER_NAME)
                 .withSelfParameterName(SELF_PARAMETER_NAME)
@@ -115,6 +120,7 @@ public class GeneratorTest {
                 .withPermissiveAccumulationTypeConstructor(FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()))
                 .withInputTypeConstructor(FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()))
                 .withAccumulationTypeConstructor(FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()))
+                .withOptionalResultTypeConstructor(Optional.empty())
                 .withLiftMethodName("lift")
                 .withMaxArity(4)
                 .generate();

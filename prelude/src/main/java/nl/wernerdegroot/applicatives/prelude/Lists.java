@@ -2,11 +2,10 @@ package nl.wernerdegroot.applicatives.prelude;
 
 import nl.wernerdegroot.applicatives.runtime.Accumulator;
 import nl.wernerdegroot.applicatives.runtime.Covariant;
+import nl.wernerdegroot.applicatives.runtime.Finalizer;
 import nl.wernerdegroot.applicatives.runtime.Initializer;
 
-import java.sql.Array;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
 
@@ -21,7 +20,7 @@ public class Lists implements ListsApplicative {
 
     @Override
     @Initializer
-    public <A> ArrayList<A> singleton(A value) {
+    public <A> ArrayList<? extends A> singleton(A value) {
         ArrayList<A> result = new ArrayList<>(1);
         result.add(value);
         return result;
@@ -40,5 +39,11 @@ public class Lists implements ListsApplicative {
             }
         }
         return result;
+    }
+
+    @Override
+    @Finalizer
+    public <A> List<A> finalize(ArrayList<A> toFinalize) {
+        return toFinalize;
     }
 }

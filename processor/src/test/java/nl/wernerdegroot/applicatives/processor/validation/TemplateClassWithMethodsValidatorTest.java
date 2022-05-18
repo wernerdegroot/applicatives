@@ -41,7 +41,9 @@ public class TemplateClassWithMethodsValidatorTest {
                         ARRAY_LIST.with(placeholder().covariant()),
                         LIST.with(placeholder().covariant()),
                         Optional.empty(),
-                        accumulator.getName()
+                        Optional.empty(),
+                        accumulator.getName(),
+                        Optional.empty()
                 )
         );
 
@@ -145,6 +147,71 @@ public class TemplateClassWithMethodsValidatorTest {
         assertFalse(toVerify.isValid());
     }
 
+    @Test
+    public void givenValidClassAndMethodsContainingValidAccumulatorAndValidFinalizer() {
+        Validated<TemplateClassWithMethods> toVerify = TemplateClassWithMethodsValidator.validate(
+                getValidContainingClass(),
+                asList(
+                        getAccumulator(withAnnotations(ACCUMULATOR), withModifiers(PUBLIC), withTypeConstructor(ARRAY_LIST), withTypeConstructor(ARRAY_LIST), withTypeConstructor(LIST)),
+                        getFinalizer(withAnnotations(FINALIZER), withModifiers(PUBLIC), withTypeConstructor(ARRAY_LIST), withTypeConstructor(LIST))
+                )
+        );
+
+        assertTrue(toVerify.isValid());
+    }
+
+    @Test
+    public void givenValidClassAndMethodsContainingInvalidAccumulatorAndValidFinalizer() {
+        Validated<TemplateClassWithMethods> toVerify = TemplateClassWithMethodsValidator.validate(
+                getValidContainingClass(),
+                asList(
+                        getAccumulator(withAnnotations(ACCUMULATOR), withModifiers(PRIVATE), withTypeConstructor(ARRAY_LIST), withTypeConstructor(ARRAY_LIST), withTypeConstructor(LIST)),
+                        getFinalizer(withAnnotations(FINALIZER), withModifiers(PUBLIC), withTypeConstructor(ARRAY_LIST), withTypeConstructor(LIST))
+                )
+        );
+
+        assertFalse(toVerify.isValid());
+    }
+
+    @Test
+    public void givenValidClassAndMethodsContainingValidAccumulatorAndInvalidFinalizer() {
+        Validated<TemplateClassWithMethods> toVerify = TemplateClassWithMethodsValidator.validate(
+                getValidContainingClass(),
+                asList(
+                        getAccumulator(withAnnotations(ACCUMULATOR), withModifiers(PUBLIC), withTypeConstructor(ARRAY_LIST), withTypeConstructor(ARRAY_LIST), withTypeConstructor(LIST)),
+                        getFinalizer(withAnnotations(FINALIZER), withModifiers(PRIVATE), withTypeConstructor(ARRAY_LIST), withTypeConstructor(LIST))
+                )
+        );
+
+        assertFalse(toVerify.isValid());
+    }
+
+    @Test
+    public void givenInvalidClassAndMethodsContainingValidAccumulatorAndValidFinalizer() {
+        Validated<TemplateClassWithMethods> toVerify = TemplateClassWithMethodsValidator.validate(
+                getInvalidContainingClass(),
+                asList(
+                        getAccumulator(withAnnotations(ACCUMULATOR), withModifiers(PUBLIC), withTypeConstructor(ARRAY_LIST), withTypeConstructor(ARRAY_LIST), withTypeConstructor(LIST)),
+                        getFinalizer(withAnnotations(FINALIZER), withModifiers(PUBLIC), withTypeConstructor(ARRAY_LIST), withTypeConstructor(LIST))
+                )
+        );
+
+        assertFalse(toVerify.isValid());
+    }
+
+    @Test
+    public void givenValidClassAndMethodsContainingValidAccumulatorAndValidFinalizerButWithoutSharedTypeConstructor() {
+        Validated<TemplateClassWithMethods> toVerify = TemplateClassWithMethodsValidator.validate(
+                getInvalidContainingClass(),
+                asList(
+                        getAccumulator(withAnnotations(ACCUMULATOR), withModifiers(PUBLIC), withTypeConstructor(ARRAY_LIST), withTypeConstructor(ARRAY_LIST), withTypeConstructor(LIST)),
+                        getFinalizer(withAnnotations(FINALIZER), withModifiers(PUBLIC), withTypeConstructor(OPTIONAL), withTypeConstructor(LIST))
+                )
+        );
+
+        assertFalse(toVerify.isValid());
+    }
+
     private ContainingClass getValidContainingClass() {
         return PackageName.of("nl.wernerdegroot.applicatives")
                 .asPackage()
@@ -214,6 +281,17 @@ public class TemplateClassWithMethodsValidatorTest {
                         Parameter.of(inputTypeConstructor.apply(U.asType()), "right"),
                         Parameter.of(BI_FUNCTION.with(T.asType().contravariant(), U.asType().contravariant(), V.asType().covariant()), "compose")
                 )
+        );
+    }
+
+    private Method getFinalizer(Set<FullyQualifiedName> annotations, Set<Modifier> modifiers, TypeConstructor permissiveAccumulationTypeConstructor, TypeConstructor resultTypeConstructor) {
+        return Method.of(
+                annotations,
+                modifiers,
+                asList(T.asTypeParameter()),
+                Optional.of(resultTypeConstructor.apply(T.asType())),
+                "finalizer",
+                asList(Parameter.of(permissiveAccumulationTypeConstructor.apply(T.asType()), "value"))
         );
     }
 }
