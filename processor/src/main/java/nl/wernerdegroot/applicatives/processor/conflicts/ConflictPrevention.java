@@ -6,6 +6,7 @@ import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstr
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static nl.wernerdegroot.applicatives.processor.conflicts.ConflictFinder.findClassTypeParameterNameReplacements;
@@ -34,7 +35,8 @@ public class ConflictPrevention {
             List<TypeParameter> classTypeParameters,
             TypeConstructor accumulationTypeConstructor,
             TypeConstructor permissiveAccumulationTypeConstructor,
-            TypeConstructor inputTypeConstructor) {
+            TypeConstructor inputTypeConstructor,
+            Optional<TypeConstructor> optionalResultTypeConstructor) {
 
         Map<TypeParameterName, TypeParameterName> classTypeParameterNameReplacements = findClassTypeParameterNameReplacements(classTypeParameters);
 
@@ -46,12 +48,14 @@ public class ConflictPrevention {
         TypeConstructor conflictFreeAccumulationTypeConstructor = accumulationTypeConstructor.replaceAllTypeParameterNames(classTypeParameterNameReplacements);
         TypeConstructor conflictFreePermissiveAccumulationTypeConstructor = permissiveAccumulationTypeConstructor.replaceAllTypeParameterNames(classTypeParameterNameReplacements);
         TypeConstructor conflictFreeInputTypeConstructor = inputTypeConstructor.replaceAllTypeParameterNames(classTypeParameterNameReplacements);
+        Optional<TypeConstructor> conflictFreeOptionalResultTypeConstructor = optionalResultTypeConstructor.map(resultTypeConstructor -> resultTypeConstructor.replaceAllTypeParameterNames(classTypeParameterNameReplacements));
 
         return ConflictFree.of(
                 conflictFreeClassTypeParameters,
                 conflictFreeAccumulationTypeConstructor,
                 conflictFreePermissiveAccumulationTypeConstructor,
-                conflictFreeInputTypeConstructor
+                conflictFreeInputTypeConstructor,
+                conflictFreeOptionalResultTypeConstructor
         );
 
     }

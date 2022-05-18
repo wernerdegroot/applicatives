@@ -98,15 +98,18 @@ public class CovariantProcessor extends AbstractProcessor {
                             .withDetail("Accumulation type constructor", templateClassWithMethods.getAccumulationTypeConstructor(), this::typeConstructorToString)
                             .withDetail("Permissive accumulation type constructor", templateClassWithMethods.getPermissiveAccumulationTypeConstructor(), this::typeConstructorToString)
                             .withDetail("Input type constructor", templateClassWithMethods.getInputTypeConstructor(), this::typeConstructorToString)
+                            .withDetail("Result type constructor", templateClassWithMethods.getOptionalResultTypeConstructor(), this::typeConstructorToString)
                             .withDetail("Name of initializer method", templateClassWithMethods.getOptionalInitializerMethodName())
                             .withDetail("Name of accumulator method", templateClassWithMethods.getAccumulatorMethodName())
+                            .withDetail("Name of finalizer method", templateClassWithMethods.getOptionalFinalizerMethodName())
                             .append(asNote());
 
                     ConflictFree conflictFree = ConflictPrevention.preventConflicts(
                             templateClassWithMethods.getClassTypeParameters(),
                             templateClassWithMethods.getAccumulationTypeConstructor(),
                             templateClassWithMethods.getPermissiveAccumulationTypeConstructor(),
-                            templateClassWithMethods.getInputTypeConstructor()
+                            templateClassWithMethods.getInputTypeConstructor(),
+                            templateClassWithMethods.getOptionalResultTypeConstructor()
                     );
 
                     Log.of("Resolved (potential) conflicts between existing type parameters and new, generated type parameters")
@@ -114,6 +117,7 @@ public class CovariantProcessor extends AbstractProcessor {
                             .withDetail("Accumulation type constructor", conflictFree.getAccumulationTypeConstructor(), this::typeConstructorToString)
                             .withDetail("Permissive accumulation type constructor", conflictFree.getPermissiveAccumulationTypeConstructor(), this::typeConstructorToString)
                             .withDetail("Input type constructor", conflictFree.getInputTypeConstructor(), this::typeConstructorToString)
+                            .withDetail("Result type constructor", conflictFree.getOptionalResultTypeConstructor(), this::typeConstructorToString)
                             .append(asNote());
 
                     String generated = generator()

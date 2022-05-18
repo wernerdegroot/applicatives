@@ -5,6 +5,7 @@ import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstr
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * The product of the conflict resolution algorithm. The fields in
@@ -19,16 +20,18 @@ public class ConflictFree {
     private final TypeConstructor accumulationTypeConstructor;
     private final TypeConstructor permissiveAccumulationTypeConstructor;
     private final TypeConstructor inputTypeConstructor;
+    private final Optional<TypeConstructor> optionalResultTypeConstructor;
 
-    public ConflictFree(List<TypeParameter> classTypeParameters, TypeConstructor accumulationTypeConstructor, TypeConstructor permissiveAccumulationTypeConstructor, TypeConstructor inputTypeConstructor) {
+    public ConflictFree(List<TypeParameter> classTypeParameters, TypeConstructor accumulationTypeConstructor, TypeConstructor permissiveAccumulationTypeConstructor, TypeConstructor inputTypeConstructor, Optional<TypeConstructor> optionalResultTypeConstructor) {
         this.classTypeParameters = classTypeParameters;
         this.accumulationTypeConstructor = accumulationTypeConstructor;
         this.permissiveAccumulationTypeConstructor = permissiveAccumulationTypeConstructor;
         this.inputTypeConstructor = inputTypeConstructor;
+        this.optionalResultTypeConstructor = optionalResultTypeConstructor;
     }
 
-    public static ConflictFree of(List<TypeParameter> classTypeParameters, TypeConstructor accumulationTypeConstructor, TypeConstructor permissiveAccumulationTypeConstructor, TypeConstructor inputTypeConstructor) {
-        return new ConflictFree(classTypeParameters, accumulationTypeConstructor, permissiveAccumulationTypeConstructor, inputTypeConstructor);
+    public static ConflictFree of(List<TypeParameter> classTypeParameters, TypeConstructor accumulationTypeConstructor, TypeConstructor permissiveAccumulationTypeConstructor, TypeConstructor inputTypeConstructor, Optional<TypeConstructor> optionalResultTypeConstructor) {
+        return new ConflictFree(classTypeParameters, accumulationTypeConstructor, permissiveAccumulationTypeConstructor, inputTypeConstructor, optionalResultTypeConstructor);
     }
 
     public List<TypeParameter> getClassTypeParameters() {
@@ -47,16 +50,31 @@ public class ConflictFree {
         return inputTypeConstructor;
     }
 
+    public Optional<TypeConstructor> getOptionalResultTypeConstructor() {
+        return optionalResultTypeConstructor;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ConflictFree that = (ConflictFree) o;
-        return getClassTypeParameters().equals(that.getClassTypeParameters()) && getAccumulationTypeConstructor().equals(that.getAccumulationTypeConstructor()) && getPermissiveAccumulationTypeConstructor().equals(that.getPermissiveAccumulationTypeConstructor()) && getInputTypeConstructor().equals(that.getInputTypeConstructor());
+        return getClassTypeParameters().equals(that.getClassTypeParameters()) && getAccumulationTypeConstructor().equals(that.getAccumulationTypeConstructor()) && getPermissiveAccumulationTypeConstructor().equals(that.getPermissiveAccumulationTypeConstructor()) && getInputTypeConstructor().equals(that.getInputTypeConstructor()) && getOptionalResultTypeConstructor().equals(that.getOptionalResultTypeConstructor());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getClassTypeParameters(), getAccumulationTypeConstructor(), getPermissiveAccumulationTypeConstructor(), getInputTypeConstructor());
+        return Objects.hash(getClassTypeParameters(), getAccumulationTypeConstructor(), getPermissiveAccumulationTypeConstructor(), getInputTypeConstructor(), getOptionalResultTypeConstructor());
+    }
+
+    @Override
+    public String toString() {
+        return "ConflictFree{" +
+                "classTypeParameters=" + classTypeParameters +
+                ", accumulationTypeConstructor=" + accumulationTypeConstructor +
+                ", permissiveAccumulationTypeConstructor=" + permissiveAccumulationTypeConstructor +
+                ", inputTypeConstructor=" + inputTypeConstructor +
+                ", optionalResultTypeConstructor=" + optionalResultTypeConstructor +
+                '}';
     }
 }

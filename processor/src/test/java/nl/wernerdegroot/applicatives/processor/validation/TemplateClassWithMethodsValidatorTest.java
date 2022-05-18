@@ -41,6 +41,7 @@ public class TemplateClassWithMethodsValidatorTest {
                         ARRAY_LIST.with(placeholder().covariant()),
                         LIST.with(placeholder().covariant()),
                         Optional.empty(),
+                        Optional.empty(),
                         accumulator.getName(),
                         Optional.empty()
                 )

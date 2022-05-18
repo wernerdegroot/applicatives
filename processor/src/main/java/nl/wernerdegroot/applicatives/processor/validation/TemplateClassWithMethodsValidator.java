@@ -108,6 +108,7 @@ public class TemplateClassWithMethodsValidator {
                 covariantAccumulator.getAccumulationTypeConstructor(),
                 covariantAccumulator.getPermissiveAccumulationTypeConstructor(),
                 covariantAccumulator.getInputTypeConstructor(),
+                covariantFinalizer.map(CovariantFinalizer::getResultTypeConstructor),
                 covariantInitializer.map(CovariantInitializer::getName),
                 covariantAccumulator.getName(),
                 covariantFinalizer.map(CovariantFinalizer::getName)

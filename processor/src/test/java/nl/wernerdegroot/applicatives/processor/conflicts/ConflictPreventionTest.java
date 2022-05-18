@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.Arrays.asList;
 import static nl.wernerdegroot.applicatives.processor.Ordinals.ORDINALS;
@@ -41,7 +42,10 @@ public class ConflictPreventionTest {
                     ERUDITE.with(placeholder().covariant(), T.asTypeConstructor().contravariant(), conflictingTypeParameter.asTypeConstructor().invariant()),
 
                     // Input type constructor:
-                    ARDUOUS.with(conflictingTypeParameter.asTypeConstructor().contravariant(), placeholder().invariant(), U.asTypeConstructor().covariant())
+                    ARDUOUS.with(conflictingTypeParameter.asTypeConstructor().contravariant(), placeholder().invariant(), U.asTypeConstructor().covariant()),
+
+                    // (Optional) result type constructor:
+                    Optional.of(PROFUSE.with(conflictingTypeParameter.asTypeConstructor().contravariant(), placeholder().invariant(), U.asTypeConstructor().covariant()))
             );
 
             // Class type parameters:
@@ -55,6 +59,9 @@ public class ConflictPreventionTest {
 
             // Input type constructor:
             assertEquals(ARDUOUS.with(C2.asTypeConstructor().contravariant(), placeholder().invariant(), U.asTypeConstructor().covariant()), conflictFree.getInputTypeConstructor());
+
+            // (Optional) result type constructor:
+            assertEquals(Optional.of(PROFUSE.with(C2.asTypeConstructor().contravariant(), placeholder().invariant(), U.asTypeConstructor().covariant())), conflictFree.getOptionalResultTypeConstructor());
         });
     }
 
