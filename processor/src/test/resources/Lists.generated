@@ -2,9 +2,9 @@ package nl.wernerdegroot.applicatives;
 
 public interface ListsMixin {
 
-    <R> java.util.ArrayList<? extends R> singleton(R value);
+    <R> java.util.ArrayList<R> singleton(R value);
 
-    <R> java.util.List<R> finalize(java.util.ArrayList<R> value);
+    <R> java.util.List<R> finalize(java.util.ArrayList<? extends R> value);
 
     <P1, P2, R> java.util.ArrayList<R> compose(java.util.ArrayList<? extends P1> first, java.util.List<? extends P2> second, java.util.function.BiFunction<? super P1, ? super P2, ? extends R> fn);
 
@@ -28,7 +28,7 @@ public interface ListsMixin {
 
     class Tuples {
 
-        public static java.util.ArrayList<? extends nl.wernerdegroot.applicatives.runtime.Tuple0> tuple(nl.wernerdegroot.applicatives.ListsMixin self, int maxSize) {
+        public static java.util.ArrayList<nl.wernerdegroot.applicatives.runtime.Tuple0> tuple(nl.wernerdegroot.applicatives.ListsMixin self, int maxSize) {
             return self.singleton(nl.wernerdegroot.applicatives.runtime.FastTuple.emptyWithMaxSize(maxSize));
         }
 

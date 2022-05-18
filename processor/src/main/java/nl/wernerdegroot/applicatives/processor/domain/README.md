@@ -1,5 +1,17 @@
 # Domain
 
+initializedTypeConstructor
+
+accumulatedTypeConstructor
+
+partiallyAccumulatedTypeConstructor
+
+inputTypeConstructor
+
+toFinalizeTypeConstructor
+
+finalizedTypeConstructor
+
 A **type constructor** is a function from one type to another.
 
 The **input type constructor arguments**

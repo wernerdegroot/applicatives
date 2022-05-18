@@ -51,10 +51,12 @@ public class Generator {
     private String selfParameterName;
     private String combinatorParameterName;
     private String maxTupleSizeParameterName;
-    private TypeConstructor accumulationTypeConstructor;
-    private TypeConstructor permissiveAccumulationTypeConstructor;
+    private Optional<TypeConstructor> optionalInitializedTypeConstructor;
     private TypeConstructor inputTypeConstructor;
-    private Optional<TypeConstructor> optionalResultTypeConstructor;
+    private TypeConstructor partiallyAccumulatedTypeConstructor;
+    private TypeConstructor accumulatedTypeConstructor;
+    private Optional<TypeConstructor> optionalToFinalizeTypeConstructor;
+    private Optional<TypeConstructor> optionalFinalizedTypeConstructor;
     private String liftMethodName;
     private int maxArity;
 
@@ -124,12 +126,14 @@ public class Generator {
     }
 
     public TypeConstructor getFirstParameterTypeConstructor() {
-        // If we have an Initializer, all parameters use the same type constructor (`inputTypeConstructor`).
-        // If we don't have an Initializer, the first parameter uses a different type constructor than the
-        // other parameters (`permissiveAccumulationTypeConstructor`).
+        // If the user provided an initializer method, all parameters
+        // use the same type constructor (`inputTypeConstructor`).
+        // If no initializer method is available, the first parameter
+        // uses a different type constructor than the other parameters
+        // (`partiallyAccumulatedTypeConstructor`).
         return hasInitializer()
                 ? getOtherParametersTypeConstructor()
-                : permissiveAccumulationTypeConstructor;
+                : partiallyAccumulatedTypeConstructor;
     }
 
     public TypeConstructor getOtherParametersTypeConstructor() {
@@ -159,7 +163,23 @@ public class Generator {
     }
 
     public TypeConstructor getReturnTypeConstructor() {
-        return optionalResultTypeConstructor.orElse(accumulationTypeConstructor);
+        return optionalFinalizedTypeConstructor.orElse(accumulatedTypeConstructor);
+    }
+
+    private TypeConstructor getTupleMethodReturnTypeConstructor(int arity) {
+        // If the arity is equal to zero, we are dealing with a special case. We use the initializer method
+        // to wrap an empty tuple using the `initializedTypeConstructor`. We can pass that as the
+        // input to the accumulator method that the user defined.
+        if (arity == 0) {
+
+            if (!optionalInitializedTypeConstructor.isPresent()) {
+                throw new IllegalStateException("An initializer method is required for a tuple method of arity zero");
+            }
+
+            return optionalInitializedTypeConstructor.get();
+        } else {
+            return accumulatedTypeConstructor;
+        }
     }
 
     public Type getReturnType() {
@@ -214,13 +234,8 @@ public class Generator {
         return this;
     }
 
-    public Generator withAccumulationTypeConstructor(TypeConstructor accumulationTypeConstructor) {
-        this.accumulationTypeConstructor = accumulationTypeConstructor;
-        return this;
-    }
-
-    public Generator withPermissiveAccumulationTypeConstructor(TypeConstructor permissiveAccumulationTypeConstructor) {
-        this.permissiveAccumulationTypeConstructor = permissiveAccumulationTypeConstructor;
+    public Generator withOptionalInitializedTypeConstructor(Optional<TypeConstructor> optionalInitializedTypeConstructor) {
+        this.optionalInitializedTypeConstructor = optionalInitializedTypeConstructor;
         return this;
     }
 
@@ -229,8 +244,23 @@ public class Generator {
         return this;
     }
 
-    public Generator withOptionalResultTypeConstructor(Optional<TypeConstructor> optionalResultTypeConstructor) {
-        this.optionalResultTypeConstructor = optionalResultTypeConstructor;
+    public Generator withPartiallyAccumulatedTypeConstructor(TypeConstructor partiallyAccumulatedTypeConstructor) {
+        this.partiallyAccumulatedTypeConstructor = partiallyAccumulatedTypeConstructor;
+        return this;
+    }
+
+    public Generator withAccumulatedTypeConstructor(TypeConstructor accumulatedTypeConstructor) {
+        this.accumulatedTypeConstructor = accumulatedTypeConstructor;
+        return this;
+    }
+
+    public Generator withOptionalToFinalizeTypeConstructor(Optional<TypeConstructor> optionalToFinalizeTypeConstructor) {
+        this.optionalToFinalizeTypeConstructor = optionalToFinalizeTypeConstructor;
+        return this;
+    }
+
+    public Generator withOptionalFinalizedTypeConstructor(Optional<TypeConstructor> optionalFinalizedTypeConstructor) {
+        this.optionalFinalizedTypeConstructor = optionalFinalizedTypeConstructor;
         return this;
     }
 
@@ -292,26 +322,32 @@ public class Generator {
     }
 
     private Optional<List<String>> optionalAbstractInitializerMethod() {
-        return optionalInitializerMethodName.map(initializerMethodName -> {
-            return method()
+        if (optionalInitializedTypeConstructor.isPresent() && optionalInitializerMethodName.isPresent()) {
+            TypeConstructor initializedTypeConstructor = optionalInitializedTypeConstructor.get();
+            String initializerMethodName = optionalInitializerMethodName.get();
+            List<String> lines = method()
                     .withTypeParameters(returnTypeConstructorArgument.getName())
-                    .withReturnType(returnTypeConstructorArgument.asType().using(permissiveAccumulationTypeConstructor))
+                    .withReturnType(returnTypeConstructorArgument.asType().using(initializedTypeConstructor))
                     .withName(initializerMethodName)
                     .withParameter(returnTypeConstructorArgument.asType(), valueParameterName)
                     .lines();
-        });
+            return Optional.of(lines);
+        } else {
+            return Optional.empty();
+        }
     }
 
     private Optional<List<String>> optionalAbstractFinalizerMethod() {
-        if (optionalResultTypeConstructor.isPresent() && optionalFinalizerMethodName.isPresent()) {
-            TypeConstructor resultTypeConstructor = optionalResultTypeConstructor.get();
+        if (optionalFinalizedTypeConstructor.isPresent() && optionalFinalizerMethodName.isPresent() && optionalToFinalizeTypeConstructor.isPresent()) {
+            TypeConstructor finalizedTypeConstructor = optionalFinalizedTypeConstructor.get();
             String finalizerMethodName = optionalFinalizerMethodName.get();
+            TypeConstructor toFinalizeTypeConstructor = optionalToFinalizeTypeConstructor.get();
 
             List<String> lines = method()
                     .withTypeParameters(returnTypeConstructorArgument.getName())
-                    .withReturnType(returnTypeConstructorArgument.asType().using(resultTypeConstructor))
+                    .withReturnType(returnTypeConstructorArgument.asType().using(finalizedTypeConstructor))
                     .withName(finalizerMethodName)
-                    .withParameter(returnTypeConstructorArgument.asType().using(accumulationTypeConstructor), valueParameterName)
+                    .withParameter(returnTypeConstructorArgument.asType().using(toFinalizeTypeConstructor), valueParameterName)
                     .lines();
 
             return Optional.of(lines);
@@ -347,9 +383,9 @@ public class Generator {
         return method()
                 .withTypeParameters(takeParameterTypeConstructorArguments(arity))
                 .withTypeParameters(returnTypeConstructorArgument.getName())
-                .withReturnType(returnTypeConstructorArgument.asType().using(accumulationTypeConstructor))
+                .withReturnType(returnTypeConstructorArgument.asType().using(accumulatedTypeConstructor))
                 .withName(accumulatorMethodName)
-                .withParameterTypes(takeParameterTypes(arity, permissiveAccumulationTypeConstructor, inputTypeConstructor))
+                .withParameterTypes(takeParameterTypes(arity, partiallyAccumulatedTypeConstructor, inputTypeConstructor))
                 .andParameterNames(takeInputParameterNames(arity))
                 .withParameter(
                         BI_FUNCTION.with(
@@ -545,12 +581,6 @@ public class Generator {
     }
 
     private List<String> tupleMethodWithArity(int arity, String methodBody) {
-        // TODO: when superfluous type arguments are removed from the tuple-methods, this can perhaps be simplified by skipping arity 0 and plugging the implementation of arity 0 directly into arity 1. Since the method body is already parameterized here, we can dispense with the `if` completely.
-        // If the arity is equal to zero, we are dealing with a special case. We use the Initializer method
-        // to wrap an empty tuple using the `permissiveAccumulationTypeConstructor`. We can pass that as the
-        // input to the Accumulator method that the user defined.
-        TypeConstructor returnTypeConstructor = arity == 0 ? permissiveAccumulationTypeConstructor : accumulationTypeConstructor;
-
         return method()
                 .withModifiers(PUBLIC, STATIC)
                 .withTypeParameters(takeParameterTypeConstructorArguments(arity))
@@ -558,7 +588,7 @@ public class Generator {
                 // we need to make sure that the class type parameters are available as additional method
                 // type parameters:
                 .withTypeParameters(classTypeParameters)
-                .withReturnType(Type.concrete(fullyQualifiedNameOfTupleWithArity(arity), takeParameterTypeConstructorArgumentsAsTypeArguments(arity)).using(returnTypeConstructor))
+                .withReturnType(Type.concrete(fullyQualifiedNameOfTupleWithArity(arity), takeParameterTypeConstructorArgumentsAsTypeArguments(arity)).using(getTupleMethodReturnTypeConstructor(arity)))
                 .withName(TUPLE_METHOD_NAME)
                 .withParameter(getFullyQualifiedClassNameToGenerate().with(getClassTypeParametersAsTypeArguments()), selfParameterName)
                 .withParameterTypes(takeParameterTypes(arity))

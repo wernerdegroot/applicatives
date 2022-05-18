@@ -38,6 +38,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -151,20 +152,22 @@ public class CovariantBuilderProcessor extends AbstractProcessor {
                             .withClassTypeParameters(conflictFree.getClassTypeParameters())
                             .withParameterTypeConstructorArguments(Conflicts.PARAMETER_TYPE_CONSTRUCTOR_ARGUMENTS)
                             .withReturnTypeConstructorArgument(Conflicts.RETURN_TYPE_CONSTRUCTOR_ARGUMENT)
-                            .withOptionalInitializerMethodName(templateClassWithMethods.getOptionalInitializerMethodName())
-                            .withAccumulatorMethodName(templateClassWithMethods.getAccumulatorMethodName())
-                            .withOptionalFinalizerMethodName(templateClassWithMethods.getOptionalFinalizerMethodName())
                             .withInputParameterNames(Conflicts.INPUT_PARAMETER_NAMES)
-                            .withValueParameterName(Conflicts.VALUE_PARAMETER_NAME)
-                            .withSelfParameterName(Conflicts.SELF_PARAMETER_NAME)
-                            .withCombinatorParameterName(Conflicts.COMBINATOR_PARAMETER_NAME)
-                            .withMaxTupleSizeParameterName(Conflicts.MAX_TUPLE_SIZE_PARAMETER_NAME)
-                            .withAccumulationTypeConstructor(conflictFree.getAccumulationTypeConstructor())
-                            .withPermissiveAccumulationTypeConstructor(conflictFree.getPermissiveAccumulationTypeConstructor())
+                            .withOptionalInitializerMethodName(templateClassWithMethods.getOptionalInitializerMethodName())
+                            .withOptionalInitializedTypeConstructor(Optional.of(conflictFree.getPermissiveAccumulationTypeConstructor()))
+                            .withAccumulatorMethodName(templateClassWithMethods.getAccumulatorMethodName())
                             .withInputTypeConstructor(conflictFree.getInputTypeConstructor())
-                            .withOptionalResultTypeConstructor(conflictFree.getOptionalResultTypeConstructor())
+                            .withPartiallyAccumulatedTypeConstructor(conflictFree.getPermissiveAccumulationTypeConstructor())
+                            .withAccumulatedTypeConstructor(conflictFree.getAccumulationTypeConstructor())
+                            .withOptionalFinalizerMethodName(templateClassWithMethods.getOptionalFinalizerMethodName())
+                            .withOptionalToFinalizeTypeConstructor(Optional.of(conflictFree.getAccumulationTypeConstructor()))
+                            .withOptionalFinalizedTypeConstructor(conflictFree.getOptionalResultTypeConstructor())
+                            .withValueParameterName(Conflicts.VALUE_PARAMETER_NAME)
+                            .withCombinatorParameterName(Conflicts.COMBINATOR_PARAMETER_NAME)
                             .withLiftMethodName(covariantBuilderAnnotation.liftMethodName())
+                            .withMaxTupleSizeParameterName(Conflicts.MAX_TUPLE_SIZE_PARAMETER_NAME)
                             .withMaxArity(covariantBuilderAnnotation.maxArity())
+                            .withSelfParameterName(Conflicts.SELF_PARAMETER_NAME)
                             .generate();
 
                     Log.of("Done generating code").append(asNote());
