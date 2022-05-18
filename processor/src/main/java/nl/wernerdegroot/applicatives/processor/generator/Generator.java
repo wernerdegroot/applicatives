@@ -11,12 +11,14 @@ import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstr
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.UnaryOperator;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
 import static nl.wernerdegroot.applicatives.processor.Ordinals.witherForIndex;
 import static nl.wernerdegroot.applicatives.processor.domain.Modifier.*;
-import static nl.wernerdegroot.applicatives.processor.domain.type.Type.*;
+import static nl.wernerdegroot.applicatives.processor.domain.type.Type.BI_FUNCTION;
+import static nl.wernerdegroot.applicatives.processor.domain.type.Type.INT;
 import static nl.wernerdegroot.applicatives.processor.generator.ClassOrInterfaceGenerator.classOrInterface;
 import static nl.wernerdegroot.applicatives.processor.generator.Constants.*;
 import static nl.wernerdegroot.applicatives.processor.generator.LambdaGenerator.lambda;
@@ -156,8 +158,12 @@ public class Generator {
         return this;
     }
 
+    public TypeConstructor getReturnTypeConstructor() {
+        return optionalResultTypeConstructor.orElse(accumulationTypeConstructor);
+    }
+
     public Type getReturnType() {
-        return returnTypeConstructorArgument.asType().using(accumulationTypeConstructor);
+        return returnTypeConstructorArgument.asType().using(getReturnTypeConstructor());
     }
 
     public Generator withAccumulatorMethodName(String accumulatorMethodName) {
@@ -370,25 +376,31 @@ public class Generator {
                     .generate();
         }
 
+        UnaryOperator<String> finalization = optionalFinalizerMethodName
+                .<UnaryOperator<String>>map(finalizerMethodName -> argument -> methodCall().withObjectPath(THIS).withMethodName(finalizerMethodName).withArguments(argument).generate())
+                .orElse(UnaryOperator.identity());
+
         return combineMethodWithArity(
                 arity,
-                methodCall()
-                        .withObjectPath(THIS)
-                        .withMethodName(accumulatorMethodName)
-                        .withArguments(
-                                methodCall()
-                                        .withType(getFullyQualifiedTupleClass())
-                                        .withTypeArguments(takeParameterTypeConstructorArgumentsAsTypeArguments(arity - 1))
-                                        .withTypeArguments(getClassTypeParametersAsTypeArguments())
-                                        .withMethodName(TUPLE_METHOD_NAME)
-                                        .withArguments(THIS)
-                                        .withArguments(takeInputParameterNames(arity - 1))
-                                        .withArguments(Integer.toString(arity))
-                                        .generate(),
-                                inputParameterNames.get(arity - 1),
-                                methodReference().withObjectPath(function).withMethodName(FUNCTION_N_APPLY_METHOD).generate()
-                        )
-                        .generate()
+                finalization.apply(
+                        methodCall()
+                                .withObjectPath(THIS)
+                                .withMethodName(accumulatorMethodName)
+                                .withArguments(
+                                        methodCall()
+                                                .withType(getFullyQualifiedTupleClass())
+                                                .withTypeArguments(takeParameterTypeConstructorArgumentsAsTypeArguments(arity - 1))
+                                                .withTypeArguments(getClassTypeParametersAsTypeArguments())
+                                                .withMethodName(TUPLE_METHOD_NAME)
+                                                .withArguments(THIS)
+                                                .withArguments(takeInputParameterNames(arity - 1))
+                                                .withArguments(Integer.toString(arity))
+                                                .generate(),
+                                        inputParameterNames.get(arity - 1),
+                                        methodReference().withObjectPath(function).withMethodName(FUNCTION_N_APPLY_METHOD).generate()
+                                )
+                                .generate()
+                )
         );
     }
 
@@ -436,7 +448,7 @@ public class Generator {
                 .withModifiers(DEFAULT)
                 .withTypeParameters(takeParameterTypeConstructorArguments(arity))
                 .withTypeParameters(returnTypeConstructorArgument.getName())
-                .withReturnType(lambdaType(accumulationTypeConstructor, getOtherParametersTypeConstructor(), getFirstParameterTypeConstructor(), arity))
+                .withReturnType(lambdaType(getReturnTypeConstructor(), getOtherParametersTypeConstructor(), getFirstParameterTypeConstructor(), arity))
                 .withName(liftMethodName)
                 .withParameter(lambdaType(TypeConstructor.placeholder(), TypeConstructor.placeholder(), TypeConstructor.placeholder(), arity), combinatorParameterName)
                 .withReturnStatement(
