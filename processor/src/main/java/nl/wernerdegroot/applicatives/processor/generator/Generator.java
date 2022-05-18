@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
-import static java.util.Collections.nCopies;
 import static java.util.stream.Collectors.toList;
 import static nl.wernerdegroot.applicatives.processor.Ordinals.witherForIndex;
 import static nl.wernerdegroot.applicatives.processor.domain.Modifier.*;
@@ -44,6 +43,7 @@ public class Generator {
     private TypeParameter returnTypeConstructorArgument;
     private Optional<String> optionalInitializerMethodName;
     private String accumulatorMethodName;
+    private Optional<String> optionalFinalizerMethodName;
     private List<String> inputParameterNames;
     private String valueParameterName;
     private String selfParameterName;
@@ -52,6 +52,7 @@ public class Generator {
     private TypeConstructor accumulationTypeConstructor;
     private TypeConstructor permissiveAccumulationTypeConstructor;
     private TypeConstructor inputTypeConstructor;
+    private Optional<TypeConstructor> optionalResultTypeConstructor;
     private String liftMethodName;
     private int maxArity;
 
@@ -102,13 +103,6 @@ public class Generator {
         return parameterTypeConstructorArguments
                 .stream()
                 .map(TypeParameter::asType)
-                .collect(toList());
-    }
-
-    public List<TypeArgument> getParameterTypeConstructorArgumentsAsTypeArguments() {
-        return getParameterTypeConstructorArgumentsAsTypes()
-                .stream()
-                .map(Type::invariant)
                 .collect(toList());
     }
 
@@ -171,13 +165,18 @@ public class Generator {
         return this;
     }
 
-    public Generator withOptionalInitializerMethodName(Optional<String> initializerMethodName) {
-        this.optionalInitializerMethodName = initializerMethodName;
+    public Generator withOptionalInitializerMethodName(Optional<String> optionalInitializerMethodName) {
+        this.optionalInitializerMethodName = optionalInitializerMethodName;
         return this;
     }
 
     public boolean hasInitializer() {
         return optionalInitializerMethodName.isPresent();
+    }
+
+    public Generator withOptionalFinalizerMethodName(Optional<String> optionalFinalizerMethodName) {
+        this.optionalFinalizerMethodName = optionalFinalizerMethodName;
+        return this;
     }
 
     public Generator withInputParameterNames(List<String> inputParameterNames) {
@@ -224,6 +223,11 @@ public class Generator {
         return this;
     }
 
+    public Generator withOptionalResultTypeConstructor(Optional<TypeConstructor> optionalResultTypeConstructor) {
+        this.optionalResultTypeConstructor = optionalResultTypeConstructor;
+        return this;
+    }
+
     public Generator withLiftMethodName(String liftMethodName) {
         this.liftMethodName = liftMethodName;
         return this;
@@ -246,6 +250,12 @@ public class Generator {
         // method for it and append it to the methods.
         optionalAbstractInitializerMethod().ifPresent(abstractInitializerMethod -> {
             methods.append(abstractInitializerMethod).append(EMPTY_LINE);
+        });
+
+        // If the client provided a Finalizer, generate an abstract
+        // method for it and append it to the methods.
+        optionalAbstractFinalizerMethod().ifPresent(abstractFinalizerMehtod -> {
+            methods.append(abstractFinalizerMehtod).append(EMPTY_LINE);
         });
 
         // Continue adding the combine- and lift-methods.
@@ -284,6 +294,24 @@ public class Generator {
                     .withParameter(returnTypeConstructorArgument.asType(), valueParameterName)
                     .lines();
         });
+    }
+
+    private Optional<List<String>> optionalAbstractFinalizerMethod() {
+        if (optionalResultTypeConstructor.isPresent() && optionalFinalizerMethodName.isPresent()) {
+            TypeConstructor resultTypeConstructor = optionalResultTypeConstructor.get();
+            String finalizerMethodName = optionalFinalizerMethodName.get();
+
+            List<String> lines = method()
+                    .withTypeParameters(returnTypeConstructorArgument.getName())
+                    .withReturnType(returnTypeConstructorArgument.asType().using(resultTypeConstructor))
+                    .withName(finalizerMethodName)
+                    .withParameter(returnTypeConstructorArgument.asType().using(accumulationTypeConstructor), valueParameterName)
+                    .lines();
+
+            return Optional.of(lines);
+        } else {
+            return Optional.empty();
+        }
     }
 
     private List<String> combineMethods() {

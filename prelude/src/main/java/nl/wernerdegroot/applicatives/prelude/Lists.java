@@ -5,12 +5,9 @@ import nl.wernerdegroot.applicatives.runtime.Covariant;
 import nl.wernerdegroot.applicatives.runtime.Finalizer;
 import nl.wernerdegroot.applicatives.runtime.Initializer;
 
-import java.sql.Array;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
 
 /**
  * When combining <strong>more</strong> than two lists, it is strongly advised
@@ -44,6 +41,7 @@ public class Lists implements ListsApplicative {
         return result;
     }
 
+    @Override
     @Finalizer
     public <A> List<A> finalize(ArrayList<A> toFinalize) {
         return toFinalize;

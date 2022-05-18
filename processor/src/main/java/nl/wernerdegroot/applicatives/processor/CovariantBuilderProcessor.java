@@ -153,6 +153,7 @@ public class CovariantBuilderProcessor extends AbstractProcessor {
                             .withReturnTypeConstructorArgument(Conflicts.RETURN_TYPE_CONSTRUCTOR_ARGUMENT)
                             .withOptionalInitializerMethodName(templateClassWithMethods.getOptionalInitializerMethodName())
                             .withAccumulatorMethodName(templateClassWithMethods.getAccumulatorMethodName())
+                            .withOptionalFinalizerMethodName(templateClassWithMethods.getOptionalFinalizerMethodName())
                             .withInputParameterNames(Conflicts.INPUT_PARAMETER_NAMES)
                             .withValueParameterName(Conflicts.VALUE_PARAMETER_NAME)
                             .withSelfParameterName(Conflicts.SELF_PARAMETER_NAME)
@@ -161,6 +162,7 @@ public class CovariantBuilderProcessor extends AbstractProcessor {
                             .withAccumulationTypeConstructor(conflictFree.getAccumulationTypeConstructor())
                             .withPermissiveAccumulationTypeConstructor(conflictFree.getPermissiveAccumulationTypeConstructor())
                             .withInputTypeConstructor(conflictFree.getInputTypeConstructor())
+                            .withOptionalResultTypeConstructor(conflictFree.getOptionalResultTypeConstructor())
                             .withLiftMethodName(covariantBuilderAnnotation.liftMethodName())
                             .withMaxArity(covariantBuilderAnnotation.maxArity())
                             .generate();
