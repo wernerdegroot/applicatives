@@ -1,15 +1,10 @@
 package nl.wernerdegroot.applicatives.processor;
 
 import com.google.auto.service.AutoService;
-import nl.wernerdegroot.applicatives.processor.conflicts.ConflictFree;
-import nl.wernerdegroot.applicatives.processor.conflicts.ConflictPrevention;
 import nl.wernerdegroot.applicatives.processor.conflicts.Conflicts;
 import nl.wernerdegroot.applicatives.processor.converters.ContainingClassConverter;
 import nl.wernerdegroot.applicatives.processor.converters.MethodConverter;
-import nl.wernerdegroot.applicatives.processor.domain.ClassName;
-import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
-import nl.wernerdegroot.applicatives.processor.domain.Method;
-import nl.wernerdegroot.applicatives.processor.domain.Modifier;
+import nl.wernerdegroot.applicatives.processor.domain.*;
 import nl.wernerdegroot.applicatives.processor.domain.containing.ContainingClass;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor;
@@ -37,8 +32,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -46,6 +41,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static javax.lang.model.element.ElementKind.METHOD;
 import static nl.wernerdegroot.applicatives.processor.Classes.*;
+import static nl.wernerdegroot.applicatives.processor.conflicts.ConflictFinder.findClassTypeParameterNameReplacements;
 import static nl.wernerdegroot.applicatives.processor.generator.Generator.generator;
 
 @SupportedOptions({Options.VERBOSE_ARGUMENT})
@@ -121,29 +117,31 @@ public class CovariantBuilderProcessor extends AbstractProcessor {
                     TemplateClassWithMethods templateClassWithMethods = validatedTemplateClassWithMethods.getValue();
                     Log.of("All criteria for code generation satisfied")
                             .withDetail("Class type parameters", templateClassWithMethods.getClassTypeParameters(), TypeParameterGenerator::generateFrom)
-                            .withDetail("Accumulation type constructor", templateClassWithMethods.getAccumulationTypeConstructor(), this::typeConstructorToString)
-                            .withDetail("Permissive accumulation type constructor", templateClassWithMethods.getPermissiveAccumulationTypeConstructor(), this::typeConstructorToString)
-                            .withDetail("Input type constructor", templateClassWithMethods.getInputTypeConstructor(), this::typeConstructorToString)
-                            .withDetail("Result type constructor", templateClassWithMethods.getOptionalResultTypeConstructor(), this::typeConstructorToString)
                             .withDetail("Name of initializer method", templateClassWithMethods.getOptionalInitializerMethodName())
+                            .withDetail("Initialized type constructor", templateClassWithMethods.getOptionalInitializedTypeConstructor(), this::typeConstructorToString)
                             .withDetail("Name of accumulator method", templateClassWithMethods.getAccumulatorMethodName())
+                            .withDetail("Input type constructor", templateClassWithMethods.getInputTypeConstructor(), this::typeConstructorToString)
+                            .withDetail("Partially accumulated type constructor", templateClassWithMethods.getPartiallyAccumulatedTypeConstructor(), this::typeConstructorToString)
+                            .withDetail("Accumulated type constructor", templateClassWithMethods.getAccumulatedTypeConstructor(), this::typeConstructorToString)
                             .withDetail("Name of finalizer method", templateClassWithMethods.getOptionalFinalizerMethodName())
+                            .withDetail("To finalize type constructor", templateClassWithMethods.getOptionalToFinalizeTypeConstructor(), this::typeConstructorToString)
+                            .withDetail("Finalized type constructor", templateClassWithMethods.getOptionalFinalizedTypeConstructor(), this::typeConstructorToString)
                             .append(asNote());
 
-                    ConflictFree conflictFree = ConflictPrevention.preventConflicts(
-                            templateClassWithMethods.getClassTypeParameters(),
-                            templateClassWithMethods.getAccumulationTypeConstructor(),
-                            templateClassWithMethods.getPermissiveAccumulationTypeConstructor(),
-                            templateClassWithMethods.getInputTypeConstructor(),
-                            templateClassWithMethods.getOptionalResultTypeConstructor()
-                    );
+                    Map<TypeParameterName, TypeParameterName> classTypeParameterNameReplacements = findClassTypeParameterNameReplacements(templateClassWithMethods.getClassTypeParameters());
+                    TemplateClassWithMethods conflictFree = templateClassWithMethods.replaceTypeParameterNames(classTypeParameterNameReplacements);
 
                     Log.of("Resolved (potential) conflicts between existing type parameters and new, generated type parameters")
                             .withDetail("Class type parameters", conflictFree.getClassTypeParameters(), TypeParameterGenerator::generateFrom)
-                            .withDetail("Accumulation type constructor", conflictFree.getAccumulationTypeConstructor(), this::typeConstructorToString)
-                            .withDetail("Permissive accumulation type constructor", conflictFree.getPermissiveAccumulationTypeConstructor(), this::typeConstructorToString)
+                            .withDetail("Name of initializer method", conflictFree.getOptionalInitializerMethodName())
+                            .withDetail("Initialized type constructor", conflictFree.getOptionalInitializedTypeConstructor(), this::typeConstructorToString)
+                            .withDetail("Name of accumulator method", conflictFree.getAccumulatorMethodName())
                             .withDetail("Input type constructor", conflictFree.getInputTypeConstructor(), this::typeConstructorToString)
-                            .withDetail("Result type constructor", conflictFree.getOptionalResultTypeConstructor(), this::typeConstructorToString)
+                            .withDetail("Partially accumulated type constructor", conflictFree.getPartiallyAccumulatedTypeConstructor(), this::typeConstructorToString)
+                            .withDetail("Accumulated type constructor", conflictFree.getAccumulatedTypeConstructor(), this::typeConstructorToString)
+                            .withDetail("Name of finalizer method", conflictFree.getOptionalFinalizerMethodName())
+                            .withDetail("To finalize type constructor", conflictFree.getOptionalToFinalizeTypeConstructor(), this::typeConstructorToString)
+                            .withDetail("Finalized type constructor", conflictFree.getOptionalFinalizedTypeConstructor(), this::typeConstructorToString)
                             .append(asNote());
 
                     String generated = generator()
@@ -153,15 +151,15 @@ public class CovariantBuilderProcessor extends AbstractProcessor {
                             .withParameterTypeConstructorArguments(Conflicts.PARAMETER_TYPE_CONSTRUCTOR_ARGUMENTS)
                             .withReturnTypeConstructorArgument(Conflicts.RETURN_TYPE_CONSTRUCTOR_ARGUMENT)
                             .withInputParameterNames(Conflicts.INPUT_PARAMETER_NAMES)
-                            .withOptionalInitializerMethodName(templateClassWithMethods.getOptionalInitializerMethodName())
-                            .withOptionalInitializedTypeConstructor(Optional.of(conflictFree.getPermissiveAccumulationTypeConstructor()))
-                            .withAccumulatorMethodName(templateClassWithMethods.getAccumulatorMethodName())
+                            .withOptionalInitializerMethodName(conflictFree.getOptionalInitializerMethodName())
+                            .withOptionalInitializedTypeConstructor(conflictFree.getOptionalInitializedTypeConstructor())
+                            .withAccumulatorMethodName(conflictFree.getAccumulatorMethodName())
                             .withInputTypeConstructor(conflictFree.getInputTypeConstructor())
-                            .withPartiallyAccumulatedTypeConstructor(conflictFree.getPermissiveAccumulationTypeConstructor())
-                            .withAccumulatedTypeConstructor(conflictFree.getAccumulationTypeConstructor())
+                            .withPartiallyAccumulatedTypeConstructor(conflictFree.getPartiallyAccumulatedTypeConstructor())
+                            .withAccumulatedTypeConstructor(conflictFree.getAccumulatedTypeConstructor())
                             .withOptionalFinalizerMethodName(templateClassWithMethods.getOptionalFinalizerMethodName())
-                            .withOptionalToFinalizeTypeConstructor(Optional.of(conflictFree.getAccumulationTypeConstructor()))
-                            .withOptionalFinalizedTypeConstructor(conflictFree.getOptionalResultTypeConstructor())
+                            .withOptionalToFinalizeTypeConstructor(conflictFree.getOptionalToFinalizeTypeConstructor())
+                            .withOptionalFinalizedTypeConstructor(conflictFree.getOptionalFinalizedTypeConstructor())
                             .withValueParameterName(Conflicts.VALUE_PARAMETER_NAME)
                             .withCombinatorParameterName(Conflicts.COMBINATOR_PARAMETER_NAME)
                             .withLiftMethodName(covariantBuilderAnnotation.liftMethodName())

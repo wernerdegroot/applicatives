@@ -105,13 +105,15 @@ public class TemplateClassWithMethodsValidator {
     private static TemplateClassWithMethods templateClassWithMethods(TemplateClass templateClass, Optional<CovariantInitializer> covariantInitializer, CovariantAccumulator covariantAccumulator, Optional<CovariantFinalizer> covariantFinalizer) {
         return TemplateClassWithMethods.of(
                 templateClass.getTypeParameters(),
-                covariantAccumulator.getAccumulationTypeConstructor(),
-                covariantAccumulator.getPermissiveAccumulationTypeConstructor(),
-                covariantAccumulator.getInputTypeConstructor(),
-                covariantFinalizer.map(CovariantFinalizer::getResultTypeConstructor),
                 covariantInitializer.map(CovariantInitializer::getName),
+                covariantInitializer.map(ignored -> covariantAccumulator.getPermissiveAccumulationTypeConstructor()),
                 covariantAccumulator.getName(),
-                covariantFinalizer.map(CovariantFinalizer::getName)
+                covariantAccumulator.getInputTypeConstructor(),
+                covariantAccumulator.getPermissiveAccumulationTypeConstructor(),
+                covariantAccumulator.getAccumulationTypeConstructor(),
+                covariantFinalizer.map(CovariantFinalizer::getName),
+                covariantFinalizer.map(ignored -> covariantAccumulator.getAccumulationTypeConstructor()),
+                covariantFinalizer.map(CovariantFinalizer::getResultTypeConstructor)
         );
     }
 }

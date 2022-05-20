@@ -37,12 +37,14 @@ public class TemplateClassWithMethodsValidatorTest {
         Validated<TemplateClassWithMethods> expected = Validated.valid(
                 TemplateClassWithMethods.of(
                         containingClass.getTypeParameters(),
-                        ARRAY_LIST.with(placeholder().invariant()),
-                        ARRAY_LIST.with(placeholder().covariant()),
-                        LIST.with(placeholder().covariant()),
                         Optional.empty(),
                         Optional.empty(),
                         accumulator.getName(),
+                        LIST.with(placeholder().covariant()),
+                        ARRAY_LIST.with(placeholder().covariant()),
+                        ARRAY_LIST.with(placeholder().invariant()),
+                        Optional.empty(),
+                        Optional.empty(),
                         Optional.empty()
                 )
         );
