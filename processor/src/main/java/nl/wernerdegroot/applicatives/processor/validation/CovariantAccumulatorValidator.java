@@ -79,14 +79,14 @@ public class CovariantAccumulatorValidator {
             return Validated.invalid("Expected third argument to be a " + generateFrom(expectedCombinatorParameter) + " but was " + generateFrom(combinatorParameter.getType()));
         }
 
-        TypeConstructor accumulationTypeConstructor = returnType.asTypeConstructorWithPlaceholderFor(returnTypeConstructorArgument.getName());
-        TypeConstructor permissiveAccumulationTypeConstructor = leftParameter.getType().asTypeConstructorWithPlaceholderFor(leftInputTypeConstructorArgument.getName());
+        TypeConstructor accumulatedTypeConstructor = returnType.asTypeConstructorWithPlaceholderFor(returnTypeConstructorArgument.getName());
+        TypeConstructor partiallyAccumulatedTypeConstructor = leftParameter.getType().asTypeConstructorWithPlaceholderFor(leftInputTypeConstructorArgument.getName());
         TypeConstructor inputTypeConstructor = rightParameter.getType().asTypeConstructorWithPlaceholderFor(rightInputTypeConstructorArgument.getName());
 
-        if (!permissiveAccumulationTypeConstructor.canAccept(accumulationTypeConstructor)) {
+        if (!partiallyAccumulatedTypeConstructor.canAccept(accumulatedTypeConstructor)) {
             // Tweak the error message to not confuse people using the simple case where
             // parameter types and result type should be identical:
-            if (Objects.equals(permissiveAccumulationTypeConstructor, inputTypeConstructor)) {
+            if (Objects.equals(partiallyAccumulatedTypeConstructor, inputTypeConstructor)) {
                 return Validated.invalid("No shared type constructor between parameters (" + generateFrom(leftParameter.getType()) + " and " + generateFrom(rightParameter.getType()) + ") and result (" + generateFrom(returnType) + ")");
             } else {
                 return Validated.invalid("No shared type constructor between first parameter (" + generateFrom(leftParameter.getType()) + ") and result (" + generateFrom(returnType) + ")");
@@ -96,10 +96,10 @@ public class CovariantAccumulatorValidator {
         return Validated.valid(
                 CovariantAccumulator.of(
                         name,
-                        accumulationTypeConstructor,
-                        leftParameter.getType(),
-                        permissiveAccumulationTypeConstructor,
-                        inputTypeConstructor
+                        inputTypeConstructor,
+                        partiallyAccumulatedTypeConstructor,
+                        accumulatedTypeConstructor,
+                        leftParameter.getType()
                 )
         );
     }

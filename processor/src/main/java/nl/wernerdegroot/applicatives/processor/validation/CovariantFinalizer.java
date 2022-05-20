@@ -9,18 +9,18 @@ public class CovariantFinalizer {
 
     private final String name;
     private final Type parameterType;
-    private final TypeConstructor accumulationTypeConstructor;
-    private final TypeConstructor resultTypeConstructor;
+    private final TypeConstructor toFinalizeTypeConstructor;
+    private final TypeConstructor finalizedTypeConstructor;
 
-    public CovariantFinalizer(String name, Type parameterType, TypeConstructor accumulationTypeConstructor, TypeConstructor resultTypeConstructor) {
+    public CovariantFinalizer(String name, Type parameterType, TypeConstructor toFinalizeTypeConstructor, TypeConstructor finalizedTypeConstructor) {
         this.name = name;
         this.parameterType = parameterType;
-        this.accumulationTypeConstructor = accumulationTypeConstructor;
-        this.resultTypeConstructor = resultTypeConstructor;
+        this.toFinalizeTypeConstructor = toFinalizeTypeConstructor;
+        this.finalizedTypeConstructor = finalizedTypeConstructor;
     }
 
-    public static CovariantFinalizer of(String name, Type parameterType, TypeConstructor accumulationTypeConstructor, TypeConstructor resultTypeConstructor) {
-        return new CovariantFinalizer(name, parameterType, accumulationTypeConstructor, resultTypeConstructor);
+    public static CovariantFinalizer of(String name, Type parameterType, TypeConstructor toFinalizeTypeConstructor, TypeConstructor finalizedTypeConstructor) {
+        return new CovariantFinalizer(name, parameterType, toFinalizeTypeConstructor, finalizedTypeConstructor);
     }
 
     public String getName() {
@@ -31,12 +31,12 @@ public class CovariantFinalizer {
         return parameterType;
     }
 
-    public TypeConstructor getAccumulationTypeConstructor() {
-        return accumulationTypeConstructor;
+    public TypeConstructor getToFinalizeTypeConstructor() {
+        return toFinalizeTypeConstructor;
     }
 
-    public TypeConstructor getResultTypeConstructor() {
-        return resultTypeConstructor;
+    public TypeConstructor getFinalizedTypeConstructor() {
+        return finalizedTypeConstructor;
     }
 
     @Override
@@ -44,12 +44,12 @@ public class CovariantFinalizer {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CovariantFinalizer that = (CovariantFinalizer) o;
-        return getName().equals(that.getName()) && getParameterType().equals(that.getParameterType()) && getAccumulationTypeConstructor().equals(that.getAccumulationTypeConstructor()) && getResultTypeConstructor().equals(that.getResultTypeConstructor());
+        return getName().equals(that.getName()) && getParameterType().equals(that.getParameterType()) && getToFinalizeTypeConstructor().equals(that.getToFinalizeTypeConstructor()) && getFinalizedTypeConstructor().equals(that.getFinalizedTypeConstructor());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getName(), getParameterType(), getAccumulationTypeConstructor(), getResultTypeConstructor());
+        return Objects.hash(getName(), getParameterType(), getToFinalizeTypeConstructor(), getFinalizedTypeConstructor());
     }
 
     @Override
@@ -57,8 +57,8 @@ public class CovariantFinalizer {
         return "CovariantFinalizer{" +
                 "name='" + name + '\'' +
                 ", parameterType=" + parameterType +
-                ", accumulationTypeConstructor=" + accumulationTypeConstructor +
-                ", resultTypeConstructor=" + resultTypeConstructor +
+                ", toFinalizeTypeConstructor=" + toFinalizeTypeConstructor +
+                ", finalizedTypeConstructor=" + finalizedTypeConstructor +
                 '}';
     }
 }

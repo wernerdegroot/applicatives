@@ -4,6 +4,7 @@ import nl.wernerdegroot.applicatives.processor.domain.type.ArrayType;
 import nl.wernerdegroot.applicatives.processor.domain.type.GenericType;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor;
+import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructorArgument;
 
 import java.util.Objects;
 

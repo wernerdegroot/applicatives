@@ -30,7 +30,7 @@ public class TemplateClassWithMethodsValidator {
                 (templateClass, optionalInitializer, accumulator, optionalFinalizer) -> {
                     if (optionalInitializer.isPresent()) {
                         CovariantInitializer initializer = optionalInitializer.get();
-                        if (!accumulator.getPermissiveAccumulationTypeConstructor().equals(initializer.getPermissiveAccumulationTypeConstructor())) {
+                        if (!accumulator.getPartiallyAccumulatedTypeConstructor().canAccept(initializer.getInitializedTypeConstructor())) {
                             String message = String.format("No shared type constructor between return type of '%s' (%s) and first parameter of '%s' (%s)", initializer.getName(), generateFrom(initializer.getReturnType()), accumulator.getName(), generateFrom(accumulator.getFirstParameterType()));
                             return Validated.<TemplateClassWithMethods>invalid(message);
                         }
@@ -38,7 +38,7 @@ public class TemplateClassWithMethodsValidator {
 
                     if (optionalFinalizer.isPresent()) {
                         CovariantFinalizer finalizer = optionalFinalizer.get();
-                        if (!finalizer.getAccumulationTypeConstructor().equals(accumulator.getAccumulationTypeConstructor())) {
+                        if (!finalizer.getToFinalizeTypeConstructor().canAccept(accumulator.getAccumulatedTypeConstructor())) {
                             String message = String.format("No shared type constructor between return type of '%s' (%s) and parameter of '%s' (%s)", accumulator.getName(), generateFrom(accumulator.getFirstParameterType()), finalizer.getName(), generateFrom(finalizer.getParameterType()));
                             return Validated.<TemplateClassWithMethods>invalid(message);
                         }
@@ -105,13 +105,15 @@ public class TemplateClassWithMethodsValidator {
     private static TemplateClassWithMethods templateClassWithMethods(TemplateClass templateClass, Optional<CovariantInitializer> covariantInitializer, CovariantAccumulator covariantAccumulator, Optional<CovariantFinalizer> covariantFinalizer) {
         return TemplateClassWithMethods.of(
                 templateClass.getTypeParameters(),
-                covariantAccumulator.getAccumulationTypeConstructor(),
-                covariantAccumulator.getPermissiveAccumulationTypeConstructor(),
-                covariantAccumulator.getInputTypeConstructor(),
-                covariantFinalizer.map(CovariantFinalizer::getResultTypeConstructor),
                 covariantInitializer.map(CovariantInitializer::getName),
+                covariantInitializer.map(CovariantInitializer::getInitializedTypeConstructor),
                 covariantAccumulator.getName(),
-                covariantFinalizer.map(CovariantFinalizer::getName)
+                covariantAccumulator.getInputTypeConstructor(),
+                covariantAccumulator.getPartiallyAccumulatedTypeConstructor(),
+                covariantAccumulator.getAccumulatedTypeConstructor(),
+                covariantFinalizer.map(CovariantFinalizer::getName),
+                covariantFinalizer.map(CovariantFinalizer::getToFinalizeTypeConstructor),
+                covariantFinalizer.map(CovariantFinalizer::getFinalizedTypeConstructor)
         );
     }
 }

@@ -1,4 +1,3 @@
-* Type constructors shouldn't have to be exactly the same. Pass both variations to generator.
 * Allow non-builder to have method type parameters again.
 * Because builder-methods are not for exposing, perhaps pass reference to builder object instead (make this configurable `style = "inheritance"` or `style = "delegation"`).
 * Validate values of annotation parameters (no -1 overloads)
