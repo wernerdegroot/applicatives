@@ -157,8 +157,8 @@ public class Generator {
         return result;
     }
 
-    public Generator withReturnTypeConstructorArgument(TypeParameter resultTypeConstructorArgument) {
-        this.returnTypeConstructorArgument = resultTypeConstructorArgument;
+    public Generator withReturnTypeConstructorArgument(TypeParameter returnTypeConstructorArgument) {
+        this.returnTypeConstructorArgument = returnTypeConstructorArgument;
         return this;
     }
 
@@ -360,10 +360,10 @@ public class Generator {
         List<String> lines = new ArrayList<>();
         lines.addAll(abstractCombineMethodWithArityTwo());
 
-        // If we have an Initializer, we need to generate an addition `combine`-method with
+        // If we have an initializer method, we need to generate an addition `combine`-method with
         // arity two. Both `combine`-method have different parameters. The abstract method
         // may use a different type constructor for its first parameter and its second parameter
-        // (`permissiveAccumulationTypeConstructor` and `inputTypeConstructor` respectively). The
+        // (`partiallyAccumulatedTypeConstructor` and `inputTypeConstructor` respectively). The
         // concrete method's parameters all use the same type constructor (`inputTypeConstructor`).
         if (hasInitializer()) {
             lines.add(EMPTY_LINE);

@@ -20,7 +20,7 @@ public class Lists implements ListsApplicative {
 
     @Override
     @Initializer
-    public <A> ArrayList<? extends A> singleton(A value) {
+    public <A> ArrayList<A> singleton(A value) {
         ArrayList<A> result = new ArrayList<>(1);
         result.add(value);
         return result;
@@ -43,7 +43,7 @@ public class Lists implements ListsApplicative {
 
     @Override
     @Finalizer
-    public <A> List<A> finalize(ArrayList<A> toFinalize) {
-        return toFinalize;
+    public <A> List<A> finalize(ArrayList<? extends A> toFinalize) {
+        return new ArrayList<>(toFinalize);
     }
 }

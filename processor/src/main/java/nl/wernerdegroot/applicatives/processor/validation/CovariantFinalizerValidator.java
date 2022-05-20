@@ -56,7 +56,7 @@ public class CovariantFinalizerValidator {
         Type returnType = optionalReturnType.get();
 
         // Extract the type constructor from the return type:
-        TypeConstructor resultTypeConstructor = returnType.asTypeConstructorWithPlaceholderFor(typeParameter.getName());
+        TypeConstructor finalizedTypeConstructor = returnType.asTypeConstructorWithPlaceholderFor(typeParameter.getName());
 
         // We require exactly one parameter:
         int numberOfParameters = parameters.size();
@@ -67,8 +67,8 @@ public class CovariantFinalizerValidator {
         Parameter parameter = parameters.get(0);
 
         // Extract the type constructor from the single parameter:
-        TypeConstructor accumulationTypeConstructor = parameter.getType().asTypeConstructorWithPlaceholderFor(typeParameter.getName());
+        TypeConstructor toFinalizeTypeConstructor = parameter.getType().asTypeConstructorWithPlaceholderFor(typeParameter.getName());
 
-        return Validated.valid(CovariantFinalizer.of(name, parameter.getType(), accumulationTypeConstructor, resultTypeConstructor));
+        return Validated.valid(CovariantFinalizer.of(name, parameter.getType(), toFinalizeTypeConstructor, finalizedTypeConstructor));
     }
 }

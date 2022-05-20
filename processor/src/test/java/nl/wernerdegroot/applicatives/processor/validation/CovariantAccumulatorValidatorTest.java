@@ -1,6 +1,8 @@
 package nl.wernerdegroot.applicatives.processor.validation;
 
-import nl.wernerdegroot.applicatives.processor.domain.*;
+import nl.wernerdegroot.applicatives.processor.domain.Method;
+import nl.wernerdegroot.applicatives.processor.domain.Parameter;
+import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -125,10 +127,8 @@ public class CovariantAccumulatorValidatorTest {
         Validated<CovariantAccumulator> expected = Validated.valid(
                 CovariantAccumulator.of(
                         "myFunction",
-                        OPTIONAL.asTypeConstructor(),
-                        OPTIONAL.with(T),
-                        OPTIONAL.asTypeConstructor(),
-                        OPTIONAL.asTypeConstructor()
+                        OPTIONAL.asTypeConstructor(), OPTIONAL.asTypeConstructor(), OPTIONAL.asTypeConstructor(),
+                        OPTIONAL.with(T)
                 )
         );
         Validated<CovariantAccumulator> toVerify = CovariantAccumulatorValidator.validate(toValidate);
@@ -280,10 +280,8 @@ public class CovariantAccumulatorValidatorTest {
         Validated<CovariantAccumulator> expected = Validated.valid(
                 CovariantAccumulator.of(
                         "myFunction",
-                        OPTIONAL.asTypeConstructor(),
-                        OPTIONAL.with(T),
-                        OPTIONAL.asTypeConstructor(),
-                        COMPLETABLE_FUTURE.asTypeConstructor()
+                        COMPLETABLE_FUTURE.asTypeConstructor(), OPTIONAL.asTypeConstructor(), OPTIONAL.asTypeConstructor(),
+                        OPTIONAL.with(T)
                 )
         );
         Validated<CovariantAccumulator> toVerify = CovariantAccumulatorValidator.validate(toValidate);
@@ -292,7 +290,7 @@ public class CovariantAccumulatorValidatorTest {
     }
 
     @Test
-    public void validateGivenMethodWithNoSharedTypeConstructorBetweenLeftInputParameterAndResultType() {
+    public void validateGivenMethodWithNoSharedTypeConstructorBetweenLeftInputParameterAndReturnType() {
         Method toValidate = Method.of(
                 emptySet(),
                 modifiers(PUBLIC),
@@ -313,7 +311,7 @@ public class CovariantAccumulatorValidatorTest {
     }
 
     @Test
-    public void validateGivenMethodWithAccumulationTypeConstructorThatIsAssignableToPermissiveAccumulationTypeConstructor() {
+    public void validateGivenMethodWithAccumulatedTypeConstructorThatIsAssignableToPartiallyAccumulatedTypeConstructor() {
         Method toValidate = Method.of(
                 emptySet(),
                 modifiers(PUBLIC),
@@ -330,10 +328,8 @@ public class CovariantAccumulatorValidatorTest {
         Validated<CovariantAccumulator> expected = Validated.valid(
                 CovariantAccumulator.of(
                         "myFunction",
-                        FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()),
-                        FUNCTION.with(P.asType().contravariant(), T.asType().covariant()),
-                        FUNCTION.with(P.asTypeConstructor().contravariant(), placeholder().covariant()),
-                        FUNCTION.with(P.asTypeConstructor().contravariant(), placeholder().covariant())
+                        FUNCTION.with(P.asTypeConstructor().contravariant(), placeholder().covariant()), FUNCTION.with(P.asTypeConstructor().contravariant(), placeholder().covariant()), FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()),
+                        FUNCTION.with(P.asType().contravariant(), T.asType().covariant())
                 )
         );
         Validated<CovariantAccumulator> toVerify = CovariantAccumulatorValidator.validate(toValidate);

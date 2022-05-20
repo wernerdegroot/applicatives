@@ -185,7 +185,7 @@ public class CovariantInitializerValidatorTest {
                 asList(Parameter.of(T.asType(), "value"))
         );
 
-        Validated<CovariantInitializer> expected = Validated.valid(CovariantInitializer.of("myFunction", OPTIONAL.with(T), OPTIONAL.asTypeConstructor()));
+        Validated<CovariantInitializer> expected = Validated.valid(CovariantInitializer.of("myFunction", OPTIONAL.asTypeConstructor(), OPTIONAL.with(T)));
         Validated<CovariantInitializer> toVerify = CovariantInitializerValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);

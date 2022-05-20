@@ -71,8 +71,8 @@ public class CovariantInitializerValidator {
             return Validated.invalid("Expected parameter to be " + generateFrom(expectedParameterType) + " but was " + generateFrom(parameter.getType()));
         }
 
-        TypeConstructor permissiveAccumulationTypeConstructor = returnType.asTypeConstructorWithPlaceholderFor(typeParameter.getName());
+        TypeConstructor initializedTypeConstructor = returnType.asTypeConstructorWithPlaceholderFor(typeParameter.getName());
 
-        return Validated.valid(CovariantInitializer.of(name, returnType, permissiveAccumulationTypeConstructor));
+        return Validated.valid(CovariantInitializer.of(name, initializedTypeConstructor, returnType));
     }
 }

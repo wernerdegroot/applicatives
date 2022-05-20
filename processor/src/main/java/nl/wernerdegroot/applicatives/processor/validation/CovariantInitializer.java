@@ -8,29 +8,29 @@ import java.util.Objects;
 public class CovariantInitializer {
 
     private final String name;
+    private final TypeConstructor initializedTypeConstructor;
     private final Type returnType;
-    private final TypeConstructor permissiveAccumulationTypeConstructor;
 
-    public CovariantInitializer(String name, Type returnType, TypeConstructor permissiveAccumulationTypeConstructor) {
+    public CovariantInitializer(String name, TypeConstructor initializedTypeConstructor, Type returnType) {
         this.name = name;
         this.returnType = returnType;
-        this.permissiveAccumulationTypeConstructor = permissiveAccumulationTypeConstructor;
+        this.initializedTypeConstructor = initializedTypeConstructor;
     }
 
-    public static CovariantInitializer of(String name, Type returnType, TypeConstructor permissiveAccumulationTypeConstructor) {
-        return new CovariantInitializer(name, returnType, permissiveAccumulationTypeConstructor);
+    public static CovariantInitializer of(String name, TypeConstructor initializedTypeConstructor, Type returnType) {
+        return new CovariantInitializer(name, initializedTypeConstructor, returnType);
     }
 
     public String getName() {
         return name;
     }
 
-    public Type getReturnType() {
-        return returnType;
+    public TypeConstructor getInitializedTypeConstructor() {
+        return initializedTypeConstructor;
     }
 
-    public TypeConstructor getPermissiveAccumulationTypeConstructor() {
-        return permissiveAccumulationTypeConstructor;
+    public Type getReturnType() {
+        return returnType;
     }
 
     @Override
@@ -38,20 +38,20 @@ public class CovariantInitializer {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CovariantInitializer that = (CovariantInitializer) o;
-        return getName().equals(that.getName()) && getReturnType().equals(that.getReturnType()) && getPermissiveAccumulationTypeConstructor().equals(that.getPermissiveAccumulationTypeConstructor());
+        return getName().equals(that.getName()) && getInitializedTypeConstructor().equals(that.getInitializedTypeConstructor()) && getReturnType().equals(that.getReturnType());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getName(), getReturnType(), getPermissiveAccumulationTypeConstructor());
+        return Objects.hash(getName(), getInitializedTypeConstructor(), getReturnType());
     }
 
     @Override
     public String toString() {
         return "CovariantInitializer{" +
                 "name='" + name + '\'' +
+                ", initializedTypeConstructor=" + initializedTypeConstructor +
                 ", returnType=" + returnType +
-                ", permissiveAccumulationTypeConstructor=" + permissiveAccumulationTypeConstructor +
                 '}';
     }
 }
