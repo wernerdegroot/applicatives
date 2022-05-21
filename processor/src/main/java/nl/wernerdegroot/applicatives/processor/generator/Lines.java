@@ -3,8 +3,15 @@ package nl.wernerdegroot.applicatives.processor.generator;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
 
 import static java.util.Arrays.asList;
+import static nl.wernerdegroot.applicatives.processor.generator.Constants.EMPTY_LINE;
 
 public class Lines extends AbstractList<String> {
 
@@ -23,6 +30,25 @@ public class Lines extends AbstractList<String> {
 
     public static Lines lines() {
         return new Lines();
+    }
+
+    public static <E> Collector<E, ?, List<String>> collector(Function<E, List<String>> toLines) {
+        return Collector.of(
+                ArrayList::new,
+                (lines, element) -> {
+                    if (!lines.isEmpty()) {
+                        lines.add(EMPTY_LINE);
+                    }
+                    lines.addAll(toLines.apply(element));
+                },
+                (left, right) -> {
+                    if (!left.isEmpty() && !right.isEmpty()) {
+                        left.add(EMPTY_LINE);
+                    }
+                    left.addAll(right);
+                    return left;
+                }
+        );
     }
 
     @Override
