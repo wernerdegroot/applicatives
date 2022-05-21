@@ -14,9 +14,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
+import static nl.wernerdegroot.applicatives.processor.Ordinals.getterForIndex;
 import static nl.wernerdegroot.applicatives.processor.Ordinals.witherForIndex;
 import static nl.wernerdegroot.applicatives.processor.domain.Modifier.*;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.BI_FUNCTION;
@@ -53,6 +55,8 @@ public class Generator {
     private String selfParameterName;
     private String combinatorParameterName;
     private String maxTupleSizeParameterName;
+    private String tupleParameterName;
+    private String elementParameterName;
     private Optional<TypeConstructor> optionalInitializedTypeConstructor;
     private TypeConstructor inputTypeConstructor;
     private TypeConstructor partiallyAccumulatedTypeConstructor;
@@ -236,6 +240,16 @@ public class Generator {
         return this;
     }
 
+    public Generator withTupleParameterName(String tupleParameterName) {
+        this.tupleParameterName = tupleParameterName;
+        return this;
+    }
+
+    public Generator withElementParameterName(String elementParameterName) {
+        this.elementParameterName = elementParameterName;
+        return this;
+    }
+
     public Generator withOptionalInitializedTypeConstructor(Optional<TypeConstructor> optionalInitializedTypeConstructor) {
         this.optionalInitializedTypeConstructor = optionalInitializedTypeConstructor;
         return this;
@@ -393,18 +407,6 @@ public class Generator {
 
     private MethodGenerator combineMethodWithArity(int arity) {
 
-        // If the arity is equal to two, we are not dealing with a `Function2` like we want,
-        // but a `BiFunction` (to stay as close as possible to the Java standard library).
-        // To call the proper `apply`-method, we need to convert it to a `Function2` first.
-        String function = combinatorParameterName;
-        if (arity == 2) {
-            function = methodCall()
-                    .withObjectPath(fullyQualifiedNameOfArbitraryArityFunction(2))
-                    .withMethodName(FUNCTION_2_FROM_BI_FUNCTION_METHOD_NAME)
-                    .withArguments(combinatorParameterName)
-                    .generate();
-        }
-
         UnaryOperator<String> finalization = optionalFinalizerMethodName
                 .<UnaryOperator<String>>map(finalizerMethodName -> argument -> methodCall().withObjectPath(THIS).withMethodName(finalizerMethodName).withArguments(argument).generate())
                 .orElse(UnaryOperator.identity());
@@ -426,7 +428,23 @@ public class Generator {
                                                 .withArguments(Integer.toString(arity))
                                                 .generate(),
                                         inputParameterNames.get(arity - 1),
-                                        methodReference().withObjectPath(function).withMethodName(FUNCTION_N_APPLY_METHOD).generate()
+                                        lambda()
+                                                .withParameterNames(tupleParameterName, elementParameterName)
+                                                .withExpression(
+                                                        methodCall()
+                                                                .withObjectPath(combinatorParameterName)
+                                                                .withMethodName(FUNCTION_N_APPLY_METHOD)
+                                                                .withArguments(
+                                                                        IntStream.range(0, arity - 1)
+                                                                                .boxed()
+                                                                                .map(elementIndex -> methodCall().withObjectPath(tupleParameterName).withMethodName(getterForIndex(elementIndex)).generate())
+                                                                                .collect(toList())
+                                                                )
+                                                                .withArguments(elementParameterName)
+                                                                .generate()
+
+                                                )
+                                                .generate()
                                 )
                                 .generate()
                 )

@@ -65,6 +65,8 @@ public class GeneratorTest {
                 .withSelfParameterName(SELF_PARAMETER_NAME)
                 .withCombinatorParameterName(COMBINATOR_PARAMETER_NAME)
                 .withMaxTupleSizeParameterName(MAX_TUPLE_SIZE_PARAMETER_NAME)
+                .withTupleParameterName(TUPLE_PARAMETER_NAME)
+                .withElementParameterName(ELEMENT_PARAMETER_NAME)
                 .withLiftMethodName("lift")
                 .withMaxArity(2)
                 .generate();
@@ -95,6 +97,8 @@ public class GeneratorTest {
                 .withSelfParameterName(SELF_PARAMETER_NAME)
                 .withCombinatorParameterName(COMBINATOR_PARAMETER_NAME)
                 .withMaxTupleSizeParameterName(MAX_TUPLE_SIZE_PARAMETER_NAME)
+                .withTupleParameterName(TUPLE_PARAMETER_NAME)
+                .withElementParameterName(ELEMENT_PARAMETER_NAME)
                 .withLiftMethodName("lift")
                 .withMaxArity(3)
                 .generate();
@@ -127,6 +131,8 @@ public class GeneratorTest {
                 .withSelfParameterName(SELF_PARAMETER_NAME)
                 .withCombinatorParameterName(COMBINATOR_PARAMETER_NAME)
                 .withMaxTupleSizeParameterName(MAX_TUPLE_SIZE_PARAMETER_NAME)
+                .withTupleParameterName(TUPLE_PARAMETER_NAME)
+                .withElementParameterName(ELEMENT_PARAMETER_NAME)
                 .withLiftMethodName("lift")
                 .withMaxArity(4)
                 .generate();

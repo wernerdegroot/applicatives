@@ -1,7 +1,6 @@
 package nl.wernerdegroot.applicatives.processor;
 
 import com.google.auto.service.AutoService;
-import nl.wernerdegroot.applicatives.processor.conflicts.Conflicts;
 import nl.wernerdegroot.applicatives.processor.converters.ContainingClassConverter;
 import nl.wernerdegroot.applicatives.processor.converters.MethodConverter;
 import nl.wernerdegroot.applicatives.processor.domain.*;
@@ -37,6 +36,7 @@ import java.util.Set;
 import static nl.wernerdegroot.applicatives.processor.Classes.COVARIANT_CLASS;
 import static nl.wernerdegroot.applicatives.processor.Classes.COVARIANT_CLASS_NAME;
 import static nl.wernerdegroot.applicatives.processor.conflicts.ConflictFinder.findClassTypeParameterNameReplacements;
+import static nl.wernerdegroot.applicatives.processor.conflicts.Conflicts.*;
 import static nl.wernerdegroot.applicatives.processor.generator.Generator.generator;
 
 @SupportedOptions({Options.VERBOSE_ARGUMENT})
@@ -126,9 +126,9 @@ public class CovariantProcessor extends AbstractProcessor {
                             .withPackageName(containingClass.getPackageName())
                             .withClassNameToGenerate(covariantAnnotation.className())
                             .withClassTypeParameters(conflictFree.getClassTypeParameters())
-                            .withParameterTypeConstructorArguments(Conflicts.PARAMETER_TYPE_CONSTRUCTOR_ARGUMENTS)
-                            .withReturnTypeConstructorArgument(Conflicts.RETURN_TYPE_CONSTRUCTOR_ARGUMENT)
-                            .withInputParameterNames(Conflicts.INPUT_PARAMETER_NAMES)
+                            .withParameterTypeConstructorArguments(PARAMETER_TYPE_CONSTRUCTOR_ARGUMENTS)
+                            .withReturnTypeConstructorArgument(RETURN_TYPE_CONSTRUCTOR_ARGUMENT)
+                            .withInputParameterNames(INPUT_PARAMETER_NAMES)
                             .withOptionalInitializerMethodName(conflictFree.getOptionalInitializerMethodName())
                             .withOptionalInitializedTypeConstructor(conflictFree.getOptionalInitializedTypeConstructor())
                             .withAccumulatorMethodName(conflictFree.getAccumulatorMethodName())
@@ -138,12 +138,14 @@ public class CovariantProcessor extends AbstractProcessor {
                             .withOptionalFinalizerMethodName(conflictFree.getOptionalFinalizerMethodName())
                             .withOptionalToFinalizeTypeConstructor(conflictFree.getOptionalToFinalizeTypeConstructor())
                             .withOptionalFinalizedTypeConstructor(conflictFree.getOptionalFinalizedTypeConstructor())
-                            .withValueParameterName(Conflicts.VALUE_PARAMETER_NAME)
-                            .withCombinatorParameterName(Conflicts.COMBINATOR_PARAMETER_NAME)
+                            .withValueParameterName(VALUE_PARAMETER_NAME)
+                            .withCombinatorParameterName(COMBINATOR_PARAMETER_NAME)
                             .withLiftMethodName(covariantAnnotation.liftMethodName())
-                            .withMaxTupleSizeParameterName(Conflicts.MAX_TUPLE_SIZE_PARAMETER_NAME)
+                            .withMaxTupleSizeParameterName(MAX_TUPLE_SIZE_PARAMETER_NAME)
                             .withMaxArity(covariantAnnotation.maxArity())
-                            .withSelfParameterName(Conflicts.SELF_PARAMETER_NAME)
+                            .withSelfParameterName(SELF_PARAMETER_NAME)
+                            .withTupleParameterName(TUPLE_PARAMETER_NAME)
+                            .withElementParameterName(ELEMENT_PARAMETER_NAME)
                             .generate();
 
                     Log.of("Done generating code").append(asNote());

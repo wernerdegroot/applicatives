@@ -57,11 +57,11 @@ public class Validated<T> {
     }
 
     public static <A, B, C, D> Validated<D> combine(Validated<A> first, Validated<B> second, Validated<C> third, Function3<? super A, ? super B, ? super C, ? extends D> fn) {
-        return combine(Validated.tuple(first, second, 2), third, fn::apply);
+        return combine(Validated.tuple(first, second, 2), third, (tuple, element) -> fn.apply(tuple.getFirst(), tuple.getSecond(), element));
     }
 
     public static <A, B, C, D, E> Validated<E> combine(Validated<A> first, Validated<B> second, Validated<C> third, Validated<D> fourth, Function4<? super A, ? super B, ? super C, ? super D, ? extends E> fn) {
-        return combine(Validated.tuple(first, second, third, 3), fourth, fn::apply);
+        return combine(Validated.tuple(first, second, third, 3), fourth, (tuple, element) -> fn.apply(tuple.getFirst(), tuple.getSecond(), tuple.getThird(), element));
     }
 
     private static <P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26> Validated<FastTuple<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26>> tuple(Validated<P1> first, Validated<P2> second, int maxSize) {

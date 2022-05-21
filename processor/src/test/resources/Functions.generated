@@ -5,11 +5,11 @@ public interface FunctionsMixin<P> {
     <P1, P2, R> java.util.function.Function<P, R> compose(java.util.function.Function<P, P1> first, java.util.function.Function<P, P2> second, java.util.function.BiFunction<? super P1, ? super P2, ? extends R> fn);
 
     default <P1, P2, P3, R> java.util.function.Function<P, R> compose(java.util.function.Function<P, P1> first, java.util.function.Function<P, P2> second, java.util.function.Function<P, P3> third, nl.wernerdegroot.applicatives.runtime.Function3<? super P1, ? super P2, ? super P3, ? extends R> fn) {
-        return this.compose(nl.wernerdegroot.applicatives.FunctionsMixin.Tuples.<P1, P2, P>tuple(this, first, second, 3), third, fn::apply);
+        return this.compose(nl.wernerdegroot.applicatives.FunctionsMixin.Tuples.<P1, P2, P>tuple(this, first, second, 3), third, (tuple, element) -> fn.apply(tuple.getFirst(), tuple.getSecond(), element));
     }
 
     default <P1, P2, P3, P4, R> java.util.function.Function<P, R> compose(java.util.function.Function<P, P1> first, java.util.function.Function<P, P2> second, java.util.function.Function<P, P3> third, java.util.function.Function<P, P4> fourth, nl.wernerdegroot.applicatives.runtime.Function4<? super P1, ? super P2, ? super P3, ? super P4, ? extends R> fn) {
-        return this.compose(nl.wernerdegroot.applicatives.FunctionsMixin.Tuples.<P1, P2, P3, P>tuple(this, first, second, third, 4), fourth, fn::apply);
+        return this.compose(nl.wernerdegroot.applicatives.FunctionsMixin.Tuples.<P1, P2, P3, P>tuple(this, first, second, third, 4), fourth, (tuple, element) -> fn.apply(tuple.getFirst(), tuple.getSecond(), tuple.getThird(), element));
     }
 
     default <P1, P2, R> java.util.function.BiFunction<? super java.util.function.Function<P, P1>, ? super java.util.function.Function<P, P2>, ? extends java.util.function.Function<P, R>> lift(java.util.function.BiFunction<? super P1, ? super P2, ? extends R> fn) {
