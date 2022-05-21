@@ -7,11 +7,13 @@ import nl.wernerdegroot.applicatives.processor.domain.TypeParameter;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import nl.wernerdegroot.applicatives.processor.domain.type.TypeArgument;
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor;
+import org.checkerframework.checker.units.qual.A;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collector;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
@@ -280,25 +282,21 @@ public class Generator {
         lines.append(EMPTY_LINE);
 
         // Place to gather methods:
-        Lines methods = lines();
+        List<MethodGenerator> methods = new ArrayList<>();
 
-        // If the client provided an Initializer, generate an abstract
+        // If the client provided an initializer method, generate an abstract
         // method for it and append it to the methods.
-        optionalAbstractInitializerMethod().ifPresent(abstractInitializerMethod -> {
-            methods.append(abstractInitializerMethod).append(EMPTY_LINE);
-        });
+        optionalAbstractInitializerMethod().ifPresent(methods::add);
 
-        // If the client provided a Finalizer, generate an abstract
+        methods.add(abstractCombineMethodWithArityTwo());
+
+        // If the client provided a finalizer method, generate an abstract
         // method for it and append it to the methods.
-        optionalAbstractFinalizerMethod().ifPresent(abstractFinalizerMehtod -> {
-            methods.append(abstractFinalizerMehtod).append(EMPTY_LINE);
-        });
+        optionalAbstractFinalizerMethod().ifPresent(methods::add);
 
         // Continue adding the combine- and lift-methods.
-        methods
-                .append(combineMethods())
-                .append(EMPTY_LINE)
-                .append(liftMethods());
+        methods.addAll(combineMethods());
+        methods.addAll(liftMethods());
 
         lines.append(
                 classOrInterface()
@@ -306,7 +304,7 @@ public class Generator {
                         .withModifiers(PUBLIC)
                         .withName(classNameToGenerate)
                         .withTypeParameters(classTypeParameters)
-                        .withBody(methods)
+                        .withBody(methods.stream().collect(Lines.collector(MethodGenerator::lines)))
                         .withBody(EMPTY_LINE)
                         .withBody(
                                 classOrInterface()
@@ -321,44 +319,41 @@ public class Generator {
         return String.join(LINE_FEED, lines);
     }
 
-    private Optional<List<String>> optionalAbstractInitializerMethod() {
+    private Optional<MethodGenerator> optionalAbstractInitializerMethod() {
         if (optionalInitializedTypeConstructor.isPresent() && optionalInitializerMethodName.isPresent()) {
             TypeConstructor initializedTypeConstructor = optionalInitializedTypeConstructor.get();
             String initializerMethodName = optionalInitializerMethodName.get();
-            List<String> lines = method()
+            MethodGenerator method = method()
                     .withTypeParameters(returnTypeConstructorArgument.getName())
                     .withReturnType(returnTypeConstructorArgument.asType().using(initializedTypeConstructor))
                     .withName(initializerMethodName)
-                    .withParameter(returnTypeConstructorArgument.asType(), valueParameterName)
-                    .lines();
-            return Optional.of(lines);
+                    .withParameter(returnTypeConstructorArgument.asType(), valueParameterName);
+            return Optional.of(method);
         } else {
             return Optional.empty();
         }
     }
 
-    private Optional<List<String>> optionalAbstractFinalizerMethod() {
+    private Optional<MethodGenerator> optionalAbstractFinalizerMethod() {
         if (optionalFinalizedTypeConstructor.isPresent() && optionalFinalizerMethodName.isPresent() && optionalToFinalizeTypeConstructor.isPresent()) {
             TypeConstructor finalizedTypeConstructor = optionalFinalizedTypeConstructor.get();
             String finalizerMethodName = optionalFinalizerMethodName.get();
             TypeConstructor toFinalizeTypeConstructor = optionalToFinalizeTypeConstructor.get();
 
-            List<String> lines = method()
+            MethodGenerator method = method()
                     .withTypeParameters(returnTypeConstructorArgument.getName())
                     .withReturnType(returnTypeConstructorArgument.asType().using(finalizedTypeConstructor))
                     .withName(finalizerMethodName)
-                    .withParameter(returnTypeConstructorArgument.asType().using(toFinalizeTypeConstructor), valueParameterName)
-                    .lines();
+                    .withParameter(returnTypeConstructorArgument.asType().using(toFinalizeTypeConstructor), valueParameterName);
 
-            return Optional.of(lines);
+            return Optional.of(method);
         } else {
             return Optional.empty();
         }
     }
 
-    private List<String> combineMethods() {
-        List<String> lines = new ArrayList<>();
-        lines.addAll(abstractCombineMethodWithArityTwo());
+    private List<MethodGenerator> combineMethods() {
+        List<MethodGenerator> combineMethods = new ArrayList<>();
 
         // If we have an initializer method, we need to generate an addition `combine`-method with
         // arity two. Both `combine`-method have different parameters. The abstract method
@@ -366,18 +361,17 @@ public class Generator {
         // (`partiallyAccumulatedTypeConstructor` and `inputTypeConstructor` respectively). The
         // concrete method's parameters all use the same type constructor (`inputTypeConstructor`).
         if (hasInitializer()) {
-            lines.add(EMPTY_LINE);
-            lines.addAll(combineMethodWithArity(2));
+            combineMethods.add(combineMethodWithArity(2));
         }
 
         IntStream.rangeClosed(3, maxArity).forEach(arity -> {
-            lines.add(EMPTY_LINE);
-            lines.addAll(combineMethodWithArity(arity));
+            combineMethods.add(combineMethodWithArity(arity));
         });
-        return lines;
+
+        return combineMethods;
     }
 
-    private List<String> abstractCombineMethodWithArityTwo() {
+    private MethodGenerator abstractCombineMethodWithArityTwo() {
         int arity = 2;
 
         return method()
@@ -394,11 +388,10 @@ public class Generator {
                                 returnTypeConstructorArgument.covariant()
                         ),
                         combinatorParameterName
-                )
-                .lines();
+                );
     }
 
-    private List<String> combineMethodWithArity(int arity) {
+    private MethodGenerator combineMethodWithArity(int arity) {
 
         // If the arity is equal to two, we are not dealing with a `Function2` like we want,
         // but a `BiFunction` (to stay as close as possible to the Java standard library).
@@ -440,7 +433,7 @@ public class Generator {
         );
     }
 
-    private List<String> combineMethodWithArity(int arity, String returnStatement) {
+    private MethodGenerator combineMethodWithArity(int arity, String returnStatement) {
         return method()
                 .withModifiers(DEFAULT)
                 .withTypeParameters(takeParameterTypeConstructorArguments(arity))
@@ -450,24 +443,18 @@ public class Generator {
                 .withParameterTypes(takeParameterTypes(arity))
                 .andParameterNames(takeInputParameterNames(arity))
                 .withParameter(lambdaType(TypeConstructor.placeholder(), TypeConstructor.placeholder(), TypeConstructor.placeholder(), arity), combinatorParameterName)
-                .withReturnStatement(returnStatement)
-                .lines();
+                .withReturnStatement(returnStatement);
     }
 
-    private List<String> liftMethods() {
-        return IntStream.rangeClosed(3, maxArity)
-                .boxed()
-                .collect(
-                        () -> this.liftMethodWithArity(2),
-                        (acc, i) -> {
-                            acc.add(EMPTY_LINE);
-                            acc.addAll(liftMethodWithArity(i));
-                        },
-                        List::addAll
-                );
+    private List<MethodGenerator> liftMethods() {
+        List<MethodGenerator> liftMethods = new ArrayList<>();
+        IntStream.rangeClosed(2, maxArity).forEachOrdered(arity -> {
+            liftMethods.add(liftMethodWithArity(arity));
+        });
+        return liftMethods;
     }
 
-    private List<String> liftMethodWithArity(int arity) {
+    private MethodGenerator liftMethodWithArity(int arity) {
         return liftMethodWithArity(
                 arity,
                 methodCall()
@@ -479,7 +466,7 @@ public class Generator {
         );
     }
 
-    private List<String> liftMethodWithArity(int arity, String lambdaBody) {
+    private MethodGenerator liftMethodWithArity(int arity, String lambdaBody) {
         return method()
                 .withModifiers(DEFAULT)
                 .withTypeParameters(takeParameterTypeConstructorArguments(arity))
@@ -492,8 +479,7 @@ public class Generator {
                                 .withParameterNames(takeInputParameterNames(arity))
                                 .withExpression(lambdaBody)
                                 .multiline()
-                )
-                .lines();
+                );
     }
 
     private List<String> tupleMethods() {
