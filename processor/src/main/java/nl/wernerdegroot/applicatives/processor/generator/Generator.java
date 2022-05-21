@@ -7,14 +7,10 @@ import nl.wernerdegroot.applicatives.processor.domain.TypeParameter;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import nl.wernerdegroot.applicatives.processor.domain.type.TypeArgument;
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor;
-import org.checkerframework.checker.units.qual.A;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.UnaryOperator;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
@@ -324,7 +320,7 @@ public class Generator {
                                 classOrInterface()
                                         .asClass()
                                         .withName(TUPLE_CLASS_NAME.raw())
-                                        .withBody(tupleMethods())
+                                        .withBody(tupleMethods().stream().collect(Lines.collector(MethodGenerator::lines)))
                                         .lines()
                         )
                         .lines()
@@ -406,48 +402,45 @@ public class Generator {
     }
 
     private MethodGenerator combineMethodWithArity(int arity) {
-
-        UnaryOperator<String> finalization = optionalFinalizerMethodName
-                .<UnaryOperator<String>>map(finalizerMethodName -> argument -> methodCall().withObjectPath(THIS).withMethodName(finalizerMethodName).withArguments(argument).generate())
-                .orElse(UnaryOperator.identity());
-
-        return combineMethodWithArity(
-                arity,
-                finalization.apply(
+        String methodBody = methodCall()
+                .withObjectPath(THIS)
+                .withMethodName(accumulatorMethodName)
+                .withArguments(
                         methodCall()
-                                .withObjectPath(THIS)
-                                .withMethodName(accumulatorMethodName)
-                                .withArguments(
+                                .withType(getFullyQualifiedTupleClass())
+                                .withTypeArguments(takeParameterTypeConstructorArgumentsAsTypeArguments(arity - 1))
+                                .withTypeArguments(getClassTypeParametersAsTypeArguments())
+                                .withMethodName(TUPLE_METHOD_NAME)
+                                .withArguments(THIS)
+                                .withArguments(takeInputParameterNames(arity - 1))
+                                .withArguments(Integer.toString(arity))
+                                .generate(),
+                        inputParameterNames.get(arity - 1),
+                        lambda()
+                                .withParameterNames(tupleParameterName, elementParameterName)
+                                .withExpression(
                                         methodCall()
-                                                .withType(getFullyQualifiedTupleClass())
-                                                .withTypeArguments(takeParameterTypeConstructorArgumentsAsTypeArguments(arity - 1))
-                                                .withTypeArguments(getClassTypeParametersAsTypeArguments())
-                                                .withMethodName(TUPLE_METHOD_NAME)
-                                                .withArguments(THIS)
-                                                .withArguments(takeInputParameterNames(arity - 1))
-                                                .withArguments(Integer.toString(arity))
-                                                .generate(),
-                                        inputParameterNames.get(arity - 1),
-                                        lambda()
-                                                .withParameterNames(tupleParameterName, elementParameterName)
-                                                .withExpression(
-                                                        methodCall()
-                                                                .withObjectPath(combinatorParameterName)
-                                                                .withMethodName(FUNCTION_N_APPLY_METHOD)
-                                                                .withArguments(
-                                                                        IntStream.range(0, arity - 1)
-                                                                                .boxed()
-                                                                                .map(elementIndex -> methodCall().withObjectPath(tupleParameterName).withMethodName(getterForIndex(elementIndex)).generate())
-                                                                                .collect(toList())
-                                                                )
-                                                                .withArguments(elementParameterName)
-                                                                .generate()
-
+                                                .withObjectPath(combinatorParameterName)
+                                                .withMethodName(FUNCTION_N_APPLY_METHOD)
+                                                .withArguments(
+                                                        IntStream.range(0, arity - 1)
+                                                                .boxed()
+                                                                .map(elementIndex -> methodCall().withObjectPath(tupleParameterName).withMethodName(getterForIndex(elementIndex)).generate())
+                                                                .collect(toList())
                                                 )
+                                                .withArguments(elementParameterName)
                                                 .generate()
+
                                 )
                                 .generate()
                 )
+                .generate();
+
+        return combineMethodWithArity(
+                arity,
+                optionalFinalizerMethodName
+                        .map(finalizerMethodName -> methodCall().withObjectPath(THIS).withMethodName(finalizerMethodName).withArguments(methodBody).generate())
+                        .orElse(methodBody)
         );
     }
 
@@ -500,28 +493,28 @@ public class Generator {
                 );
     }
 
-    private List<String> tupleMethods() {
+    private List<MethodGenerator> tupleMethods() {
+        List<MethodGenerator> tupleMethods = new ArrayList<>();
 
-        Lines lines = lines();
         if (hasInitializer()) {
             String initializerMethodName = optionalInitializerMethodName.get();
 
-            lines.append(tupleMethodWithArityZero(initializerMethodName)).append(EMPTY_LINE);
-            lines.append(tupleMethodWithArity(1)).append(EMPTY_LINE);
-            lines.append(tupleMethodWithArity(2));
+            tupleMethods.add(tupleMethodWithArityZero(initializerMethodName));
+            tupleMethods.add(tupleMethodWithArity(1));
+            tupleMethods.add(tupleMethodWithArity(2));
         } else {
-            lines.append(tupleMethodWithArityTwo());
+            tupleMethods.add(tupleMethodWithArityTwo());
         }
 
-        for (int arity = 3; arity < maxArity; arity++) {
-            lines.append(EMPTY_LINE);
-            lines.append(tupleMethodWithArity(arity));
-        }
+        IntStream.range(3, maxArity)
+                .forEachOrdered(arity -> {
+                    tupleMethods.add(tupleMethodWithArity(arity));
+                });
 
-        return lines;
+        return tupleMethods;
     }
 
-    private List<String> tupleMethodWithArityZero(String initializerMethodName) {
+    private MethodGenerator tupleMethodWithArityZero(String initializerMethodName) {
         return tupleMethodWithArity(
                 0,
                 methodCall()
@@ -539,7 +532,7 @@ public class Generator {
         );
     }
 
-    private List<String> tupleMethodWithArityTwo() {
+    private MethodGenerator tupleMethodWithArityTwo() {
         return tupleMethodWithArity(
                 2,
                 methodCall()
@@ -558,7 +551,7 @@ public class Generator {
         );
     }
 
-    private List<String> tupleMethodWithArity(int arity) {
+    private MethodGenerator tupleMethodWithArity(int arity) {
         return tupleMethodWithArity(
                 arity,
                 methodCall()
@@ -584,7 +577,7 @@ public class Generator {
         );
     }
 
-    private List<String> tupleMethodWithArity(int arity, String methodBody) {
+    private MethodGenerator tupleMethodWithArity(int arity, String methodBody) {
         return method()
                 .withModifiers(PUBLIC, STATIC)
                 .withTypeParameters(takeParameterTypeConstructorArguments(arity))
@@ -598,8 +591,7 @@ public class Generator {
                 .withParameterTypes(takeParameterTypes(arity))
                 .andParameterNames(takeInputParameterNames(arity))
                 .withParameter(INT, maxTupleSizeParameterName)
-                .withReturnStatement(methodBody)
-                .lines();
+                .withReturnStatement(methodBody);
     }
 
     private Type lambdaType(TypeConstructor returnTypeConstructor, TypeConstructor firstParameterTypeConstructor, TypeConstructor otherParametersTypeConstructor, int arity) {
