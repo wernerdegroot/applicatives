@@ -17,7 +17,7 @@ import static nl.wernerdegroot.applicatives.processor.generator.TypeGenerator.ge
 
 public class CovariantInitializerValidator {
 
-    public static Validated<CovariantInitializer> validate(Method method) {
+    public static Validated<ValidCovariantInitializer> validate(Method method) {
         if (method.getModifiers().contains(STATIC)) {
             return Validated.invalid("Method is static and cannot implement an abstract method");
         }
@@ -73,6 +73,6 @@ public class CovariantInitializerValidator {
 
         TypeConstructor initializedTypeConstructor = returnType.asTypeConstructorWithPlaceholderFor(typeParameter.getName());
 
-        return Validated.valid(CovariantInitializer.of(name, initializedTypeConstructor, returnType));
+        return Validated.valid(ValidCovariantInitializer.of(name, initializedTypeConstructor, returnType));
     }
 }

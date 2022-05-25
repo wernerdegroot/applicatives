@@ -37,7 +37,7 @@ public class GenericTypeConstructorTest {
         mapping.put(U, B);
 
         GenericTypeConstructor expected = new GenericTypeConstructor(A);
-        GenericTypeConstructor toVerify = new GenericTypeConstructor(T).replaceAllTypeParameterNames(mapping);
+        GenericTypeConstructor toVerify = new GenericTypeConstructor(T).replaceTypeParameterNames(mapping);
 
         assertEquals(expected, toVerify);
     }
@@ -49,7 +49,7 @@ public class GenericTypeConstructorTest {
         mapping.put(U, B);
 
         GenericTypeConstructor expected = new GenericTypeConstructor(V);
-        GenericTypeConstructor toVerify = new GenericTypeConstructor(V).replaceAllTypeParameterNames(mapping);
+        GenericTypeConstructor toVerify = new GenericTypeConstructor(V).replaceTypeParameterNames(mapping);
 
         assertEquals(expected, toVerify);
     }

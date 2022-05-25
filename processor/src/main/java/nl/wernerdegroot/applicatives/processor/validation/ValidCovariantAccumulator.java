@@ -5,7 +5,7 @@ import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstr
 
 import java.util.Objects;
 
-public class CovariantAccumulator {
+public class ValidCovariantAccumulator {
 
     private final String name;
     private final TypeConstructor inputTypeConstructor;
@@ -13,7 +13,7 @@ public class CovariantAccumulator {
     private final TypeConstructor accumulatedTypeConstructor;
     private final Type firstParameterType;
 
-    public CovariantAccumulator(String name, TypeConstructor inputTypeConstructor, TypeConstructor partiallyAccumulatedTypeConstructor, TypeConstructor accumulatedTypeConstructor, Type firstParameterType) {
+    public ValidCovariantAccumulator(String name, TypeConstructor inputTypeConstructor, TypeConstructor partiallyAccumulatedTypeConstructor, TypeConstructor accumulatedTypeConstructor, Type firstParameterType) {
         this.name = name;
         this.inputTypeConstructor = inputTypeConstructor;
         this.partiallyAccumulatedTypeConstructor = partiallyAccumulatedTypeConstructor;
@@ -21,8 +21,8 @@ public class CovariantAccumulator {
         this.firstParameterType = firstParameterType;
     }
 
-    public static CovariantAccumulator of(String name, TypeConstructor inputTypeConstructor, TypeConstructor partiallyAccumulatedTypeConstructor, TypeConstructor accumulatedTypeConstructor, Type firstParameterType) {
-        return new CovariantAccumulator(name, inputTypeConstructor, partiallyAccumulatedTypeConstructor, accumulatedTypeConstructor, firstParameterType);
+    public static ValidCovariantAccumulator of(String name, TypeConstructor inputTypeConstructor, TypeConstructor partiallyAccumulatedTypeConstructor, TypeConstructor accumulatedTypeConstructor, Type firstParameterType) {
+        return new ValidCovariantAccumulator(name, inputTypeConstructor, partiallyAccumulatedTypeConstructor, accumulatedTypeConstructor, firstParameterType);
     }
 
     public String getName() {
@@ -49,7 +49,7 @@ public class CovariantAccumulator {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        CovariantAccumulator that = (CovariantAccumulator) o;
+        ValidCovariantAccumulator that = (ValidCovariantAccumulator) o;
         return getName().equals(that.getName()) && getInputTypeConstructor().equals(that.getInputTypeConstructor()) && getPartiallyAccumulatedTypeConstructor().equals(that.getPartiallyAccumulatedTypeConstructor()) && getAccumulatedTypeConstructor().equals(that.getAccumulatedTypeConstructor()) && getFirstParameterType().equals(that.getFirstParameterType());
     }
 
@@ -60,7 +60,7 @@ public class CovariantAccumulator {
 
     @Override
     public String toString() {
-        return "CovariantAccumulator{" +
+        return "ValidCovariantAccumulator{" +
                 "name='" + name + '\'' +
                 ", inputTypeConstructor=" + inputTypeConstructor +
                 ", partiallyAccumulatedTypeConstructor=" + partiallyAccumulatedTypeConstructor +

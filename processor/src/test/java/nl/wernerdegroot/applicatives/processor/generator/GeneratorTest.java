@@ -1,7 +1,6 @@
 package nl.wernerdegroot.applicatives.processor.generator;
 
-import nl.wernerdegroot.applicatives.processor.domain.PackageName;
-import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
+import nl.wernerdegroot.applicatives.processor.domain.*;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
@@ -51,15 +50,16 @@ public class GeneratorTest {
                 .withClassTypeParameters(emptyList())
                 .withParameterTypeConstructorArguments(PARAMETER_TYPE_CONSTRUCTOR_ARGUMENTS)
                 .withReturnTypeConstructorArgument(RETURN_TYPE_CONSTRUCTOR_ARGUMENT)
-                .withOptionalInitializerMethodName(Optional.empty())
-                .withOptionalInitializedTypeConstructor(Optional.empty())
-                .withAccumulatorMethodName("compose")
-                .withInputTypeConstructor(OPTIONAL.with(placeholder().covariant()))
-                .withPartiallyAccumulatedTypeConstructor(OPTIONAL.with(placeholder().covariant()))
-                .withAccumulatedTypeConstructor(OPTIONAL.with(placeholder().invariant()))
-                .withOptionalFinalizerMethodName(Optional.empty())
-                .withOptionalToFinalizeTypeConstructor(Optional.empty())
-                .withOptionalFinalizedTypeConstructor(Optional.empty())
+                .withOptionalInitializer(Optional.empty())
+                .withAccumulator(
+                        CovariantAccumulator.of(
+                                "compose",
+                                OPTIONAL.with(placeholder().covariant()),
+                                OPTIONAL.with(placeholder().covariant()),
+                                OPTIONAL.with(placeholder().invariant())
+                        )
+                )
+                .withOptionalFinalizer(Optional.empty())
                 .withInputParameterNames(INPUT_PARAMETER_NAMES)
                 .withValueParameterName(VALUE_PARAMETER_NAME)
                 .withSelfParameterName(SELF_PARAMETER_NAME)
@@ -83,15 +83,31 @@ public class GeneratorTest {
                 .withClassTypeParameters(emptyList())
                 .withParameterTypeConstructorArguments(PARAMETER_TYPE_CONSTRUCTOR_ARGUMENTS)
                 .withReturnTypeConstructorArgument(RETURN_TYPE_CONSTRUCTOR_ARGUMENT)
-                .withOptionalInitializerMethodName(Optional.of("singleton"))
-                .withOptionalInitializedTypeConstructor(Optional.of(ARRAY_LIST.asTypeConstructor()))
-                .withAccumulatorMethodName("compose")
-                .withInputTypeConstructor(LIST.with(placeholder().covariant()))
-                .withPartiallyAccumulatedTypeConstructor(ARRAY_LIST.with(placeholder().covariant()))
-                .withAccumulatedTypeConstructor(ARRAY_LIST.with(placeholder().invariant()))
-                .withOptionalFinalizerMethodName(Optional.of("finalize"))
-                .withOptionalToFinalizeTypeConstructor(Optional.of(ARRAY_LIST.with(placeholder().covariant())))
-                .withOptionalFinalizedTypeConstructor(Optional.of(LIST.with(placeholder().invariant())))
+                .withOptionalInitializer(
+                        Optional.of(
+                                CovariantInitializer.of(
+                                        "singleton",
+                                        ARRAY_LIST.asTypeConstructor()
+                                )
+                        )
+                )
+                .withAccumulator(
+                        CovariantAccumulator.of(
+                                "compose",
+                                LIST.with(placeholder().covariant()),
+                                ARRAY_LIST.with(placeholder().covariant()),
+                                ARRAY_LIST.with(placeholder().invariant())
+                        )
+                )
+                .withOptionalFinalizer(
+                        Optional.of(
+                                CovariantFinalizer.of(
+                                        "finalize",
+                                        ARRAY_LIST.with(placeholder().covariant()),
+                                        LIST.with(placeholder().invariant())
+                                )
+                        )
+                )
                 .withInputParameterNames(INPUT_PARAMETER_NAMES)
                 .withValueParameterName(VALUE_PARAMETER_NAME)
                 .withSelfParameterName(SELF_PARAMETER_NAME)
@@ -117,15 +133,16 @@ public class GeneratorTest {
                 .withClassTypeParameters(asList(P.extending(OBJECT)))
                 .withParameterTypeConstructorArguments(PARAMETER_TYPE_CONSTRUCTOR_ARGUMENTS)
                 .withReturnTypeConstructorArgument(RETURN_TYPE_CONSTRUCTOR_ARGUMENT)
-                .withOptionalInitializerMethodName(Optional.empty())
-                .withOptionalInitializedTypeConstructor(Optional.empty())
-                .withAccumulatorMethodName("compose")
-                .withInputTypeConstructor(FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()))
-                .withPartiallyAccumulatedTypeConstructor(FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()))
-                .withAccumulatedTypeConstructor(FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()))
-                .withOptionalFinalizerMethodName(Optional.empty())
-                .withOptionalToFinalizeTypeConstructor(Optional.empty())
-                .withOptionalFinalizedTypeConstructor(Optional.empty())
+                .withOptionalInitializer(Optional.empty())
+                .withAccumulator(
+                        CovariantAccumulator.of(
+                                "compose",
+                                FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()),
+                                FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()),
+                                FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant())
+                        )
+                )
+                .withOptionalFinalizer(Optional.empty())
                 .withInputParameterNames(INPUT_PARAMETER_NAMES)
                 .withValueParameterName(VALUE_PARAMETER_NAME)
                 .withSelfParameterName(SELF_PARAMETER_NAME)

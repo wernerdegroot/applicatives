@@ -1,5 +1,8 @@
 package nl.wernerdegroot.applicatives.processor.validation;
 
+import nl.wernerdegroot.applicatives.processor.domain.CovariantAccumulator;
+import nl.wernerdegroot.applicatives.processor.domain.CovariantFinalizer;
+import nl.wernerdegroot.applicatives.processor.domain.CovariantInitializer;
 import nl.wernerdegroot.applicatives.processor.domain.Method;
 import nl.wernerdegroot.applicatives.processor.domain.containing.ContainingClass;
 
@@ -29,7 +32,7 @@ public class TemplateClassWithMethodsValidator {
                 validateFinalizer(methods),
                 (templateClass, optionalInitializer, accumulator, optionalFinalizer) -> {
                     if (optionalInitializer.isPresent()) {
-                        CovariantInitializer initializer = optionalInitializer.get();
+                        ValidCovariantInitializer initializer = optionalInitializer.get();
                         if (!accumulator.getPartiallyAccumulatedTypeConstructor().canAccept(initializer.getInitializedTypeConstructor())) {
                             String message = String.format("No shared type constructor between return type of '%s' (%s) and first parameter of '%s' (%s)", initializer.getName(), generateFrom(initializer.getReturnType()), accumulator.getName(), generateFrom(accumulator.getFirstParameterType()));
                             return Validated.<TemplateClassWithMethods>invalid(message);
@@ -37,7 +40,7 @@ public class TemplateClassWithMethodsValidator {
                     }
 
                     if (optionalFinalizer.isPresent()) {
-                        CovariantFinalizer finalizer = optionalFinalizer.get();
+                        ValidCovariantFinalizer finalizer = optionalFinalizer.get();
                         if (!finalizer.getToFinalizeTypeConstructor().canAccept(accumulator.getAccumulatedTypeConstructor())) {
                             String message = String.format("No shared type constructor between return type of '%s' (%s) and parameter of '%s' (%s)", accumulator.getName(), generateFrom(accumulator.getFirstParameterType()), finalizer.getName(), generateFrom(finalizer.getParameterType()));
                             return Validated.<TemplateClassWithMethods>invalid(message);
@@ -53,7 +56,7 @@ public class TemplateClassWithMethodsValidator {
         return TemplateClassValidator.validate(containingClass);
     }
 
-    private static Validated<Optional<CovariantInitializer>> validateInitializer(List<Method> methods) {
+    private static Validated<Optional<ValidCovariantInitializer>> validateInitializer(List<Method> methods) {
         List<Method> candidates = methods
                 .stream()
                 .filter(method -> method.hasAnnotation(INITIALIZER))
@@ -68,11 +71,11 @@ public class TemplateClassWithMethodsValidator {
         }
     }
 
-    private static Validated<CovariantAccumulator> validateAccumulator(Method method) {
+    private static Validated<ValidCovariantAccumulator> validateAccumulator(Method method) {
         return CovariantAccumulatorValidator.validate(method);
     }
 
-    private static Validated<CovariantAccumulator> validateAccumulator(List<Method> methods) {
+    private static Validated<ValidCovariantAccumulator> validateAccumulator(List<Method> methods) {
         List<Method> candidates = methods
                 .stream()
                 .filter(method -> method.hasAnnotation(ACCUMULATOR))
@@ -87,7 +90,7 @@ public class TemplateClassWithMethodsValidator {
         }
     }
 
-    private static Validated<Optional<CovariantFinalizer>> validateFinalizer(List<Method> methods) {
+    private static Validated<Optional<ValidCovariantFinalizer>> validateFinalizer(List<Method> methods) {
         List<Method> candidates = methods
                 .stream()
                 .filter(method -> method.hasAnnotation(FINALIZER))
@@ -102,18 +105,24 @@ public class TemplateClassWithMethodsValidator {
         }
     }
 
-    private static TemplateClassWithMethods templateClassWithMethods(TemplateClass templateClass, Optional<CovariantInitializer> covariantInitializer, CovariantAccumulator covariantAccumulator, Optional<CovariantFinalizer> covariantFinalizer) {
+    private static CovariantInitializer toDomain(ValidCovariantInitializer initializer) {
+        return CovariantInitializer.of(initializer.getName(), initializer.getInitializedTypeConstructor());
+    }
+
+    private static CovariantAccumulator toDomain(ValidCovariantAccumulator accumulator) {
+        return CovariantAccumulator.of(accumulator.getName(), accumulator.getInputTypeConstructor(), accumulator.getPartiallyAccumulatedTypeConstructor(), accumulator.getAccumulatedTypeConstructor());
+    }
+
+    private static CovariantFinalizer toDomain(ValidCovariantFinalizer finalizer) {
+        return CovariantFinalizer.of(finalizer.getName(), finalizer.getToFinalizeTypeConstructor(), finalizer.getFinalizedTypeConstructor());
+    }
+
+    private static TemplateClassWithMethods templateClassWithMethods(TemplateClass templateClass, Optional<ValidCovariantInitializer> optionalInitializer, ValidCovariantAccumulator accumulator, Optional<ValidCovariantFinalizer> optionalFinalizer) {
         return TemplateClassWithMethods.of(
                 templateClass.getTypeParameters(),
-                covariantInitializer.map(CovariantInitializer::getName),
-                covariantInitializer.map(CovariantInitializer::getInitializedTypeConstructor),
-                covariantAccumulator.getName(),
-                covariantAccumulator.getInputTypeConstructor(),
-                covariantAccumulator.getPartiallyAccumulatedTypeConstructor(),
-                covariantAccumulator.getAccumulatedTypeConstructor(),
-                covariantFinalizer.map(CovariantFinalizer::getName),
-                covariantFinalizer.map(CovariantFinalizer::getToFinalizeTypeConstructor),
-                covariantFinalizer.map(CovariantFinalizer::getFinalizedTypeConstructor)
+                optionalInitializer.map(TemplateClassWithMethodsValidator::toDomain),
+                TemplateClassWithMethodsValidator.toDomain(accumulator),
+                optionalFinalizer.map(TemplateClassWithMethodsValidator::toDomain)
         );
     }
 }

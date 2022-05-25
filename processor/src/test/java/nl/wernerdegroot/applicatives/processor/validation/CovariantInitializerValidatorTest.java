@@ -32,8 +32,8 @@ public class CovariantInitializerValidatorTest {
                 asList(Parameter.of(T.asType(), "value"))
         );
 
-        Validated<CovariantInitializer> expected = Validated.invalid("Method needs to return something");
-        Validated<CovariantInitializer> toVerify = CovariantInitializerValidator.validate(toValidate);
+        Validated<ValidCovariantInitializer> expected = Validated.invalid("Method needs to return something");
+        Validated<ValidCovariantInitializer> toVerify = CovariantInitializerValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -49,8 +49,8 @@ public class CovariantInitializerValidatorTest {
                 asList(Parameter.of(T.asType(), "value"))
         );
 
-        Validated<CovariantInitializer> expected = Validated.invalid("Method is static and cannot implement an abstract method");
-        Validated<CovariantInitializer> toVerify = CovariantInitializerValidator.validate(toValidate);
+        Validated<ValidCovariantInitializer> expected = Validated.invalid("Method is static and cannot implement an abstract method");
+        Validated<ValidCovariantInitializer> toVerify = CovariantInitializerValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -66,8 +66,8 @@ public class CovariantInitializerValidatorTest {
                 asList(Parameter.of(T.asType(), "value"))
         );
 
-        Validated<CovariantInitializer> expected = Validated.invalid("Method is private and cannot implement an abstract method");
-        Validated<CovariantInitializer> toVerify = CovariantInitializerValidator.validate(toValidate);
+        Validated<ValidCovariantInitializer> expected = Validated.invalid("Method is private and cannot implement an abstract method");
+        Validated<ValidCovariantInitializer> toVerify = CovariantInitializerValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -83,8 +83,8 @@ public class CovariantInitializerValidatorTest {
                 asList(Parameter.of(T.asType(), "value"))
         );
 
-        Validated<CovariantInitializer> expected = Validated.invalid("The type parameter needs to be unbounded");
-        Validated<CovariantInitializer> toVerify = CovariantInitializerValidator.validate(toValidate);
+        Validated<ValidCovariantInitializer> expected = Validated.invalid("The type parameter needs to be unbounded");
+        Validated<ValidCovariantInitializer> toVerify = CovariantInitializerValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -100,8 +100,8 @@ public class CovariantInitializerValidatorTest {
                 asList(Parameter.of(T.asType(), "value"))
         );
 
-        Validated<CovariantInitializer> expected = Validated.invalid("Method requires exactly one type parameter, but found 0");
-        Validated<CovariantInitializer> toVerify = CovariantInitializerValidator.validate(toValidate);
+        Validated<ValidCovariantInitializer> expected = Validated.invalid("Method requires exactly one type parameter, but found 0");
+        Validated<ValidCovariantInitializer> toVerify = CovariantInitializerValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -117,8 +117,8 @@ public class CovariantInitializerValidatorTest {
                 asList(Parameter.of(T.asType(), "value"))
         );
 
-        Validated<CovariantInitializer> expected = Validated.invalid("Method requires exactly one type parameter, but found 2");
-        Validated<CovariantInitializer> toVerify = CovariantInitializerValidator.validate(toValidate);
+        Validated<ValidCovariantInitializer> expected = Validated.invalid("Method requires exactly one type parameter, but found 2");
+        Validated<ValidCovariantInitializer> toVerify = CovariantInitializerValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -134,8 +134,8 @@ public class CovariantInitializerValidatorTest {
                 asList()
         );
 
-        Validated<CovariantInitializer> expected = Validated.invalid("Method requires exactly one parameter, but found 0");
-        Validated<CovariantInitializer> toVerify = CovariantInitializerValidator.validate(toValidate);
+        Validated<ValidCovariantInitializer> expected = Validated.invalid("Method requires exactly one parameter, but found 0");
+        Validated<ValidCovariantInitializer> toVerify = CovariantInitializerValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -151,8 +151,8 @@ public class CovariantInitializerValidatorTest {
                 asList(Parameter.of(T.asType(), "left"), Parameter.of(T.asType(), "right"))
         );
 
-        Validated<CovariantInitializer> expected = Validated.invalid("Method requires exactly one parameter, but found 2");
-        Validated<CovariantInitializer> toVerify = CovariantInitializerValidator.validate(toValidate);
+        Validated<ValidCovariantInitializer> expected = Validated.invalid("Method requires exactly one parameter, but found 2");
+        Validated<ValidCovariantInitializer> toVerify = CovariantInitializerValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -168,8 +168,8 @@ public class CovariantInitializerValidatorTest {
                 asList(Parameter.of(STRING, "value"))
         );
 
-        Validated<CovariantInitializer> expected = Validated.invalid("Expected parameter to be T but was java.lang.String");
-        Validated<CovariantInitializer> toVerify = CovariantInitializerValidator.validate(toValidate);
+        Validated<ValidCovariantInitializer> expected = Validated.invalid("Expected parameter to be T but was java.lang.String");
+        Validated<ValidCovariantInitializer> toVerify = CovariantInitializerValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -185,8 +185,8 @@ public class CovariantInitializerValidatorTest {
                 asList(Parameter.of(T.asType(), "value"))
         );
 
-        Validated<CovariantInitializer> expected = Validated.valid(CovariantInitializer.of("myFunction", OPTIONAL.asTypeConstructor(), OPTIONAL.with(T)));
-        Validated<CovariantInitializer> toVerify = CovariantInitializerValidator.validate(toValidate);
+        Validated<ValidCovariantInitializer> expected = Validated.valid(ValidCovariantInitializer.of("myFunction", OPTIONAL.asTypeConstructor(), OPTIONAL.with(T)));
+        Validated<ValidCovariantInitializer> toVerify = CovariantInitializerValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }

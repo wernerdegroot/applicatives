@@ -1,9 +1,6 @@
 package nl.wernerdegroot.applicatives.processor.generator;
 
-import nl.wernerdegroot.applicatives.processor.domain.ClassName;
-import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
-import nl.wernerdegroot.applicatives.processor.domain.PackageName;
-import nl.wernerdegroot.applicatives.processor.domain.TypeParameter;
+import nl.wernerdegroot.applicatives.processor.domain.*;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import nl.wernerdegroot.applicatives.processor.domain.type.TypeArgument;
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor;
@@ -29,23 +26,24 @@ import static nl.wernerdegroot.applicatives.processor.generator.MethodReferenceG
 
 public class Generator {
 
-    private static final int NUMBER_OF_TUPLE_TYPE_PARAMETERS = 26;
     private static final ClassName TUPLE_CLASS_NAME = ClassName.of("Tuples");
     private static final String TUPLE_METHOD_NAME = "tuple";
     private static final FullyQualifiedName FAST_TUPLE = FullyQualifiedName.of("nl.wernerdegroot.applicatives.runtime.FastTuple");
     private static final String FAST_TUPLE_WITH_MAX_SIZE_METHOD_NAME = "withMaxSize";
     private static final String FAST_TUPLE_EMPTY_WITH_MAX_SIZE_METHOD_NAME = "emptyWithMaxSize";
-    private static final String FUNCTION_2_FROM_BI_FUNCTION_METHOD_NAME = "fromBiFunction";
-    private static final String FUNCTION_N_APPLY_METHOD = "apply";
+    private static final String APPLY_METHOD = "apply";
 
     private PackageName packageName;
     private String classNameToGenerate;
     private List<TypeParameter> classTypeParameters;
+
+    private Optional<CovariantInitializer> optionalInitializer;
+
+    private CovariantAccumulator accumulator;
+
+    private Optional<CovariantFinalizer> optionalFinalizer;
     private List<TypeParameter> parameterTypeConstructorArguments;
     private TypeParameter returnTypeConstructorArgument;
-    private Optional<String> optionalInitializerMethodName;
-    private String accumulatorMethodName;
-    private Optional<String> optionalFinalizerMethodName;
     private List<String> inputParameterNames;
     private String valueParameterName;
     private String selfParameterName;
@@ -53,12 +51,6 @@ public class Generator {
     private String maxTupleSizeParameterName;
     private String tupleParameterName;
     private String elementParameterName;
-    private Optional<TypeConstructor> optionalInitializedTypeConstructor;
-    private TypeConstructor inputTypeConstructor;
-    private TypeConstructor partiallyAccumulatedTypeConstructor;
-    private TypeConstructor accumulatedTypeConstructor;
-    private Optional<TypeConstructor> optionalToFinalizeTypeConstructor;
-    private Optional<TypeConstructor> optionalFinalizedTypeConstructor;
     private String liftMethodName;
     private int maxArity;
 
@@ -86,6 +78,21 @@ public class Generator {
 
     public Generator withClassTypeParameters(List<TypeParameter> classTypeParameters) {
         this.classTypeParameters = classTypeParameters;
+        return this;
+    }
+
+    public Generator withOptionalInitializer(Optional<CovariantInitializer> optionalInitializer) {
+        this.optionalInitializer = optionalInitializer;
+        return this;
+    }
+
+    public Generator withAccumulator(CovariantAccumulator accumulator) {
+        this.accumulator = accumulator;
+        return this;
+    }
+
+    public Generator withOptionalFinalizer(Optional<CovariantFinalizer> optionalFinalizer) {
+        this.optionalFinalizer = optionalFinalizer;
         return this;
     }
 
@@ -135,11 +142,11 @@ public class Generator {
         // (`partiallyAccumulatedTypeConstructor`).
         return hasInitializer()
                 ? getOtherParametersTypeConstructor()
-                : partiallyAccumulatedTypeConstructor;
+                : accumulator.getPartiallyAccumulatedTypeConstructor();
     }
 
     public TypeConstructor getOtherParametersTypeConstructor() {
-        return inputTypeConstructor;
+        return accumulator.getInputTypeConstructor();
     }
 
     public List<Type> takeParameterTypes(int toTake, TypeConstructor firstParameterTypeConstructor, TypeConstructor otherParametersTypeConstructor) {
@@ -165,7 +172,7 @@ public class Generator {
     }
 
     public TypeConstructor getReturnTypeConstructor() {
-        return optionalFinalizedTypeConstructor.orElse(accumulatedTypeConstructor);
+        return optionalFinalizer.map(CovariantFinalizer::getFinalizedTypeConstructor).orElse(accumulator.getAccumulatedTypeConstructor());
     }
 
     private TypeConstructor getTupleMethodReturnTypeConstructor(int arity) {
@@ -173,14 +180,11 @@ public class Generator {
         // to wrap an empty tuple using the `initializedTypeConstructor`. We can pass that as the
         // input to the accumulator method that the user defined.
         if (arity == 0) {
-
-            if (!optionalInitializedTypeConstructor.isPresent()) {
-                throw new IllegalStateException("An initializer method is required for a tuple method of arity zero");
-            }
-
-            return optionalInitializedTypeConstructor.get();
+            return optionalInitializer
+                    .map(CovariantInitializer::getInitializedTypeConstructor)
+                    .orElseThrow(() -> new IllegalStateException("An initializer method is required for a tuple method of arity zero"));
         } else {
-            return accumulatedTypeConstructor;
+            return accumulator.getAccumulatedTypeConstructor();
         }
     }
 
@@ -188,23 +192,8 @@ public class Generator {
         return returnTypeConstructorArgument.asType().using(getReturnTypeConstructor());
     }
 
-    public Generator withAccumulatorMethodName(String accumulatorMethodName) {
-        this.accumulatorMethodName = accumulatorMethodName;
-        return this;
-    }
-
-    public Generator withOptionalInitializerMethodName(Optional<String> optionalInitializerMethodName) {
-        this.optionalInitializerMethodName = optionalInitializerMethodName;
-        return this;
-    }
-
     public boolean hasInitializer() {
-        return optionalInitializerMethodName.isPresent();
-    }
-
-    public Generator withOptionalFinalizerMethodName(Optional<String> optionalFinalizerMethodName) {
-        this.optionalFinalizerMethodName = optionalFinalizerMethodName;
-        return this;
+        return optionalInitializer.isPresent();
     }
 
     public Generator withInputParameterNames(List<String> inputParameterNames) {
@@ -243,36 +232,6 @@ public class Generator {
 
     public Generator withElementParameterName(String elementParameterName) {
         this.elementParameterName = elementParameterName;
-        return this;
-    }
-
-    public Generator withOptionalInitializedTypeConstructor(Optional<TypeConstructor> optionalInitializedTypeConstructor) {
-        this.optionalInitializedTypeConstructor = optionalInitializedTypeConstructor;
-        return this;
-    }
-
-    public Generator withInputTypeConstructor(TypeConstructor inputTypeConstructor) {
-        this.inputTypeConstructor = inputTypeConstructor;
-        return this;
-    }
-
-    public Generator withPartiallyAccumulatedTypeConstructor(TypeConstructor partiallyAccumulatedTypeConstructor) {
-        this.partiallyAccumulatedTypeConstructor = partiallyAccumulatedTypeConstructor;
-        return this;
-    }
-
-    public Generator withAccumulatedTypeConstructor(TypeConstructor accumulatedTypeConstructor) {
-        this.accumulatedTypeConstructor = accumulatedTypeConstructor;
-        return this;
-    }
-
-    public Generator withOptionalToFinalizeTypeConstructor(Optional<TypeConstructor> optionalToFinalizeTypeConstructor) {
-        this.optionalToFinalizeTypeConstructor = optionalToFinalizeTypeConstructor;
-        return this;
-    }
-
-    public Generator withOptionalFinalizedTypeConstructor(Optional<TypeConstructor> optionalFinalizedTypeConstructor) {
-        this.optionalFinalizedTypeConstructor = optionalFinalizedTypeConstructor;
         return this;
     }
 
@@ -330,36 +289,23 @@ public class Generator {
     }
 
     private Optional<MethodGenerator> optionalAbstractInitializerMethod() {
-        if (optionalInitializedTypeConstructor.isPresent() && optionalInitializerMethodName.isPresent()) {
-            TypeConstructor initializedTypeConstructor = optionalInitializedTypeConstructor.get();
-            String initializerMethodName = optionalInitializerMethodName.get();
-            MethodGenerator method = method()
-                    .withTypeParameters(returnTypeConstructorArgument.getName())
-                    .withReturnType(returnTypeConstructorArgument.asType().using(initializedTypeConstructor))
-                    .withName(initializerMethodName)
-                    .withParameter(returnTypeConstructorArgument.asType(), valueParameterName);
-            return Optional.of(method);
-        } else {
-            return Optional.empty();
-        }
+        return optionalInitializer.map(initializer ->
+                method()
+                        .withTypeParameters(returnTypeConstructorArgument.getName())
+                        .withReturnType(returnTypeConstructorArgument.asType().using(initializer.getInitializedTypeConstructor()))
+                        .withName(initializer.getName())
+                        .withParameter(returnTypeConstructorArgument.asType(), valueParameterName)
+        );
     }
 
     private Optional<MethodGenerator> optionalAbstractFinalizerMethod() {
-        if (optionalFinalizedTypeConstructor.isPresent() && optionalFinalizerMethodName.isPresent() && optionalToFinalizeTypeConstructor.isPresent()) {
-            TypeConstructor finalizedTypeConstructor = optionalFinalizedTypeConstructor.get();
-            String finalizerMethodName = optionalFinalizerMethodName.get();
-            TypeConstructor toFinalizeTypeConstructor = optionalToFinalizeTypeConstructor.get();
-
-            MethodGenerator method = method()
-                    .withTypeParameters(returnTypeConstructorArgument.getName())
-                    .withReturnType(returnTypeConstructorArgument.asType().using(finalizedTypeConstructor))
-                    .withName(finalizerMethodName)
-                    .withParameter(returnTypeConstructorArgument.asType().using(toFinalizeTypeConstructor), valueParameterName);
-
-            return Optional.of(method);
-        } else {
-            return Optional.empty();
-        }
+        return optionalFinalizer.map(finalizer ->
+                method()
+                        .withTypeParameters(returnTypeConstructorArgument.getName())
+                        .withReturnType(returnTypeConstructorArgument.asType().using(finalizer.getFinalizedTypeConstructor()))
+                        .withName(finalizer.getName())
+                        .withParameter(returnTypeConstructorArgument.asType().using(finalizer.getToFinalizeTypeConstructor()), valueParameterName)
+        );
     }
 
     private List<MethodGenerator> combineMethods() {
@@ -387,9 +333,9 @@ public class Generator {
         return method()
                 .withTypeParameters(takeParameterTypeConstructorArguments(arity))
                 .withTypeParameters(returnTypeConstructorArgument.getName())
-                .withReturnType(returnTypeConstructorArgument.asType().using(accumulatedTypeConstructor))
-                .withName(accumulatorMethodName)
-                .withParameterTypes(takeParameterTypes(arity, partiallyAccumulatedTypeConstructor, inputTypeConstructor))
+                .withReturnType(returnTypeConstructorArgument.asType().using(accumulator.getAccumulatedTypeConstructor()))
+                .withName(accumulator.getName())
+                .withParameterTypes(takeParameterTypes(arity, accumulator.getPartiallyAccumulatedTypeConstructor(), accumulator.getInputTypeConstructor()))
                 .andParameterNames(takeInputParameterNames(arity))
                 .withParameter(
                         BI_FUNCTION.with(
@@ -404,7 +350,7 @@ public class Generator {
     private MethodGenerator combineMethodWithArity(int arity) {
         String methodBody = methodCall()
                 .withObjectPath(THIS)
-                .withMethodName(accumulatorMethodName)
+                .withMethodName(accumulator.getName())
                 .withArguments(
                         methodCall()
                                 .withType(getFullyQualifiedTupleClass())
@@ -421,7 +367,7 @@ public class Generator {
                                 .withExpression(
                                         methodCall()
                                                 .withObjectPath(combinatorParameterName)
-                                                .withMethodName(FUNCTION_N_APPLY_METHOD)
+                                                .withMethodName(APPLY_METHOD)
                                                 .withArguments(
                                                         IntStream.range(0, arity - 1)
                                                                 .boxed()
@@ -438,7 +384,8 @@ public class Generator {
 
         return combineMethodWithArity(
                 arity,
-                optionalFinalizerMethodName
+                optionalFinalizer
+                        .map(CovariantFinalizer::getName)
                         .map(finalizerMethodName -> methodCall().withObjectPath(THIS).withMethodName(finalizerMethodName).withArguments(methodBody).generate())
                         .orElse(methodBody)
         );
@@ -450,7 +397,7 @@ public class Generator {
                 .withTypeParameters(takeParameterTypeConstructorArguments(arity))
                 .withTypeParameters(returnTypeConstructorArgument.getName())
                 .withReturnType(getReturnType())
-                .withName(accumulatorMethodName)
+                .withName(accumulator.getName())
                 .withParameterTypes(takeParameterTypes(arity))
                 .andParameterNames(takeInputParameterNames(arity))
                 .withParameter(lambdaType(TypeConstructor.placeholder(), TypeConstructor.placeholder(), TypeConstructor.placeholder(), arity), combinatorParameterName)
@@ -470,7 +417,7 @@ public class Generator {
                 arity,
                 methodCall()
                         .withObjectPath(THIS)
-                        .withMethodName(accumulatorMethodName)
+                        .withMethodName(accumulator.getName())
                         .withArguments(takeInputParameterNames(arity))
                         .withArguments(combinatorParameterName)
                         .generate()
@@ -496,10 +443,10 @@ public class Generator {
     private List<MethodGenerator> tupleMethods() {
         List<MethodGenerator> tupleMethods = new ArrayList<>();
 
-        if (hasInitializer()) {
-            String initializerMethodName = optionalInitializerMethodName.get();
+        if (optionalInitializer.isPresent()) {
+            CovariantInitializer initializer = optionalInitializer.get();
 
-            tupleMethods.add(tupleMethodWithArityZero(initializerMethodName));
+            tupleMethods.add(tupleMethodWithArityZero(initializer.getName()));
             tupleMethods.add(tupleMethodWithArity(1));
             tupleMethods.add(tupleMethodWithArity(2));
         } else {
@@ -537,7 +484,7 @@ public class Generator {
                 2,
                 methodCall()
                         .withObjectPath(selfParameterName)
-                        .withMethodName(accumulatorMethodName)
+                        .withMethodName(accumulator.getName())
                         .withArguments(
                                 inputParameterNames.get(0),
                                 inputParameterNames.get(1),
@@ -556,7 +503,7 @@ public class Generator {
                 arity,
                 methodCall()
                         .withObjectPath(selfParameterName)
-                        .withMethodName(accumulatorMethodName)
+                        .withMethodName(accumulator.getName())
                         .withArguments(
                                 methodCall()
                                         .withType(getFullyQualifiedTupleClass())
@@ -605,15 +552,15 @@ public class Generator {
         return Type.concrete(fullyQualifiedNameOfFunction(arity), typeArguments);
     }
 
-    private static FullyQualifiedName fullyQualifiedNameOfFunction(int arity) {
+    private FullyQualifiedName fullyQualifiedNameOfFunction(int arity) {
         return arity == 2 ? BI_FUNCTION.getFullyQualifiedName() : fullyQualifiedNameOfArbitraryArityFunction(arity);
     }
 
-    private static FullyQualifiedName fullyQualifiedNameOfArbitraryArityFunction(int arity) {
+    private FullyQualifiedName fullyQualifiedNameOfArbitraryArityFunction(int arity) {
         return FullyQualifiedName.of("nl.wernerdegroot.applicatives.runtime.Function" + arity);
     }
 
-    private static FullyQualifiedName fullyQualifiedNameOfTupleWithArity(int arity) {
+    private FullyQualifiedName fullyQualifiedNameOfTupleWithArity(int arity) {
         return FullyQualifiedName.of("nl.wernerdegroot.applicatives.runtime.Tuple" + arity);
     }
 }

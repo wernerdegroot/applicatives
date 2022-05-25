@@ -10,13 +10,13 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
-import static java.util.Arrays.parallelPrefix;
 import static java.util.stream.Collectors.toSet;
 import static nl.wernerdegroot.applicatives.processor.Classes.*;
 import static nl.wernerdegroot.applicatives.processor.domain.Modifier.*;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.*;
 import static nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor.placeholder;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class TemplateClassWithMethodsValidatorTest {
 
@@ -37,13 +37,12 @@ public class TemplateClassWithMethodsValidatorTest {
                 TemplateClassWithMethods.of(
                         containingClass.getTypeParameters(),
                         Optional.empty(),
-                        Optional.empty(),
-                        accumulator.getName(),
-                        LIST.with(placeholder().covariant()),
-                        ARRAY_LIST.with(placeholder().covariant()),
-                        ARRAY_LIST.with(placeholder().invariant()),
-                        Optional.empty(),
-                        Optional.empty(),
+                        CovariantAccumulator.of(
+                                accumulator.getName(),
+                                LIST.with(placeholder().covariant()),
+                                ARRAY_LIST.with(placeholder().covariant()),
+                                ARRAY_LIST.with(placeholder().invariant())
+                        ),
                         Optional.empty()
                 )
         );
@@ -104,14 +103,13 @@ public class TemplateClassWithMethodsValidatorTest {
         Validated<TemplateClassWithMethods> expected = Validated.valid(
                 TemplateClassWithMethods.of(
                         containingClass.getTypeParameters(),
-                        Optional.of(initializer.getName()),
-                        Optional.of(ARRAY_LIST.with(placeholder().invariant())),
-                        accumulator.getName(),
-                        LIST.with(placeholder().covariant()),
-                        ARRAY_LIST.with(placeholder().covariant()),
-                        ARRAY_LIST.with(placeholder().invariant()),
-                        Optional.empty(),
-                        Optional.empty(),
+                        Optional.of(CovariantInitializer.of(initializer.getName(), ARRAY_LIST.with(placeholder().invariant()))),
+                        CovariantAccumulator.of(
+                                accumulator.getName(),
+                                LIST.with(placeholder().covariant()),
+                                ARRAY_LIST.with(placeholder().covariant()),
+                                ARRAY_LIST.with(placeholder().invariant())
+                        ),
                         Optional.empty()
                 )
         );
@@ -196,14 +194,13 @@ public class TemplateClassWithMethodsValidatorTest {
                 TemplateClassWithMethods.of(
                         containingClass.getTypeParameters(),
                         Optional.empty(),
-                        Optional.empty(),
-                        accumulator.getName(),
-                        LIST.with(placeholder().covariant()),
-                        ARRAY_LIST.with(placeholder().covariant()),
-                        ARRAY_LIST.with(placeholder().invariant()),
-                        Optional.of(finalizer.getName()),
-                        Optional.of(ARRAY_LIST.with(placeholder().covariant())),
-                        Optional.of(LIST.with(placeholder().invariant()))
+                        CovariantAccumulator.of(
+                                accumulator.getName(),
+                                LIST.with(placeholder().covariant()),
+                                ARRAY_LIST.with(placeholder().covariant()),
+                                ARRAY_LIST.with(placeholder().invariant())
+                        ),
+                        Optional.of(CovariantFinalizer.of(finalizer.getName(), ARRAY_LIST.with(placeholder().covariant()), LIST.with(placeholder().invariant())))
                 )
         );
 

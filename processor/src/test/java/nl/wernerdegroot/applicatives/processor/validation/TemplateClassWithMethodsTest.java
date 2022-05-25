@@ -1,8 +1,6 @@
 package nl.wernerdegroot.applicatives.processor.validation;
 
-import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
-import nl.wernerdegroot.applicatives.processor.domain.TypeBuilder;
-import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
+import nl.wernerdegroot.applicatives.processor.domain.*;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -32,28 +30,48 @@ public class TemplateClassWithMethodsTest {
 
         TemplateClassWithMethods templateClassWithMethods = TemplateClassWithMethods.of(
                 asList(A.extending(COMPARABLE.with(B)), B.asTypeParameter()),
-                Optional.of("initializer"),
-                Optional.of(ERUDITE.with(A.asTypeConstructor().invariant(), placeholder().invariant(), B.asTypeConstructor().invariant())),
-                "accumulator",
-                PROFUSE.with(A.asTypeConstructor().covariant(), placeholder().invariant(), B.asTypeConstructor().contravariant()),
-                ERUDITE.with(A.asTypeConstructor().covariant(), placeholder().invariant(), B.asTypeConstructor().contravariant()),
-                ERUDITE.with(A.asTypeConstructor().invariant(), placeholder().invariant(), B.asTypeConstructor().invariant()),
-                Optional.of("finalizer"),
-                Optional.of(ERUDITE.with(A.asTypeConstructor().covariant(), placeholder().invariant(), B.asTypeConstructor().contravariant())),
-                Optional.of(ARDUOUS.with(A.asTypeConstructor().invariant(), placeholder().invariant(), B.asTypeConstructor().invariant()))
+                Optional.of(
+                        CovariantInitializer.of(
+                                "initializer",
+                                ERUDITE.with(A.asTypeConstructor().invariant(), placeholder().invariant(), B.asTypeConstructor().invariant())
+                        )
+                ),
+                CovariantAccumulator.of(
+                        "accumulator",
+                        PROFUSE.with(A.asTypeConstructor().covariant(), placeholder().invariant(), B.asTypeConstructor().contravariant()),
+                        ERUDITE.with(A.asTypeConstructor().covariant(), placeholder().invariant(), B.asTypeConstructor().contravariant()),
+                        ERUDITE.with(A.asTypeConstructor().invariant(), placeholder().invariant(), B.asTypeConstructor().invariant())
+                ),
+                Optional.of(
+                        CovariantFinalizer.of(
+                                "finalizer",
+                                ERUDITE.with(A.asTypeConstructor().covariant(), placeholder().invariant(), B.asTypeConstructor().contravariant()),
+                                ARDUOUS.with(A.asTypeConstructor().invariant(), placeholder().invariant(), B.asTypeConstructor().invariant())
+                        )
+                )
         );
 
         TemplateClassWithMethods expected = TemplateClassWithMethods.of(
                 asList(B.extending(COMPARABLE.with(A)), A.asTypeParameter()),
-                Optional.of("initializer"),
-                Optional.of(ERUDITE.with(B.asTypeConstructor().invariant(), placeholder().invariant(), A.asTypeConstructor().invariant())),
-                "accumulator",
-                PROFUSE.with(B.asTypeConstructor().covariant(), placeholder().invariant(), A.asTypeConstructor().contravariant()),
-                ERUDITE.with(B.asTypeConstructor().covariant(), placeholder().invariant(), A.asTypeConstructor().contravariant()),
-                ERUDITE.with(B.asTypeConstructor().invariant(), placeholder().invariant(), A.asTypeConstructor().invariant()),
-                Optional.of("finalizer"),
-                Optional.of(ERUDITE.with(B.asTypeConstructor().covariant(), placeholder().invariant(), A.asTypeConstructor().contravariant())),
-                Optional.of(ARDUOUS.with(B.asTypeConstructor().invariant(), placeholder().invariant(), A.asTypeConstructor().invariant()))
+                Optional.of(
+                        CovariantInitializer.of(
+                                "initializer",
+                                ERUDITE.with(B.asTypeConstructor().invariant(), placeholder().invariant(), A.asTypeConstructor().invariant())
+                        )
+                ),
+                CovariantAccumulator.of(
+                        "accumulator",
+                        PROFUSE.with(B.asTypeConstructor().covariant(), placeholder().invariant(), A.asTypeConstructor().contravariant()),
+                        ERUDITE.with(B.asTypeConstructor().covariant(), placeholder().invariant(), A.asTypeConstructor().contravariant()),
+                        ERUDITE.with(B.asTypeConstructor().invariant(), placeholder().invariant(), A.asTypeConstructor().invariant())
+                ),
+                Optional.of(
+                        CovariantFinalizer.of(
+                                "finalizer",
+                                ERUDITE.with(B.asTypeConstructor().covariant(), placeholder().invariant(), A.asTypeConstructor().contravariant()),
+                                ARDUOUS.with(B.asTypeConstructor().invariant(), placeholder().invariant(), A.asTypeConstructor().invariant())
+                        )
+                )
         );
 
         TemplateClassWithMethods toVerify = templateClassWithMethods.replaceTypeParameterNames(replacements);
@@ -70,26 +88,24 @@ public class TemplateClassWithMethodsTest {
         TemplateClassWithMethods templateClassWithMethods = TemplateClassWithMethods.of(
                 emptyList(),
                 Optional.empty(),
-                Optional.empty(),
-                "accumulator",
-                PROFUSE.with(A.asTypeConstructor().covariant(), placeholder().invariant(), B.asTypeConstructor().contravariant()),
-                ERUDITE.with(A.asTypeConstructor().covariant(), placeholder().invariant(), B.asTypeConstructor().contravariant()),
-                ERUDITE.with(A.asTypeConstructor().invariant(), placeholder().invariant(), B.asTypeConstructor().invariant()),
-                Optional.empty(),
-                Optional.empty(),
+                CovariantAccumulator.of(
+                        "accumulator",
+                        PROFUSE.with(A.asTypeConstructor().covariant(), placeholder().invariant(), B.asTypeConstructor().contravariant()),
+                        ERUDITE.with(A.asTypeConstructor().covariant(), placeholder().invariant(), B.asTypeConstructor().contravariant()),
+                        ERUDITE.with(A.asTypeConstructor().invariant(), placeholder().invariant(), B.asTypeConstructor().invariant())
+                ),
                 Optional.empty()
         );
 
         TemplateClassWithMethods expected = TemplateClassWithMethods.of(
                 emptyList(),
                 Optional.empty(),
-                Optional.empty(),
-                "accumulator",
-                PROFUSE.with(B.asTypeConstructor().covariant(), placeholder().invariant(), A.asTypeConstructor().contravariant()),
-                ERUDITE.with(B.asTypeConstructor().covariant(), placeholder().invariant(), A.asTypeConstructor().contravariant()),
-                ERUDITE.with(B.asTypeConstructor().invariant(), placeholder().invariant(), A.asTypeConstructor().invariant()),
-                Optional.empty(),
-                Optional.empty(),
+                CovariantAccumulator.of(
+                        "accumulator",
+                        PROFUSE.with(B.asTypeConstructor().covariant(), placeholder().invariant(), A.asTypeConstructor().contravariant()),
+                        ERUDITE.with(B.asTypeConstructor().covariant(), placeholder().invariant(), A.asTypeConstructor().contravariant()),
+                        ERUDITE.with(B.asTypeConstructor().invariant(), placeholder().invariant(), A.asTypeConstructor().invariant())
+                ),
                 Optional.empty()
         );
 

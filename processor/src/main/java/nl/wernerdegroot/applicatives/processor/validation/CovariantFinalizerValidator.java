@@ -15,7 +15,7 @@ import static nl.wernerdegroot.applicatives.processor.domain.type.Type.OBJECT;
 
 public class CovariantFinalizerValidator {
 
-    public static Validated<CovariantFinalizer> validate(Method method) {
+    public static Validated<ValidCovariantFinalizer> validate(Method method) {
         if (method.getModifiers().contains(STATIC)) {
             return Validated.invalid("Method is static and cannot implement an abstract method");
         }
@@ -69,6 +69,6 @@ public class CovariantFinalizerValidator {
         // Extract the type constructor from the single parameter:
         TypeConstructor toFinalizeTypeConstructor = parameter.getType().asTypeConstructorWithPlaceholderFor(typeParameter.getName());
 
-        return Validated.valid(CovariantFinalizer.of(name, parameter.getType(), toFinalizeTypeConstructor, finalizedTypeConstructor));
+        return Validated.valid(ValidCovariantFinalizer.of(name, parameter.getType(), toFinalizeTypeConstructor, finalizedTypeConstructor));
     }
 }

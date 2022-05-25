@@ -40,7 +40,7 @@ public class ArrayTypeConstructorTest {
         mapping.put(U, B);
 
         ArrayTypeConstructor expected = new ArrayTypeConstructor(new GenericTypeConstructor(A));
-        ArrayTypeConstructor toVerify = new ArrayTypeConstructor(new GenericTypeConstructor(T)).replaceAllTypeParameterNames(mapping);
+        ArrayTypeConstructor toVerify = new ArrayTypeConstructor(new GenericTypeConstructor(T)).replaceTypeParameterNames(mapping);
 
         assertEquals(expected, toVerify);
     }
@@ -52,7 +52,7 @@ public class ArrayTypeConstructorTest {
         mapping.put(U, B);
 
         ArrayTypeConstructor expected = new ArrayTypeConstructor(new GenericTypeConstructor(V));
-        ArrayTypeConstructor toVerify = new ArrayTypeConstructor(new GenericTypeConstructor(V)).replaceAllTypeParameterNames(mapping);
+        ArrayTypeConstructor toVerify = new ArrayTypeConstructor(new GenericTypeConstructor(V)).replaceTypeParameterNames(mapping);
 
         assertEquals(expected, toVerify);
     }

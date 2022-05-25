@@ -27,7 +27,7 @@ public class ConcreteTypeConstructor implements TypeConstructor {
     }
 
     @Override
-    public ConcreteTypeConstructor replaceAllTypeParameterNames(Map<TypeParameterName, TypeParameterName> replacement) {
+    public ConcreteTypeConstructor replaceTypeParameterNames(Map<TypeParameterName, TypeParameterName> replacement) {
         List<TypeConstructorArgument> replacedTypeConstructorArguments = typeConstructorArguments
                 .stream()
                 .map(typeConstructorArgument -> typeConstructorArgument.replaceAllTypeParameterNames(replacement))
