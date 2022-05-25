@@ -25,7 +25,7 @@ public class TypeConstructorArgument {
     }
 
     public TypeConstructorArgument replaceAllTypeParameterNames(Map<TypeParameterName, TypeParameterName> replacement) {
-        return new TypeConstructorArgument(variance, typeConstructor.replaceAllTypeParameterNames(replacement));
+        return new TypeConstructorArgument(variance, typeConstructor.replaceTypeParameterNames(replacement));
     }
 
     public boolean canAccept(TypeConstructorArgument that) {

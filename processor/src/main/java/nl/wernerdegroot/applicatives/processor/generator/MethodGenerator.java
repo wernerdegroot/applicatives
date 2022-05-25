@@ -19,7 +19,7 @@ public class MethodGenerator implements HasModifiersGenerator<MethodGenerator>, 
 
     private ModifiersGenerator modifiersGenerator = new ModifiersGenerator();
     private TypeParametersGenerator typeParametersGenerator = new TypeParametersGenerator();
-    private Type returnType;
+    private Optional<Type> optionalReturnType = Optional.empty();
     private String name;
     private ParametersGenerator parametersGenerator = new ParametersGenerator();
     private Optional<BodyGenerator> optionalBodyGenerator = Optional.empty();
@@ -56,7 +56,7 @@ public class MethodGenerator implements HasModifiersGenerator<MethodGenerator>, 
     }
 
     public MethodGenerator withReturnType(Type returnType) {
-        this.returnType = returnType;
+        this.optionalReturnType = Optional.of(returnType);
         return this;
     }
 
@@ -86,7 +86,7 @@ public class MethodGenerator implements HasModifiersGenerator<MethodGenerator>, 
         if (!typeParametersGenerator.isEmpty()) {
             components.add(typeParametersGenerator.generate());
         }
-        components.add(generateFrom(returnType));
+        components.add(optionalReturnType.map(TypeGenerator::generateFrom).orElse(VOID));
         components.add(name + parametersGenerator.generate());
         String methodDeclaration = components.stream().collect(joining(SPACE));
 

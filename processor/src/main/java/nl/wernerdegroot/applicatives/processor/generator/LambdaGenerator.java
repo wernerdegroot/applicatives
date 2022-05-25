@@ -31,16 +31,16 @@ public class LambdaGenerator {
 
     public List<String> multiline() {
         return asList(
-                generateArgumentList() + SPACE + ARROW,
+                generateParameterList() + SPACE + ARROW,
                 INDENT + INDENT + expression
         );
     }
 
     public String generate() {
-        return generateArgumentList() + SPACE + ARROW + SPACE + expression;
+        return generateParameterList() + SPACE + ARROW + SPACE + expression;
     }
 
-    private String generateArgumentList() {
+    private String generateParameterList() {
         return parameterNames.stream().collect(joining(SEPARATOR, OPEN_PARENTHESIS, CLOSE_PARENTHESIS));
     }
 }

@@ -29,7 +29,7 @@ public class PlaceholderTypeConstructorTest {
         mapping.put(U, B);
 
         PlaceholderTypeConstructor expected = new PlaceholderTypeConstructor();
-        PlaceholderTypeConstructor toVerify = new PlaceholderTypeConstructor().replaceAllTypeParameterNames(mapping);
+        PlaceholderTypeConstructor toVerify = new PlaceholderTypeConstructor().replaceTypeParameterNames(mapping);
 
         assertEquals(expected, toVerify);
     }

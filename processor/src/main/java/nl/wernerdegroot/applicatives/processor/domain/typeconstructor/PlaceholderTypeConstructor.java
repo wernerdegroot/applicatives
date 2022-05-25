@@ -8,7 +8,7 @@ import java.util.Map;
 public class PlaceholderTypeConstructor implements TypeConstructor {
 
     @Override
-    public PlaceholderTypeConstructor replaceAllTypeParameterNames(Map<TypeParameterName, TypeParameterName> replacement) {
+    public PlaceholderTypeConstructor replaceTypeParameterNames(Map<TypeParameterName, TypeParameterName> replacement) {
         return this;
     }
 

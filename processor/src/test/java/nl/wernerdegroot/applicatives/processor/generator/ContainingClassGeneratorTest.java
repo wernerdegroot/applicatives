@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toSet;
+import static nl.wernerdegroot.applicatives.processor.Utils.modifiers;
 import static nl.wernerdegroot.applicatives.processor.domain.Modifier.*;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.SERIALIZABLE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -47,9 +48,5 @@ public class ContainingClassGeneratorTest {
         String toVerify = ContainingClassGenerator.generateFrom(containingClass);
 
         assertEquals(expected, toVerify);
-    }
-
-    private Set<Modifier> modifiers(Modifier... modifiers) {
-        return Stream.of(modifiers).collect(toSet());
     }
 }

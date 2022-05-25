@@ -15,6 +15,8 @@ public class Constants {
     public static String CLOSE_PARENTHESIS = ")";
     public static String OPEN_ANGULAR_BRACKET = "<";
     public static String CLOSE_ANGULAR_BRACKET = ">";
+    public static String OPEN_SQUARE_BRACKET = "[";
+    public static String CLOSE_SQUARE_BRACKET = "]";
     public static String SEPARATOR = ", ";
     public static String PERIOD = ".";
     public static String THIS = "this";
@@ -24,4 +26,6 @@ public class Constants {
     public static String EXTENDS = "extends";
     public static String SUPER = "super";
     public static String QUESTION_MARK = "?";
+
+    public static String VOID = "void";
 }

@@ -55,6 +55,10 @@ public final class Conflicts {
 
     public static final String MAX_TUPLE_SIZE_PARAMETER_NAME = "maxSize";
 
+    public static final String TUPLE_PARAMETER_NAME = "tuple";
+
+    public static final String ELEMENT_PARAMETER_NAME = "element";
+
     public static final String CLASS_TYPE_PARAMETER_NAME_PREFIX = "C";
 
     public static String inputParameterName(int i) {

@@ -76,7 +76,7 @@ public class ConcreteTypeConstructorTest {
                         TypeConstructor.generic(T).covariant(),
                         INTEGER_TYPE_CONSTRUCTOR.contravariant()
                 )
-        ).replaceAllTypeParameterNames(mapping);
+        ).replaceTypeParameterNames(mapping);
 
         assertEquals(expected, toVerify);
     }
@@ -103,7 +103,7 @@ public class ConcreteTypeConstructorTest {
                         TypeConstructor.generic(V).covariant(),
                         INTEGER_TYPE_CONSTRUCTOR.contravariant()
                 )
-        ).replaceAllTypeParameterNames(mapping);
+        ).replaceTypeParameterNames(mapping);
 
         assertEquals(expected, toVerify);
     }

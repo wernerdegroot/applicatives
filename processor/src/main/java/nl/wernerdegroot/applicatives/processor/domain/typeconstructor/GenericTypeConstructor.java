@@ -20,7 +20,7 @@ public class GenericTypeConstructor implements TypeConstructor {
     }
 
     @Override
-    public GenericTypeConstructor replaceAllTypeParameterNames(Map<TypeParameterName, TypeParameterName> replacement) {
+    public GenericTypeConstructor replaceTypeParameterNames(Map<TypeParameterName, TypeParameterName> replacement) {
         return TypeConstructor.generic(replacement.getOrDefault(name, name));
     }
 

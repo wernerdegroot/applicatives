@@ -20,8 +20,8 @@ public class ArrayTypeConstructor implements TypeConstructor {
     }
 
     @Override
-    public ArrayTypeConstructor replaceAllTypeParameterNames(Map<TypeParameterName, TypeParameterName> replacement) {
-        return TypeConstructor.array(type.replaceAllTypeParameterNames(replacement));
+    public ArrayTypeConstructor replaceTypeParameterNames(Map<TypeParameterName, TypeParameterName> replacement) {
+        return TypeConstructor.array(type.replaceTypeParameterNames(replacement));
     }
 
     @Override

@@ -1,7 +1,5 @@
 package nl.wernerdegroot.applicatives.processor.generator;
 
-import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,10 +25,6 @@ public class ObjectPathGenerator {
 
         default This withObjectPath(String... components) {
             return withObjectPath(asList(components));
-        }
-
-        default This withObjectPath(FullyQualifiedName fullyQualifiedName) {
-            return withObjectPath(fullyQualifiedName.raw());
         }
     }
 }

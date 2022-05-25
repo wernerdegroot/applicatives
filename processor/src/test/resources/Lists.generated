@@ -4,16 +4,16 @@ public interface ListsMixin {
 
     <R> java.util.ArrayList<R> singleton(R value);
 
-    <R> java.util.List<R> finalize(java.util.ArrayList<? extends R> value);
-
     <P1, P2, R> java.util.ArrayList<R> compose(java.util.ArrayList<? extends P1> first, java.util.List<? extends P2> second, java.util.function.BiFunction<? super P1, ? super P2, ? extends R> fn);
 
+    <R> java.util.List<R> finalize(java.util.ArrayList<? extends R> value);
+
     default <P1, P2, R> java.util.List<R> compose(java.util.List<? extends P1> first, java.util.List<? extends P2> second, java.util.function.BiFunction<? super P1, ? super P2, ? extends R> fn) {
-        return this.finalize(this.compose(nl.wernerdegroot.applicatives.ListsMixin.Tuples.<P1>tuple(this, first, 2), second, nl.wernerdegroot.applicatives.runtime.Function2.fromBiFunction(fn)::apply));
+        return this.finalize(this.compose(nl.wernerdegroot.applicatives.ListsMixin.Tuples.<P1>tuple(this, first, 2), second, (tuple, element) -> fn.apply(tuple.getFirst(), element)));
     }
 
     default <P1, P2, P3, R> java.util.List<R> compose(java.util.List<? extends P1> first, java.util.List<? extends P2> second, java.util.List<? extends P3> third, nl.wernerdegroot.applicatives.runtime.Function3<? super P1, ? super P2, ? super P3, ? extends R> fn) {
-        return this.finalize(this.compose(nl.wernerdegroot.applicatives.ListsMixin.Tuples.<P1, P2>tuple(this, first, second, 3), third, fn::apply));
+        return this.finalize(this.compose(nl.wernerdegroot.applicatives.ListsMixin.Tuples.<P1, P2>tuple(this, first, second, 3), third, (tuple, element) -> fn.apply(tuple.getFirst(), tuple.getSecond(), element)));
     }
 
     default <P1, P2, R> java.util.function.BiFunction<? super java.util.List<? extends P1>, ? super java.util.List<? extends P2>, ? extends java.util.List<R>> lift(java.util.function.BiFunction<? super P1, ? super P2, ? extends R> fn) {

@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class MethodCallGeneratorTest {
 
     @Test
-    public void givenInstanceMethodAndExplicitTypeParameters() {
+    public void givenInstanceMethodAndExplicitTypeArguments() {
         String toVerify = methodCall()
                 .withObjectPath("objects")
                 .withTypeArguments(CHAR_SEQUENCE.invariant())
@@ -24,7 +24,7 @@ public class MethodCallGeneratorTest {
     }
 
     @Test
-    public void givenStaticMethodAndImplicitTypeParameters() {
+    public void givenStaticMethodAndNoTypeArguments() {
         String toVerify = methodCall()
                 .withType(BIG_DECIMAL)
                 .withMethodName("valueOf")

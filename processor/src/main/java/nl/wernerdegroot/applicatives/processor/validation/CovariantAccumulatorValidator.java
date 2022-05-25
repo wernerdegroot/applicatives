@@ -18,7 +18,7 @@ import static nl.wernerdegroot.applicatives.processor.generator.TypeGenerator.ge
 
 public class CovariantAccumulatorValidator {
 
-    public static Validated<CovariantAccumulator> validate(Method method) {
+    public static Validated<ValidCovariantAccumulator> validate(Method method) {
         if (method.getModifiers().contains(STATIC)) {
             return Validated.invalid("Method is static and cannot implement an abstract method");
         }
@@ -94,7 +94,7 @@ public class CovariantAccumulatorValidator {
         }
 
         return Validated.valid(
-                CovariantAccumulator.of(
+                ValidCovariantAccumulator.of(
                         name,
                         inputTypeConstructor,
                         partiallyAccumulatedTypeConstructor,
