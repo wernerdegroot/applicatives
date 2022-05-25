@@ -3,13 +3,8 @@ package nl.wernerdegroot.applicatives.processor;
 import com.google.auto.service.AutoService;
 import nl.wernerdegroot.applicatives.processor.converters.ContainingClassConverter;
 import nl.wernerdegroot.applicatives.processor.converters.MethodConverter;
-import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
 import nl.wernerdegroot.applicatives.processor.domain.Method;
-import nl.wernerdegroot.applicatives.processor.domain.Modifier;
 import nl.wernerdegroot.applicatives.processor.domain.containing.ContainingClass;
-import nl.wernerdegroot.applicatives.processor.generator.ParameterGenerator;
-import nl.wernerdegroot.applicatives.processor.generator.TypeGenerator;
-import nl.wernerdegroot.applicatives.processor.generator.TypeParameterGenerator;
 import nl.wernerdegroot.applicatives.processor.logging.Log;
 import nl.wernerdegroot.applicatives.processor.validation.TemplateClassWithMethods;
 import nl.wernerdegroot.applicatives.processor.validation.TemplateClassWithMethodsValidator;
@@ -45,25 +40,16 @@ public class CovariantProcessor extends AbstractCovariantProcessor {
             throw new IllegalArgumentException("Not a method");
         }
 
-        if (!(element.getEnclosingElement() instanceof TypeElement)) {
-            throw new IllegalArgumentException("Enclosing element is not a class, interface or record");
-        }
-        TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
-
         Covariant covariantAnnotation = element.getAnnotation(Covariant.class);
 
-        Log.of("Found annotation of type '%s' on method '%s' in class '%s'", COVARIANT_CLASS_NAME, element.getSimpleName(), enclosingElement.getQualifiedName())
-                .withDetail("Class name to generate", covariantAnnotation.className())
-                .withDetail("Method name for `lift`", covariantAnnotation.liftMethodName())
-                .withDetail("Maximum arity", covariantAnnotation.maxArity(), i -> Integer.toString(i))
-                .append(asNote());
+        noteAnnotationFound(element, covariantAnnotation);
 
         ContainingClass containingClass;
         Method method;
         try {
             containingClass = ContainingClassConverter.toDomain(element.getEnclosingElement());
             method = MethodConverter.toDomain(element);
-            Log.of("Successfully transformed objects from 'javax.lang.model' to objects from 'nl.wernerdegroot.applicatives.processor.domain'").append(asNote());
+            noteConversionToDomainSuccess();
         } catch (Throwable e) {
             // If we have issues transforming to `nl.wernerdegroot.applicatives.processor.domain`
             // (which makes it a lot easier to log where the annotation was found) make
@@ -72,23 +58,18 @@ public class CovariantProcessor extends AbstractCovariantProcessor {
             throw e;
         }
 
-        Log.of("Found method '%s' in class '%s'", method.getName(), containingClass.getFullyQualifiedName().raw())
-                .withDetail("Annotations", method.getAnnotations(), FullyQualifiedName::raw)
-                .withDetail("Modifiers", method.getModifiers(), Modifier::toString)
-                .withDetail("Type parameters", method.getTypeParameters(), TypeParameterGenerator::generateFrom)
-                .withDetail("Return type", method.getReturnType(), TypeGenerator::generateFrom)
-                .withDetail("Parameters", method.getParameters(), ParameterGenerator::generateFrom)
-                .append(asNote());
+        noteMethodFound(containingClass, method);
 
         Validated<TemplateClassWithMethods> validatedTemplateClassWithMethods = TemplateClassWithMethodsValidator.validate(containingClass, method);
         if (!validatedTemplateClassWithMethods.isValid()) {
-            Log.of("Method '%s' in class '%s' does not meet all criteria for code generation", method.getName(), containingClass.getFullyQualifiedName().raw())
-                    .withDetails(validatedTemplateClassWithMethods.getErrorMessages())
-                    .append(asError());
+            errorValidationFailed(containingClass, method, validatedTemplateClassWithMethods);
             return;
         }
 
         TemplateClassWithMethods templateClassWithMethods = validatedTemplateClassWithMethods.getValue();
+
+        noteValidationSuccess(templateClassWithMethods);
+
         resolveConflictsAndGenerate(
                 covariantAnnotation.className(),
                 covariantAnnotation.liftMethodName(),
@@ -96,5 +77,24 @@ public class CovariantProcessor extends AbstractCovariantProcessor {
                 containingClass.getPackageName(),
                 templateClassWithMethods
         );
+    }
+
+    private void errorValidationFailed(ContainingClass containingClass, Method method, Validated<TemplateClassWithMethods> validatedTemplateClassWithMethods) {
+        Log.of("Method '%s' in class '%s' does not meet all criteria for code generation", method.getName(), containingClass.getFullyQualifiedName().raw())
+                .withDetails(validatedTemplateClassWithMethods.getErrorMessages())
+                .append(asError());
+    }
+
+    private void noteAnnotationFound(Element element, Covariant covariantAnnotation) {
+        if (!(element.getEnclosingElement() instanceof TypeElement)) {
+            throw new IllegalArgumentException("Enclosing element is not a class, interface or record");
+        }
+        TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
+
+        Log.of("Found annotation of type '%s' on method '%s' in class '%s'", COVARIANT_CLASS_NAME, element.getSimpleName(), enclosingElement.getQualifiedName())
+                .withDetail("Class name to generate", covariantAnnotation.className())
+                .withDetail("Method name for `lift`", covariantAnnotation.liftMethodName())
+                .withDetail("Maximum arity", covariantAnnotation.maxArity(), i -> Integer.toString(i))
+                .append(asNote());
     }
 }

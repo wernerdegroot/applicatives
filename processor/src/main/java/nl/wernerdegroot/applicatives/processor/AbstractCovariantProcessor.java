@@ -1,8 +1,10 @@
 package nl.wernerdegroot.applicatives.processor;
 
 import nl.wernerdegroot.applicatives.processor.domain.*;
+import nl.wernerdegroot.applicatives.processor.domain.containing.ContainingClass;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor;
+import nl.wernerdegroot.applicatives.processor.generator.ParameterGenerator;
 import nl.wernerdegroot.applicatives.processor.generator.TypeGenerator;
 import nl.wernerdegroot.applicatives.processor.generator.TypeParameterGenerator;
 import nl.wernerdegroot.applicatives.processor.logging.Log;
@@ -24,7 +26,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import static nl.wernerdegroot.applicatives.processor.Classes.COVARIANT_BUILDER_CLASS;
 import static nl.wernerdegroot.applicatives.processor.conflicts.ConflictFinder.findClassTypeParameterNameReplacements;
 import static nl.wernerdegroot.applicatives.processor.conflicts.Conflicts.*;
 import static nl.wernerdegroot.applicatives.processor.generator.Generator.generator;
@@ -42,7 +43,7 @@ public abstract class AbstractCovariantProcessor extends AbstractProcessor {
                 try {
                     processElement(element);
                 } catch (Throwable t) {
-                    Log.of("Error occurred while processing annotation of type '%s': %s", COVARIANT_BUILDER_CLASS, t.getMessage()).append(asError());
+                    Log.of("Error occurred while processing annotation of type '%s': %s", getAnnotationType(), t.getMessage()).append(asError());
                     if (shouldLogNotes()) {
                         printStackTraceToMessagerAsNote(t);
                     } else {
@@ -55,19 +56,6 @@ public abstract class AbstractCovariantProcessor extends AbstractProcessor {
     }
 
     public void resolveConflictsAndGenerate(String className, String liftMethodName, int maxArity, PackageName packageName, TemplateClassWithMethods templateClassWithMethods) {
-        Log.of("All criteria for code generation satisfied")
-                .withDetail("Class type parameters", templateClassWithMethods.getClassTypeParameters(), TypeParameterGenerator::generateFrom)
-                .withDetail("Name of initializer method", templateClassWithMethods.getOptionalInitializer().map(CovariantInitializer::getName))
-                .withDetail("Initialized type constructor", templateClassWithMethods.getOptionalInitializer().map(CovariantInitializer::getInitializedTypeConstructor), this::typeConstructorToString)
-                .withDetail("Name of accumulator method", templateClassWithMethods.getAccumulator().getName())
-                .withDetail("Input type constructor", templateClassWithMethods.getAccumulator().getInputTypeConstructor(), this::typeConstructorToString)
-                .withDetail("Partially accumulated type constructor", templateClassWithMethods.getAccumulator().getPartiallyAccumulatedTypeConstructor(), this::typeConstructorToString)
-                .withDetail("Accumulated type constructor", templateClassWithMethods.getAccumulator().getAccumulatedTypeConstructor(), this::typeConstructorToString)
-                .withDetail("Name of finalizer method", templateClassWithMethods.getOptionalFinalizer().map(CovariantFinalizer::getName))
-                .withDetail("To finalize type constructor", templateClassWithMethods.getOptionalFinalizer().map(CovariantFinalizer::getToFinalizeTypeConstructor), this::typeConstructorToString)
-                .withDetail("Finalized type constructor", templateClassWithMethods.getOptionalFinalizer().map(CovariantFinalizer::getFinalizedTypeConstructor), this::typeConstructorToString)
-                .append(asNote());
-
         Map<TypeParameterName, TypeParameterName> classTypeParameterNameReplacements = findClassTypeParameterNameReplacements(templateClassWithMethods.getClassTypeParameters());
         TemplateClassWithMethods conflictFree = templateClassWithMethods.replaceTypeParameterNames(classTypeParameterNameReplacements);
 
@@ -130,6 +118,35 @@ public abstract class AbstractCovariantProcessor extends AbstractProcessor {
         PrintWriter pw = new PrintWriter(sw);
         e.printStackTrace(pw);
         processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, sw.toString());
+    }
+
+    protected void noteConversionToDomainSuccess() {
+        Log.of("Successfully transformed objects from 'javax.lang.model' to objects from 'nl.wernerdegroot.applicatives.processor.domain'").append(asNote());
+    }
+
+    protected void noteMethodFound(ContainingClass containingClass, Method method) {
+        Log.of("Found method '%s' in class '%s'", method.getName(), containingClass.getFullyQualifiedName().raw())
+                .withDetail("Annotations", method.getAnnotations(), FullyQualifiedName::raw)
+                .withDetail("Modifiers", method.getModifiers(), Modifier::toString)
+                .withDetail("Type parameters", method.getTypeParameters(), TypeParameterGenerator::generateFrom)
+                .withDetail("Return type", method.getReturnType(), TypeGenerator::generateFrom)
+                .withDetail("Parameters", method.getParameters(), ParameterGenerator::generateFrom)
+                .append(asNote());
+    }
+
+    protected void noteValidationSuccess(TemplateClassWithMethods templateClassWithMethods) {
+        Log.of("All criteria for code generation satisfied")
+                .withDetail("Class type parameters", templateClassWithMethods.getClassTypeParameters(), TypeParameterGenerator::generateFrom)
+                .withDetail("Name of initializer method", templateClassWithMethods.getOptionalInitializer().map(CovariantInitializer::getName))
+                .withDetail("Initialized type constructor", templateClassWithMethods.getOptionalInitializer().map(CovariantInitializer::getInitializedTypeConstructor), this::typeConstructorToString)
+                .withDetail("Name of accumulator method", templateClassWithMethods.getAccumulator().getName())
+                .withDetail("Input type constructor", templateClassWithMethods.getAccumulator().getInputTypeConstructor(), this::typeConstructorToString)
+                .withDetail("Partially accumulated type constructor", templateClassWithMethods.getAccumulator().getPartiallyAccumulatedTypeConstructor(), this::typeConstructorToString)
+                .withDetail("Accumulated type constructor", templateClassWithMethods.getAccumulator().getAccumulatedTypeConstructor(), this::typeConstructorToString)
+                .withDetail("Name of finalizer method", templateClassWithMethods.getOptionalFinalizer().map(CovariantFinalizer::getName))
+                .withDetail("To finalize type constructor", templateClassWithMethods.getOptionalFinalizer().map(CovariantFinalizer::getToFinalizeTypeConstructor), this::typeConstructorToString)
+                .withDetail("Finalized type constructor", templateClassWithMethods.getOptionalFinalizer().map(CovariantFinalizer::getFinalizedTypeConstructor), this::typeConstructorToString)
+                .append(asNote());
     }
 
     protected boolean shouldLogNotes() {

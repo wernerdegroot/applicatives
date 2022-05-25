@@ -24,3 +24,4 @@
 * Introduce `ParameterName` and `ClassName`?
 * Implement free applicative functors
 * Allow subtypes in return type (return `CartesianProductList` in applicative for `List`)
+* Increase coverage of processor-classes (now almost 0%)
