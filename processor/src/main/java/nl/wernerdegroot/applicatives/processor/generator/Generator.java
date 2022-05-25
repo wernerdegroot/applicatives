@@ -68,14 +68,6 @@ public class Generator {
         return this;
     }
 
-    public FullyQualifiedName getFullyQualifiedClassNameToGenerate() {
-        return packageName.withClassName(ClassName.of(classNameToGenerate));
-    }
-
-    public FullyQualifiedName getFullyQualifiedTupleClass() {
-        return getFullyQualifiedClassNameToGenerate().withClassName(TUPLE_CLASS_NAME);
-    }
-
     public Generator withClassTypeParameters(List<TypeParameter> classTypeParameters) {
         this.classTypeParameters = classTypeParameters;
         return this;
@@ -96,74 +88,9 @@ public class Generator {
         return this;
     }
 
-    public List<TypeArgument> getClassTypeParametersAsTypeArguments() {
-        return classTypeParameters
-                .stream()
-                .map(TypeParameter::invariant)
-                .collect(toList());
-    }
-
     public Generator withParameterTypeConstructorArguments(List<TypeParameter> inputTypeConstructorArguments) {
         this.parameterTypeConstructorArguments = inputTypeConstructorArguments;
         return this;
-    }
-
-    public List<TypeParameter> takeParameterTypeConstructorArguments(int toTake) {
-        return parameterTypeConstructorArguments.subList(0, toTake);
-    }
-
-    public List<Type> getParameterTypeConstructorArgumentsAsTypes() {
-        return parameterTypeConstructorArguments
-                .stream()
-                .map(TypeParameter::asType)
-                .collect(toList());
-    }
-
-    public List<Type> takeParameterTypeConstructorArgumentsAsTypes(int toTake) {
-        return getParameterTypeConstructorArgumentsAsTypes().subList(0, toTake);
-    }
-
-    public List<TypeArgument> takeParameterTypeConstructorArgumentsAsTypeArguments(int toTake) {
-        return takeParameterTypeConstructorArgumentsAsTypes(toTake)
-                .stream()
-                .map(Type::invariant)
-                .collect(toList());
-    }
-
-    public List<Type> takeParameterTypes(int toTake) {
-        return takeParameterTypes(toTake, getFirstParameterTypeConstructor(), getOtherParametersTypeConstructor());
-    }
-
-    public TypeConstructor getFirstParameterTypeConstructor() {
-        // If the user provided an initializer method, all parameters
-        // use the same type constructor (`inputTypeConstructor`).
-        // If no initializer method is available, the first parameter
-        // uses a different type constructor than the other parameters
-        // (`partiallyAccumulatedTypeConstructor`).
-        return hasInitializer()
-                ? getOtherParametersTypeConstructor()
-                : accumulator.getPartiallyAccumulatedTypeConstructor();
-    }
-
-    public TypeConstructor getOtherParametersTypeConstructor() {
-        return accumulator.getInputTypeConstructor();
-    }
-
-    public List<Type> takeParameterTypes(int toTake, TypeConstructor firstParameterTypeConstructor, TypeConstructor otherParametersTypeConstructor) {
-        List<Type> result = new ArrayList<>();
-
-        getParameterTypeConstructorArgumentsAsTypes()
-                .stream()
-                .limit(1)
-                .map(firstParameterTypeConstructor::apply)
-                .forEachOrdered(result::add);
-        getParameterTypeConstructorArgumentsAsTypes()
-                .stream()
-                .limit(toTake)
-                .skip(1)
-                .map(otherParametersTypeConstructor::apply)
-                .forEachOrdered(result::add);
-        return result;
     }
 
     public Generator withReturnTypeConstructorArgument(TypeParameter returnTypeConstructorArgument) {
@@ -171,38 +98,9 @@ public class Generator {
         return this;
     }
 
-    public TypeConstructor getReturnTypeConstructor() {
-        return optionalFinalizer.map(CovariantFinalizer::getFinalizedTypeConstructor).orElse(accumulator.getAccumulatedTypeConstructor());
-    }
-
-    private TypeConstructor getTupleMethodReturnTypeConstructor(int arity) {
-        // If the arity is equal to zero, we are dealing with a special case. We use the initializer method
-        // to wrap an empty tuple using the `initializedTypeConstructor`. We can pass that as the
-        // input to the accumulator method that the user defined.
-        if (arity == 0) {
-            return optionalInitializer
-                    .map(CovariantInitializer::getInitializedTypeConstructor)
-                    .orElseThrow(() -> new IllegalStateException("An initializer method is required for a tuple method of arity zero"));
-        } else {
-            return accumulator.getAccumulatedTypeConstructor();
-        }
-    }
-
-    public Type getReturnType() {
-        return returnTypeConstructorArgument.asType().using(getReturnTypeConstructor());
-    }
-
-    public boolean hasInitializer() {
-        return optionalInitializer.isPresent();
-    }
-
     public Generator withInputParameterNames(List<String> inputParameterNames) {
         this.inputParameterNames = inputParameterNames;
         return this;
-    }
-
-    public List<String> takeInputParameterNames(int toTake) {
-        return inputParameterNames.subList(0, toTake);
     }
 
     public Generator withValueParameterName(String valueParameterName) {
@@ -353,7 +251,7 @@ public class Generator {
                 .withMethodName(accumulator.getName())
                 .withArguments(
                         methodCall()
-                                .withType(getFullyQualifiedTupleClass())
+                                .withType(getFullyQualifiedClassNameOfTupleClass())
                                 .withTypeArguments(takeParameterTypeConstructorArgumentsAsTypeArguments(arity - 1))
                                 .withTypeArguments(getClassTypeParametersAsTypeArguments())
                                 .withMethodName(TUPLE_METHOD_NAME)
@@ -506,7 +404,7 @@ public class Generator {
                         .withMethodName(accumulator.getName())
                         .withArguments(
                                 methodCall()
-                                        .withType(getFullyQualifiedTupleClass())
+                                        .withType(getFullyQualifiedClassNameOfTupleClass())
                                         .withTypeArguments(takeParameterTypeConstructorArgumentsAsTypeArguments(arity - 1))
                                         .withTypeArguments(getClassTypeParametersAsTypeArguments())
                                         .withMethodName(TUPLE_METHOD_NAME)
@@ -551,6 +449,109 @@ public class Generator {
 
         return Type.concrete(fullyQualifiedNameOfFunction(arity), typeArguments);
     }
+
+    private FullyQualifiedName getFullyQualifiedClassNameToGenerate() {
+        return packageName.withClassName(ClassName.of(classNameToGenerate));
+    }
+
+    private FullyQualifiedName getFullyQualifiedClassNameOfTupleClass() {
+        return getFullyQualifiedClassNameToGenerate().withClassName(TUPLE_CLASS_NAME);
+    }
+
+    private List<TypeArgument> getClassTypeParametersAsTypeArguments() {
+        return classTypeParameters
+                .stream()
+                .map(TypeParameter::invariant)
+                .collect(toList());
+    }
+
+    private List<TypeParameter> takeParameterTypeConstructorArguments(int toTake) {
+        return parameterTypeConstructorArguments.subList(0, toTake);
+    }
+
+    private List<Type> getParameterTypeConstructorArgumentsAsTypes() {
+        return parameterTypeConstructorArguments
+                .stream()
+                .map(TypeParameter::asType)
+                .collect(toList());
+    }
+
+    private List<Type> takeParameterTypeConstructorArgumentsAsTypes(int toTake) {
+        return getParameterTypeConstructorArgumentsAsTypes().subList(0, toTake);
+    }
+
+    private List<TypeArgument> takeParameterTypeConstructorArgumentsAsTypeArguments(int toTake) {
+        return takeParameterTypeConstructorArgumentsAsTypes(toTake)
+                .stream()
+                .map(Type::invariant)
+                .collect(toList());
+    }
+
+    private List<Type> takeParameterTypes(int toTake) {
+        return takeParameterTypes(toTake, getFirstParameterTypeConstructor(), getOtherParametersTypeConstructor());
+    }
+
+    private TypeConstructor getFirstParameterTypeConstructor() {
+        // If the user provided an initializer method, all parameters
+        // use the same type constructor (`inputTypeConstructor`).
+        // If no initializer method is available, the first parameter
+        // uses a different type constructor than the other parameters
+        // (`partiallyAccumulatedTypeConstructor`).
+        return hasInitializer()
+                ? getOtherParametersTypeConstructor()
+                : accumulator.getPartiallyAccumulatedTypeConstructor();
+    }
+
+    private TypeConstructor getOtherParametersTypeConstructor() {
+        return accumulator.getInputTypeConstructor();
+    }
+
+    private List<Type> takeParameterTypes(int toTake, TypeConstructor firstParameterTypeConstructor, TypeConstructor otherParametersTypeConstructor) {
+        List<Type> result = new ArrayList<>();
+
+        getParameterTypeConstructorArgumentsAsTypes()
+                .stream()
+                .limit(1)
+                .map(firstParameterTypeConstructor::apply)
+                .forEachOrdered(result::add);
+        getParameterTypeConstructorArgumentsAsTypes()
+                .stream()
+                .limit(toTake)
+                .skip(1)
+                .map(otherParametersTypeConstructor::apply)
+                .forEachOrdered(result::add);
+        return result;
+    }
+
+    private TypeConstructor getReturnTypeConstructor() {
+        return optionalFinalizer.map(CovariantFinalizer::getFinalizedTypeConstructor).orElse(accumulator.getAccumulatedTypeConstructor());
+    }
+
+    private TypeConstructor getTupleMethodReturnTypeConstructor(int arity) {
+        // If the arity is equal to zero, we are dealing with a special case. We use the initializer method
+        // to wrap an empty tuple using the `initializedTypeConstructor`. We can pass that as the
+        // input to the accumulator method that the user defined.
+        if (arity == 0) {
+            return optionalInitializer
+                    .map(CovariantInitializer::getInitializedTypeConstructor)
+                    .orElseThrow(() -> new IllegalStateException("An initializer method is required for a tuple method of arity zero"));
+        } else {
+            return accumulator.getAccumulatedTypeConstructor();
+        }
+    }
+
+    private Type getReturnType() {
+        return returnTypeConstructorArgument.asType().using(getReturnTypeConstructor());
+    }
+
+    private boolean hasInitializer() {
+        return optionalInitializer.isPresent();
+    }
+
+    private List<String> takeInputParameterNames(int toTake) {
+        return inputParameterNames.subList(0, toTake);
+    }
+
 
     private FullyQualifiedName fullyQualifiedNameOfFunction(int arity) {
         return arity == 2 ? BI_FUNCTION.getFullyQualifiedName() : fullyQualifiedNameOfArbitraryArityFunction(arity);
