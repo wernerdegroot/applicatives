@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class BodyGeneratorTest {
 
     @Test
-    public void shouldAcceptMultipleLines() {
+    public void givenMultipleLines() {
         List<String> toVerify = toTest()
                 .withBody("Line 1", "Line 2")
                 .withBody(asList("Line 3", "Line 4"))
@@ -30,7 +30,7 @@ public class BodyGeneratorTest {
     }
 
     @Test
-    public void shouldIndentNonEmptyLinesWithFourSpaces() {
+    public void givenMultipleLinesToIndent() {
         List<String> toVerify = toTest()
                 .withBody("Line 1", "Line 2")
                 .getBodyGenerator()
@@ -47,7 +47,7 @@ public class BodyGeneratorTest {
     }
 
     @Test
-    public void shouldNotIndentEmptyLines() {
+    public void givenMultipleEmtpyAndNonEmptyLinesToIndent() {
         List<String> toVerify = toTest()
                 .withBody("Line 1", "", "Line 2")
                 .getBodyGenerator()

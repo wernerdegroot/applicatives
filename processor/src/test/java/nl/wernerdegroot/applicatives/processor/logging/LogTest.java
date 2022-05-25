@@ -67,6 +67,34 @@ public class LogTest {
     }
 
     @Test
+    public void withDetailGivenNonEmptyDetail() {
+        StringBuilderLoggingBackend loggingBackend = new StringBuilderLoggingBackend();
+
+        Log.of("This is a simple message")
+                .withDetail("It may have some things to inform you about", Optional.of("Indeed"))
+                .append(loggingBackend);
+
+        String expected = "This is a simple message\n" +
+                " - It may have some things to inform you about: Indeed\n";
+
+        assertEquals(expected, loggingBackend.build());
+    }
+
+    @Test
+    public void withDetailGivenEmptyDetail() {
+        StringBuilderLoggingBackend loggingBackend = new StringBuilderLoggingBackend();
+
+        Log.of("This is a simple message")
+                .withDetail("It may have some things to inform you about", Optional.empty())
+                .append(loggingBackend);
+
+        String expected = "This is a simple message\n" +
+                " - It may have some things to inform you about: none\n";
+
+        assertEquals(expected, loggingBackend.build());
+    }
+
+    @Test
     public void withDetailGivenNonEmptyDetailAndPrinter() {
         StringBuilderLoggingBackend loggingBackend = new StringBuilderLoggingBackend();
 
@@ -109,11 +137,25 @@ public class LogTest {
     }
 
     @Test
-    public void withDetailGivenNonEmptyDetail() {
+    public void withDetailGivenDetail() {
         StringBuilderLoggingBackend loggingBackend = new StringBuilderLoggingBackend();
 
         Log.of("This is a simple message")
                 .withDetail("It has something to inform you about", "f")
+                .append(loggingBackend);
+
+        String expected = "This is a simple message\n" +
+                " - It has something to inform you about: f\n";
+
+        assertEquals(expected, loggingBackend.build());
+    }
+
+    @Test
+    public void withDetailGivenDetailAndPrinter() {
+        StringBuilderLoggingBackend loggingBackend = new StringBuilderLoggingBackend();
+
+        Log.of("This is a simple message")
+                .withDetail("It has something to inform you about", 15, Integer::toHexString)
                 .append(loggingBackend);
 
         String expected = "This is a simple message\n" +

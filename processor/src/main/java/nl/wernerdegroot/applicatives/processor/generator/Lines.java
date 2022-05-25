@@ -3,11 +3,7 @@ package nl.wernerdegroot.applicatives.processor.generator;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.BinaryOperator;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collector;
 
 import static java.util.Arrays.asList;
@@ -32,7 +28,7 @@ public class Lines extends AbstractList<String> {
         return new Lines();
     }
 
-    public static <E> Collector<E, ?, List<String>> collector(Function<E, List<String>> toLines) {
+    public static <E> Collector<E, ?, List<String>> collecting(Function<E, List<String>> toLines) {
         return Collector.of(
                 ArrayList::new,
                 (lines, element) -> {

@@ -37,7 +37,7 @@ public class TypeGenerator {
                     }
                 },
 
-                array -> type(array.getType()).generate() + "[]"
+                array -> type(array.getType()).generate() + OPEN_SQUARE_BRACKET + CLOSE_SQUARE_BRACKET
         );
     }
 }

@@ -18,7 +18,7 @@ public class ClassOrInterfaceGeneratorTest {
     private final TypeParameterName B = TypeParameterName.of("B");
 
     @Test
-    public void withoutModifiersButWithTypeParameters() {
+    public void givenInterfaceWithoutModifiersButWithTypeParameters() {
         List<String> toVerify = classOrInterface()
                 .asInterface()
                 .withName("Pair")
@@ -43,10 +43,10 @@ public class ClassOrInterfaceGeneratorTest {
     }
 
     @Test
-    public void withModifiersButWithoutTypeParameters() {
+    public void givenClassWithModifiersButWithoutTypeParameters() {
         List<String> toVerify = classOrInterface()
-                .withModifiers(PUBLIC, ABSTRACT)
                 .asClass()
+                .withModifiers(PUBLIC, ABSTRACT)
                 .withName("Device")
                 .withBody(
                         "public int capacity = 34;",

@@ -41,11 +41,6 @@ public class ClassOrInterfaceGenerator implements HasModifiersGenerator<ClassOrI
         return this;
     }
 
-    public ClassOrInterfaceGenerator withType(ClassType type) {
-        this.type = type;
-        return this;
-    }
-
     public ClassOrInterfaceGenerator asClass() {
         this.type = ClassType.CLASS;
         return this;
