@@ -12,6 +12,9 @@ import nl.wernerdegroot.applicatives.processor.logging.NoLoggingBackend;
 import nl.wernerdegroot.applicatives.processor.validation.TemplateClassWithMethods;
 
 import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.RoundEnvironment;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
@@ -19,12 +22,37 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
+import static nl.wernerdegroot.applicatives.processor.Classes.COVARIANT_BUILDER_CLASS;
 import static nl.wernerdegroot.applicatives.processor.conflicts.ConflictFinder.findClassTypeParameterNameReplacements;
 import static nl.wernerdegroot.applicatives.processor.conflicts.Conflicts.*;
 import static nl.wernerdegroot.applicatives.processor.generator.Generator.generator;
 
 public abstract class AbstractCovariantProcessor extends AbstractProcessor {
+
+    public abstract Class<?> getAnnotationType();
+
+    public abstract void processElement(Element element);
+
+    @Override
+    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        annotations.forEach(annotation -> {
+            roundEnv.getElementsAnnotatedWith(annotation).forEach(element -> {
+                try {
+                    processElement(element);
+                } catch (Throwable t) {
+                    Log.of("Error occurred while processing annotation of type '%s': %s", COVARIANT_BUILDER_CLASS, t.getMessage()).append(asError());
+                    if (shouldLogNotes()) {
+                        printStackTraceToMessagerAsNote(t);
+                    } else {
+                        Log.of("Enable verbose logging to see a stack trace.").append(asError());
+                    }
+                }
+            });
+        });
+        return false;
+    }
 
     public void resolveConflictsAndGenerate(String className, String liftMethodName, int maxArity, PackageName packageName, TemplateClassWithMethods templateClassWithMethods) {
         Log.of("All criteria for code generation satisfied")
