@@ -20,29 +20,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class GeneratorTest {
 
-    // @TODO FIX ME
-    // Options:
-    //  * Class type parameters (Y/N)
-    //  * Secondary method type parameters (Y/N)
-    //  * Secondary parameters (Y/N)
-    //  * Different type constructors (Y/N)
-    //  * Provided class name
-    //  * Provided lift method name
-    //  * Provided maximum arity
-    //
-    // Instead of testing each combination (which would be a lot of tests)
-    // we only test the following cases:
-    //
-    // |           | Class type | Secondary method | Secondary  | Provided       | Provided lift | Provided   | Diffent type |
-    // |           | parameters | type parameters  | parameters | class name     | method name   | max. arity | constructors |
-    // |-----------|------------|------------------|------------|----------------|---------------|------------|--------------|
-    // | Optionals | N          | N                | N          | OptionalsMixin | lift          | 2          | N            |
-    // | Lists     | N          | N                | N          | ListsMixin     | lift          | 3          | Y            |
-    // | Functions | Y          | N                | N          | FunctionsMixin | lift          | 4          | N            |
-    // | Eithers   | N          | Y                | Y          | EithersMixin   | liftEither    | 26         | N            |
-
+    // Very simple:
     @Test
-    public void simple() throws IOException {
+    public void givenOptional() throws IOException {
         String expected = getResourceFileAsString("/Optionals.generated");
         String toVerify = generator()
                 .withPackageName(PackageName.of("nl.wernerdegroot.applicatives"))
@@ -74,8 +54,9 @@ public class GeneratorTest {
         assertEquals(expected, toVerify);
     }
 
+    // Involves an initializer, accumulator and finalizer:
     @Test
-    public void withDifferentLeftTypeConstructorAndRightTypeConstructor() throws IOException {
+    public void givenList() throws IOException {
         String expected = getResourceFileAsString("/Lists.generated");
         String toVerify = generator()
                 .withPackageName(PackageName.of("nl.wernerdegroot.applicatives"))
@@ -122,8 +103,9 @@ public class GeneratorTest {
         assertEquals(expected, toVerify);
     }
 
+    // Has class type parameters:
     @Test
-    public void withClassTypeParameters() throws IOException {
+    public void givenFunction() throws IOException {
         TypeParameterName P = TypeParameterName.of("P");
 
         String expected = getResourceFileAsString("/Functions.generated");
