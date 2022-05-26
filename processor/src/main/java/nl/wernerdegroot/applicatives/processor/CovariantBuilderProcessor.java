@@ -8,7 +8,6 @@ import nl.wernerdegroot.applicatives.processor.domain.Method;
 import nl.wernerdegroot.applicatives.processor.domain.containing.ContainingClass;
 import nl.wernerdegroot.applicatives.processor.generator.ContainingClassGenerator;
 import nl.wernerdegroot.applicatives.processor.logging.Log;
-import nl.wernerdegroot.applicatives.processor.validation.TemplateClassWithMethods;
 import nl.wernerdegroot.applicatives.processor.validation.TemplateClassWithMethodsValidator;
 import nl.wernerdegroot.applicatives.processor.validation.Validated;
 import nl.wernerdegroot.applicatives.runtime.Covariant;
@@ -81,13 +80,13 @@ public class CovariantBuilderProcessor extends AbstractCovariantProcessor {
 
         noteClassFound(containingClass, methods);
 
-        Validated<TemplateClassWithMethods> validatedTemplateClassWithMethods = TemplateClassWithMethodsValidator.validate(containingClass, methods);
+        Validated<TemplateClassWithMethodsValidator.Result> validatedTemplateClassWithMethods = TemplateClassWithMethodsValidator.validate(containingClass, methods);
         if (!validatedTemplateClassWithMethods.isValid()) {
             errorValidationFailed(containingClass, validatedTemplateClassWithMethods);
             return;
         }
 
-        TemplateClassWithMethods templateClassWithMethods = validatedTemplateClassWithMethods.getValue();
+        TemplateClassWithMethodsValidator.Result templateClassWithMethods = validatedTemplateClassWithMethods.getValue();
 
         noteValidationSuccess(templateClassWithMethods);
 
@@ -107,7 +106,7 @@ public class CovariantBuilderProcessor extends AbstractCovariantProcessor {
         });
     }
 
-    private void errorValidationFailed(ContainingClass containingClass, Validated<TemplateClassWithMethods> validatedTemplateClassWithMethods) {
+    private void errorValidationFailed(ContainingClass containingClass, Validated<TemplateClassWithMethodsValidator.Result> validatedTemplateClassWithMethods) {
         Log.of("Class '%s' does not meet all criteria for code generation", containingClass.getFullyQualifiedName().raw())
                 .withDetails(validatedTemplateClassWithMethods.getErrorMessages())
                 .append(asError());

@@ -1,7 +1,6 @@
 package nl.wernerdegroot.applicatives.processor.validation;
 
 import nl.wernerdegroot.applicatives.processor.domain.Method;
-import nl.wernerdegroot.applicatives.processor.domain.Modifier;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameter;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 
@@ -9,13 +8,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 import static nl.wernerdegroot.applicatives.processor.domain.Modifier.PRIVATE;
 import static nl.wernerdegroot.applicatives.processor.domain.Modifier.STATIC;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.OBJECT;
 
-public class MethodValidation {
+/**
+ * Package-private class, to encapsulate validation rules common
+ * to `CovariantInitializerValidator`, `CovariantAccumulatorValidator`
+ * and `CovariantFinalizerValidator`.
+ */
+class MethodValidation {
 
     private final Method method;
     private final Set<String> errorMessages = new HashSet<>();

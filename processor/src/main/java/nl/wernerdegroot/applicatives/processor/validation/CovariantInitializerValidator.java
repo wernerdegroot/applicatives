@@ -6,18 +6,13 @@ import nl.wernerdegroot.applicatives.processor.domain.TypeParameter;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor;
 
-import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
-import static nl.wernerdegroot.applicatives.processor.domain.Modifier.PRIVATE;
-import static nl.wernerdegroot.applicatives.processor.domain.Modifier.STATIC;
-import static nl.wernerdegroot.applicatives.processor.domain.type.Type.OBJECT;
 import static nl.wernerdegroot.applicatives.processor.generator.TypeGenerator.generateFrom;
 
 public class CovariantInitializerValidator {
 
-    public static Validated<ValidCovariantInitializer> validate(Method method) {
+    public static Validated<Result> validate(Method method) {
         MethodValidation methodValidation = MethodValidation.of(method)
                 .verifyCanImplementAbstractMethod()
                 .verifyParameterCount("exactly 1", numberOfParameters -> numberOfParameters == 1)
@@ -29,11 +24,11 @@ public class CovariantInitializerValidator {
             return Validated.invalid(methodValidation.getErrorMessages());
         }
 
-        String name = method.getName();
-
         TypeParameter typeParameter = method.getTypeParameters().get(0);
 
         Type returnType = methodValidation.getReturnType();
+
+        String name = method.getName();
 
         Parameter parameter = method.getParameters().get(0);
 
@@ -45,6 +40,57 @@ public class CovariantInitializerValidator {
 
         TypeConstructor initializedTypeConstructor = returnType.asTypeConstructorWithPlaceholderFor(typeParameter.getName());
 
-        return Validated.valid(ValidCovariantInitializer.of(name, initializedTypeConstructor, returnType));
+        return Validated.valid(Result.of(name, initializedTypeConstructor, returnType));
+    }
+
+    public static class Result {
+
+        private final String name;
+        private final TypeConstructor initializedTypeConstructor;
+        private final Type returnType;
+
+        public Result(String name, TypeConstructor initializedTypeConstructor, Type returnType) {
+            this.name = name;
+            this.returnType = returnType;
+            this.initializedTypeConstructor = initializedTypeConstructor;
+        }
+
+        public static Result of(String name, TypeConstructor initializedTypeConstructor, Type returnType) {
+            return new Result(name, initializedTypeConstructor, returnType);
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public TypeConstructor getInitializedTypeConstructor() {
+            return initializedTypeConstructor;
+        }
+
+        public Type getReturnType() {
+            return returnType;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Result that = (Result) o;
+            return getName().equals(that.getName()) && getInitializedTypeConstructor().equals(that.getInitializedTypeConstructor()) && getReturnType().equals(that.getReturnType());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(getName(), getInitializedTypeConstructor(), getReturnType());
+        }
+
+        @Override
+        public String toString() {
+            return "Result{" +
+                    "name='" + name + '\'' +
+                    ", initializedTypeConstructor=" + initializedTypeConstructor +
+                    ", returnType=" + returnType +
+                    '}';
+        }
     }
 }

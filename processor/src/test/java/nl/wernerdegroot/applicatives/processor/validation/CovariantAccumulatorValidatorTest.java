@@ -40,8 +40,8 @@ public class CovariantAccumulatorValidatorTest {
                 )
         );
 
-        Validated<ValidCovariantAccumulator> expected = Validated.invalid("Method needs to return something");
-        Validated<ValidCovariantAccumulator> toVerify = CovariantAccumulatorValidator.validate(toValidate);
+        Validated<CovariantAccumulatorValidator.Result> expected = Validated.invalid("Method needs to return something");
+        Validated<CovariantAccumulatorValidator.Result> toVerify = CovariantAccumulatorValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -61,8 +61,8 @@ public class CovariantAccumulatorValidatorTest {
                 )
         );
 
-        Validated<ValidCovariantAccumulator> expected = Validated.invalid("Method is static and cannot implement an abstract method");
-        Validated<ValidCovariantAccumulator> toVerify = CovariantAccumulatorValidator.validate(toValidate);
+        Validated<CovariantAccumulatorValidator.Result> expected = Validated.invalid("Method is static and cannot implement an abstract method");
+        Validated<CovariantAccumulatorValidator.Result> toVerify = CovariantAccumulatorValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -82,8 +82,8 @@ public class CovariantAccumulatorValidatorTest {
                 )
         );
 
-        Validated<ValidCovariantAccumulator> expected = Validated.invalid("Method is private and cannot implement an abstract method");
-        Validated<ValidCovariantAccumulator> toVerify = CovariantAccumulatorValidator.validate(toValidate);
+        Validated<CovariantAccumulatorValidator.Result> expected = Validated.invalid("Method is private and cannot implement an abstract method");
+        Validated<CovariantAccumulatorValidator.Result> toVerify = CovariantAccumulatorValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -103,8 +103,8 @@ public class CovariantAccumulatorValidatorTest {
                 )
         );
 
-        Validated<ValidCovariantAccumulator> expected = Validated.invalid("The type parameters need to be unbounded");
-        Validated<ValidCovariantAccumulator> toVerify = CovariantAccumulatorValidator.validate(toValidate);
+        Validated<CovariantAccumulatorValidator.Result> expected = Validated.invalid("The type parameters need to be unbounded");
+        Validated<CovariantAccumulatorValidator.Result> toVerify = CovariantAccumulatorValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -124,14 +124,14 @@ public class CovariantAccumulatorValidatorTest {
                 )
         );
 
-        Validated<ValidCovariantAccumulator> expected = Validated.valid(
-                ValidCovariantAccumulator.of(
+        Validated<CovariantAccumulatorValidator.Result> expected = Validated.valid(
+                CovariantAccumulatorValidator.Result.of(
                         "myFunction",
                         OPTIONAL.asTypeConstructor(), OPTIONAL.asTypeConstructor(), OPTIONAL.asTypeConstructor(),
                         OPTIONAL.with(T)
                 )
         );
-        Validated<ValidCovariantAccumulator> toVerify = CovariantAccumulatorValidator.validate(toValidate);
+        Validated<CovariantAccumulatorValidator.Result> toVerify = CovariantAccumulatorValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -151,8 +151,8 @@ public class CovariantAccumulatorValidatorTest {
                 )
         );
 
-        Validated<ValidCovariantAccumulator> expected = Validated.invalid("Method requires exactly 3 type parameters, but found 1");
-        Validated<ValidCovariantAccumulator> toVerify = CovariantAccumulatorValidator.validate(toValidate);
+        Validated<CovariantAccumulatorValidator.Result> expected = Validated.invalid("Method requires exactly 3 type parameters, but found 1");
+        Validated<CovariantAccumulatorValidator.Result> toVerify = CovariantAccumulatorValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -172,8 +172,8 @@ public class CovariantAccumulatorValidatorTest {
                 )
         );
 
-        Validated<ValidCovariantAccumulator> expected = Validated.invalid("Method requires exactly 3 type parameters, but found 4");
-        Validated<ValidCovariantAccumulator> toVerify = CovariantAccumulatorValidator.validate(toValidate);
+        Validated<CovariantAccumulatorValidator.Result> expected = Validated.invalid("Method requires exactly 3 type parameters, but found 4");
+        Validated<CovariantAccumulatorValidator.Result> toVerify = CovariantAccumulatorValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -192,8 +192,8 @@ public class CovariantAccumulatorValidatorTest {
                 )
         );
 
-        Validated<ValidCovariantAccumulator> expected = Validated.invalid("Method requires exactly 3 parameters, but found 2");
-        Validated<ValidCovariantAccumulator> toVerify = CovariantAccumulatorValidator.validate(toValidate);
+        Validated<CovariantAccumulatorValidator.Result> expected = Validated.invalid("Method requires exactly 3 parameters, but found 2");
+        Validated<CovariantAccumulatorValidator.Result> toVerify = CovariantAccumulatorValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -214,8 +214,8 @@ public class CovariantAccumulatorValidatorTest {
                 )
         );
 
-        Validated<ValidCovariantAccumulator> expected = Validated.invalid("Method requires exactly 3 parameters, but found 4");
-        Validated<ValidCovariantAccumulator> toVerify = CovariantAccumulatorValidator.validate(toValidate);
+        Validated<CovariantAccumulatorValidator.Result> expected = Validated.invalid("Method requires exactly 3 parameters, but found 4");
+        Validated<CovariantAccumulatorValidator.Result> toVerify = CovariantAccumulatorValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -235,8 +235,8 @@ public class CovariantAccumulatorValidatorTest {
                 )
         );
 
-        Validated<ValidCovariantAccumulator> expected = Validated.invalid("Expected third argument to be a java.util.function.BiFunction<? super T, ? super U, ? extends V> but was java.lang.Object");
-        Validated<ValidCovariantAccumulator> toVerify = CovariantAccumulatorValidator.validate(toValidate);
+        Validated<CovariantAccumulatorValidator.Result> expected = Validated.invalid("Expected third argument to be a java.util.function.BiFunction<? super T, ? super U, ? extends V> but was java.lang.Object");
+        Validated<CovariantAccumulatorValidator.Result> toVerify = CovariantAccumulatorValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -256,8 +256,8 @@ public class CovariantAccumulatorValidatorTest {
                 )
         );
 
-        Validated<ValidCovariantAccumulator> expected = Validated.invalid("Expected third argument to be a java.util.function.BiFunction<? super T, ? super U, ? extends V> but was java.util.function.BiFunction<W, W, W>");
-        Validated<ValidCovariantAccumulator> toVerify = CovariantAccumulatorValidator.validate(toValidate);
+        Validated<CovariantAccumulatorValidator.Result> expected = Validated.invalid("Expected third argument to be a java.util.function.BiFunction<? super T, ? super U, ? extends V> but was java.util.function.BiFunction<W, W, W>");
+        Validated<CovariantAccumulatorValidator.Result> toVerify = CovariantAccumulatorValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -277,14 +277,14 @@ public class CovariantAccumulatorValidatorTest {
                 )
         );
 
-        Validated<ValidCovariantAccumulator> expected = Validated.valid(
-                ValidCovariantAccumulator.of(
+        Validated<CovariantAccumulatorValidator.Result> expected = Validated.valid(
+                CovariantAccumulatorValidator.Result.of(
                         "myFunction",
                         COMPLETABLE_FUTURE.asTypeConstructor(), OPTIONAL.asTypeConstructor(), OPTIONAL.asTypeConstructor(),
                         OPTIONAL.with(T)
                 )
         );
-        Validated<ValidCovariantAccumulator> toVerify = CovariantAccumulatorValidator.validate(toValidate);
+        Validated<CovariantAccumulatorValidator.Result> toVerify = CovariantAccumulatorValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -304,8 +304,8 @@ public class CovariantAccumulatorValidatorTest {
                 )
         );
 
-        Validated<ValidCovariantAccumulator> expected = Validated.invalid("No shared type constructor between parameters (java.util.Optional<T> and java.util.Optional<U>) and result (java.util.concurrent.CompletableFuture<V>)");
-        Validated<ValidCovariantAccumulator> toVerify = CovariantAccumulatorValidator.validate(toValidate);
+        Validated<CovariantAccumulatorValidator.Result> expected = Validated.invalid("No shared type constructor between parameters (java.util.Optional<T> and java.util.Optional<U>) and result (java.util.concurrent.CompletableFuture<V>)");
+        Validated<CovariantAccumulatorValidator.Result> toVerify = CovariantAccumulatorValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -325,14 +325,14 @@ public class CovariantAccumulatorValidatorTest {
                 )
         );
 
-        Validated<ValidCovariantAccumulator> expected = Validated.valid(
-                ValidCovariantAccumulator.of(
+        Validated<CovariantAccumulatorValidator.Result> expected = Validated.valid(
+                CovariantAccumulatorValidator.Result.of(
                         "myFunction",
                         FUNCTION.with(P.asTypeConstructor().contravariant(), placeholder().covariant()), FUNCTION.with(P.asTypeConstructor().contravariant(), placeholder().covariant()), FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()),
                         FUNCTION.with(P.asType().contravariant(), T.asType().covariant())
                 )
         );
-        Validated<ValidCovariantAccumulator> toVerify = CovariantAccumulatorValidator.validate(toValidate);
+        Validated<CovariantAccumulatorValidator.Result> toVerify = CovariantAccumulatorValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }

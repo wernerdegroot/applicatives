@@ -26,8 +26,8 @@ public class TemplateClassValidatorTest {
                 .containingClass(modifiers(), ClassName.of("Outer"), A, B)
                 .containingClass(modifiers(), ClassName.of("Inner"), C, D);
 
-        Validated<TemplateClass> expected = Validated.invalid("Only outer classes and static inner classes are currently supported");
-        Validated<TemplateClass> toVerify = TemplateClassValidator.validate(toValidate);
+        Validated<TemplateClassValidator.Result> expected = Validated.invalid("Only outer classes and static inner classes are currently supported");
+        Validated<TemplateClassValidator.Result> toVerify = TemplateClassValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -39,8 +39,8 @@ public class TemplateClassValidatorTest {
                 .containingClass(modifiers(), ClassName.of("Outer"), A, B)
                 .containingClass(modifiers(STATIC), ClassName.of("Inner"), C, D);
 
-        Validated<TemplateClass> expected = Validated.valid(TemplateClass.of(asList(C, D)));
-        Validated<TemplateClass> toVerify = TemplateClassValidator.validate(toValidate);
+        Validated<TemplateClassValidator.Result> expected = Validated.valid(TemplateClassValidator.Result.of(asList(C, D)));
+        Validated<TemplateClassValidator.Result> toVerify = TemplateClassValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -51,8 +51,8 @@ public class TemplateClassValidatorTest {
                 .asPackage()
                 .containingClass(modifiers(), ClassName.of("Outer"), A, B);
 
-        Validated<TemplateClass> expected = Validated.valid(TemplateClass.of(asList(A, B)));
-        Validated<TemplateClass> toVerify = TemplateClassValidator.validate(toValidate);
+        Validated<TemplateClassValidator.Result> expected = Validated.valid(TemplateClassValidator.Result.of(asList(A, B)));
+        Validated<TemplateClassValidator.Result> toVerify = TemplateClassValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }

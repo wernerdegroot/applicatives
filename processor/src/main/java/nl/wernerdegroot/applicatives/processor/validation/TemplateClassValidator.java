@@ -4,10 +4,11 @@ import nl.wernerdegroot.applicatives.processor.domain.TypeParameter;
 import nl.wernerdegroot.applicatives.processor.domain.containing.ContainingClass;
 
 import java.util.List;
+import java.util.Objects;
 
 public class TemplateClassValidator {
 
-    public static Validated<TemplateClass> validate(ContainingClass containingClass) {
+    public static Validated<Result> validate(ContainingClass containingClass) {
 
         // We check whether we're dealing with an outer class or a static inner class.
         // Why is this required? Consider the following scenario:
@@ -32,6 +33,42 @@ public class TemplateClassValidator {
         }
         List<TypeParameter> typeParameters = containingClass.getTypeParameters();
 
-        return Validated.valid(TemplateClass.of(typeParameters));
+        return Validated.valid(Result.of(typeParameters));
+    }
+
+    public static class Result {
+        private final List<TypeParameter> typeParameters;
+
+        public Result(List<TypeParameter> typeParameters) {
+            this.typeParameters = typeParameters;
+        }
+
+        public static Result of(List<TypeParameter> typeParameters) {
+            return new Result(typeParameters);
+        }
+
+        public List<TypeParameter> getTypeParameters() {
+            return typeParameters;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Result that = (Result) o;
+            return getTypeParameters().equals(that.getTypeParameters());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(getTypeParameters());
+        }
+
+        @Override
+        public String toString() {
+            return "Result{" +
+                    "typeParameters=" + typeParameters +
+                    '}';
+        }
     }
 }

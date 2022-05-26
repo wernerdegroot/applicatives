@@ -6,7 +6,6 @@ import nl.wernerdegroot.applicatives.processor.converters.MethodConverter;
 import nl.wernerdegroot.applicatives.processor.domain.Method;
 import nl.wernerdegroot.applicatives.processor.domain.containing.ContainingClass;
 import nl.wernerdegroot.applicatives.processor.logging.Log;
-import nl.wernerdegroot.applicatives.processor.validation.TemplateClassWithMethods;
 import nl.wernerdegroot.applicatives.processor.validation.TemplateClassWithMethodsValidator;
 import nl.wernerdegroot.applicatives.processor.validation.Validated;
 import nl.wernerdegroot.applicatives.runtime.Covariant;
@@ -60,13 +59,13 @@ public class CovariantProcessor extends AbstractCovariantProcessor {
 
         noteMethodFound(containingClass, method);
 
-        Validated<TemplateClassWithMethods> validatedTemplateClassWithMethods = TemplateClassWithMethodsValidator.validate(containingClass, method);
+        Validated<TemplateClassWithMethodsValidator.Result> validatedTemplateClassWithMethods = TemplateClassWithMethodsValidator.validate(containingClass, method);
         if (!validatedTemplateClassWithMethods.isValid()) {
             errorValidationFailed(containingClass, method, validatedTemplateClassWithMethods);
             return;
         }
 
-        TemplateClassWithMethods templateClassWithMethods = validatedTemplateClassWithMethods.getValue();
+        TemplateClassWithMethodsValidator.Result templateClassWithMethods = validatedTemplateClassWithMethods.getValue();
 
         noteValidationSuccess(templateClassWithMethods);
 
@@ -79,7 +78,7 @@ public class CovariantProcessor extends AbstractCovariantProcessor {
         );
     }
 
-    private void errorValidationFailed(ContainingClass containingClass, Method method, Validated<TemplateClassWithMethods> validatedTemplateClassWithMethods) {
+    private void errorValidationFailed(ContainingClass containingClass, Method method, Validated<TemplateClassWithMethodsValidator.Result> validatedTemplateClassWithMethods) {
         Log.of("Method '%s' in class '%s' does not meet all criteria for code generation", method.getName(), containingClass.getFullyQualifiedName().raw())
                 .withDetails(validatedTemplateClassWithMethods.getErrorMessages())
                 .append(asError());

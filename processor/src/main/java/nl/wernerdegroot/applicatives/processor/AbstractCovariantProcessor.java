@@ -11,7 +11,7 @@ import nl.wernerdegroot.applicatives.processor.logging.Log;
 import nl.wernerdegroot.applicatives.processor.logging.LoggingBackend;
 import nl.wernerdegroot.applicatives.processor.logging.MessagerLoggingBackend;
 import nl.wernerdegroot.applicatives.processor.logging.NoLoggingBackend;
-import nl.wernerdegroot.applicatives.processor.validation.TemplateClassWithMethods;
+import nl.wernerdegroot.applicatives.processor.validation.TemplateClassWithMethodsValidator;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
@@ -55,9 +55,9 @@ public abstract class AbstractCovariantProcessor extends AbstractProcessor {
         return false;
     }
 
-    public void resolveConflictsAndGenerate(String className, String liftMethodName, int maxArity, PackageName packageName, TemplateClassWithMethods templateClassWithMethods) {
+    public void resolveConflictsAndGenerate(String className, String liftMethodName, int maxArity, PackageName packageName, TemplateClassWithMethodsValidator.Result templateClassWithMethods) {
         Map<TypeParameterName, TypeParameterName> classTypeParameterNameReplacements = findClassTypeParameterNameReplacements(templateClassWithMethods.getClassTypeParameters());
-        TemplateClassWithMethods conflictFree = templateClassWithMethods.replaceTypeParameterNames(classTypeParameterNameReplacements);
+        TemplateClassWithMethodsValidator.Result conflictFree = templateClassWithMethods.replaceTypeParameterNames(classTypeParameterNameReplacements);
 
         Log.of("Resolved (potential) conflicts between existing type parameters and new, generated type parameters")
                 .withDetail("Class type parameters", conflictFree.getClassTypeParameters(), TypeParameterGenerator::generateFrom)
@@ -134,7 +134,7 @@ public abstract class AbstractCovariantProcessor extends AbstractProcessor {
                 .append(asNote());
     }
 
-    protected void noteValidationSuccess(TemplateClassWithMethods templateClassWithMethods) {
+    protected void noteValidationSuccess(TemplateClassWithMethodsValidator.Result templateClassWithMethods) {
         Log.of("All criteria for code generation satisfied")
                 .withDetail("Class type parameters", templateClassWithMethods.getClassTypeParameters(), TypeParameterGenerator::generateFrom)
                 .withDetail("Name of initializer method", templateClassWithMethods.getOptionalInitializer().map(CovariantInitializer::getName))

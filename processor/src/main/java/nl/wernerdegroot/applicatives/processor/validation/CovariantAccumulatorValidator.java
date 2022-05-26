@@ -14,7 +14,7 @@ import static nl.wernerdegroot.applicatives.processor.generator.TypeGenerator.ge
 
 public class CovariantAccumulatorValidator {
 
-    public static Validated<ValidCovariantAccumulator> validate(Method method) {
+    public static Validated<Result> validate(Method method) {
 
         MethodValidation methodValidation = MethodValidation.of(method)
                 .verifyCanImplementAbstractMethod()
@@ -33,7 +33,6 @@ public class CovariantAccumulatorValidator {
         TypeParameter rightInputTypeConstructorArgument = typeParameters.get(1);
         TypeParameter returnTypeConstructorArgument = typeParameters.get(2);
 
-        // Now that we are sure that there is a return type, extract it from the `Optional`:
         Type returnType = methodValidation.getReturnType();
 
         String name = method.getName();
@@ -65,7 +64,7 @@ public class CovariantAccumulatorValidator {
         }
 
         return Validated.valid(
-                ValidCovariantAccumulator.of(
+                Result.of(
                         name,
                         inputTypeConstructor,
                         partiallyAccumulatedTypeConstructor,
@@ -73,5 +72,70 @@ public class CovariantAccumulatorValidator {
                         leftParameter.getType()
                 )
         );
+    }
+
+    public static class Result {
+
+        private final String name;
+        private final TypeConstructor inputTypeConstructor;
+        private final TypeConstructor partiallyAccumulatedTypeConstructor;
+        private final TypeConstructor accumulatedTypeConstructor;
+        private final Type firstParameterType;
+
+        public Result(String name, TypeConstructor inputTypeConstructor, TypeConstructor partiallyAccumulatedTypeConstructor, TypeConstructor accumulatedTypeConstructor, Type firstParameterType) {
+            this.name = name;
+            this.inputTypeConstructor = inputTypeConstructor;
+            this.partiallyAccumulatedTypeConstructor = partiallyAccumulatedTypeConstructor;
+            this.accumulatedTypeConstructor = accumulatedTypeConstructor;
+            this.firstParameterType = firstParameterType;
+        }
+
+        public static Result of(String name, TypeConstructor inputTypeConstructor, TypeConstructor partiallyAccumulatedTypeConstructor, TypeConstructor accumulatedTypeConstructor, Type firstParameterType) {
+            return new Result(name, inputTypeConstructor, partiallyAccumulatedTypeConstructor, accumulatedTypeConstructor, firstParameterType);
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public TypeConstructor getInputTypeConstructor() {
+            return inputTypeConstructor;
+        }
+
+        public TypeConstructor getPartiallyAccumulatedTypeConstructor() {
+            return partiallyAccumulatedTypeConstructor;
+        }
+
+        public TypeConstructor getAccumulatedTypeConstructor() {
+            return accumulatedTypeConstructor;
+        }
+
+        public Type getFirstParameterType() {
+            return firstParameterType;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Result that = (Result) o;
+            return getName().equals(that.getName()) && getInputTypeConstructor().equals(that.getInputTypeConstructor()) && getPartiallyAccumulatedTypeConstructor().equals(that.getPartiallyAccumulatedTypeConstructor()) && getAccumulatedTypeConstructor().equals(that.getAccumulatedTypeConstructor()) && getFirstParameterType().equals(that.getFirstParameterType());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(getName(), getInputTypeConstructor(), getPartiallyAccumulatedTypeConstructor(), getAccumulatedTypeConstructor(), getFirstParameterType());
+        }
+
+        @Override
+        public String toString() {
+            return "Result{" +
+                    "name='" + name + '\'' +
+                    ", inputTypeConstructor=" + inputTypeConstructor +
+                    ", partiallyAccumulatedTypeConstructor=" + partiallyAccumulatedTypeConstructor +
+                    ", accumulatedTypeConstructor=" + accumulatedTypeConstructor +
+                    ", firstParameterType=" + firstParameterType +
+                    '}';
+        }
     }
 }
