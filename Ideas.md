@@ -1,6 +1,5 @@
 * Allow non-builder to have method type parameters again.
 * Because builder-methods are not for exposing, perhaps pass reference to builder object instead (make this configurable `style = "inheritance"` or `style = "delegation"`).
-* Validate values of annotation parameters (no -1 overloads)
 * Validate that type constructors for accumulator contain only one of the type parameter (no `C` in first parameter for example)
 * Remove duplication of processors
 * Return type of `lift` does not need to be co- or contravariant in its arguments

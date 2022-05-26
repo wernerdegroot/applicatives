@@ -33,7 +33,7 @@ import static nl.wernerdegroot.applicatives.processor.Classes.*;
 @SupportedAnnotationTypes(COVARIANT_BUILDER_CANONICAL_NAME)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @AutoService(Processor.class)
-public class CovariantBuilderProcessor extends AbstractCovariantProcessor {
+public class CovariantBuilderProcessor extends AbstractCovariantProcessor<Covariant.Builder> {
 
     public static final Set<FullyQualifiedName> SUPPORTED_ANNOTATIONS = Stream.of(
             INITIALIZER,
@@ -44,6 +44,26 @@ public class CovariantBuilderProcessor extends AbstractCovariantProcessor {
     @Override
     public Class<?> getAnnotationType() {
         return COVARIANT_BUILDER_CLASS;
+    }
+
+    @Override
+    public Covariant.Builder getAnnotation(Element element) {
+        return element.getAnnotation(Covariant.Builder.class);
+    }
+
+    @Override
+    public String getClassNameToGenerate(Covariant.Builder annotation) {
+        return annotation.className();
+    }
+
+    @Override
+    public String getLiftMethodName(Covariant.Builder annotation) {
+        return annotation.liftMethodName();
+    }
+
+    @Override
+    public int getMaxArity(Covariant.Builder annotation) {
+        return annotation.maxArity();
     }
 
     @Override
