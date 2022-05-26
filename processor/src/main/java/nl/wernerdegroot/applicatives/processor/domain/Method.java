@@ -7,7 +7,7 @@ import java.util.*;
 
 import static java.util.Arrays.asList;
 
-public class Method {
+public final class Method {
     private final Set<FullyQualifiedName> annotations;
     private final Set<Modifier> modifiers;
     private final List<TypeParameter> typeParameters;
@@ -66,7 +66,7 @@ public class Method {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Method method = (Method) o;
-        return getAnnotations().equals(method.getAnnotations()) && getModifiers().equals(method.getModifiers()) && getTypeParameters().equals(method.getTypeParameters()) && getReturnType().equals(method.getReturnType()) && getName().equals(method.getName()) && getParameters().equals(method.getParameters());
+        return Objects.equals(getAnnotations(), method.getAnnotations()) && Objects.equals(getModifiers(), method.getModifiers()) && Objects.equals(getTypeParameters(), method.getTypeParameters()) && Objects.equals(getReturnType(), method.getReturnType()) && Objects.equals(getName(), method.getName()) && Objects.equals(getParameters(), method.getParameters());
     }
 
     @Override

@@ -8,67 +8,37 @@ import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstr
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
-import static nl.wernerdegroot.applicatives.processor.domain.Modifier.PRIVATE;
-import static nl.wernerdegroot.applicatives.processor.domain.Modifier.STATIC;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.BI_FUNCTION;
-import static nl.wernerdegroot.applicatives.processor.domain.type.Type.OBJECT;
 import static nl.wernerdegroot.applicatives.processor.generator.TypeGenerator.generateFrom;
 
 public class CovariantAccumulatorValidator {
 
-    public static Validated<ValidCovariantAccumulator> validate(Method method) {
-        if (method.getModifiers().contains(STATIC)) {
-            return Validated.invalid("Method is static and cannot implement an abstract method");
-        }
+    public static Validated<Result> validate(Method method) {
 
-        if (method.getModifiers().contains(PRIVATE)) {
-            return Validated.invalid("Method is private and cannot implement an abstract method");
-        }
+        MethodValidation methodValidation = MethodValidation.of(method)
+                .verifyCanImplementAbstractMethod()
+                .verifyParameterCount("exactly 3", numberOfParameters -> numberOfParameters == 3)
+                .verifyTypeParameterCount("exactly 3", numberOfTypeParameters -> numberOfTypeParameters == 3)
+                .verifyTypeParametersAreUnbounded()
+                .verifyHasReturnType();
 
-        List<TypeParameter> typeParameters = method.getTypeParameters();
-        Optional<Type> optionalReturnType = method.getReturnType();
-        List<Parameter> parameters = method.getParameters();
-
-        // We require exactly three type parameters:
-        int numberOfTypeParameters = typeParameters.size();
-        if (numberOfTypeParameters != 3) {
-            return Validated.invalid("Method requires exactly 3 type parameters, but found " + numberOfTypeParameters);
-        }
-
-        // We require the (three) type parameters to be unbounded:
-        boolean typeParametersHaveUpperBound = typeParameters
-                .stream()
-                .map(TypeParameter::getUpperBounds)
-                .flatMap(List::stream)
-                .anyMatch(type -> !OBJECT.equals(type));
-        if (typeParametersHaveUpperBound) {
-            return Validated.invalid("The type parameters need to be unbounded");
+        if (!methodValidation.isValid()) {
+            return Validated.invalid(methodValidation.getErrorMessages());
         }
 
         // Assign a meaningful name to each of the (three) type parameters:
+        List<TypeParameter> typeParameters = method.getTypeParameters();
         TypeParameter leftInputTypeConstructorArgument = typeParameters.get(0);
         TypeParameter rightInputTypeConstructorArgument = typeParameters.get(1);
         TypeParameter returnTypeConstructorArgument = typeParameters.get(2);
 
-        // We require the method to have a return type:
-        if (!optionalReturnType.isPresent()) {
-            return Validated.invalid("Method needs to return something");
-        }
-
-        // Now that we are sure that there is a return type, extract it from the `Optional`:
-        Type returnType = optionalReturnType.get();
+        Type returnType = methodValidation.getReturnType();
 
         String name = method.getName();
 
-        // We require exactly three parameters:
-        int numberOfParameters = parameters.size();
-        if (numberOfParameters != 3) {
-            return Validated.invalid("Method requires exactly 3 parameters, but found " + numberOfParameters);
-        }
-
         // Assign a meaningful name to each of the (three) parameters:
+        List<Parameter> parameters = method.getParameters();
         Parameter leftParameter = parameters.get(0);
         Parameter rightParameter = parameters.get(1);
         Parameter combinatorParameter = parameters.get(2);
@@ -94,7 +64,7 @@ public class CovariantAccumulatorValidator {
         }
 
         return Validated.valid(
-                ValidCovariantAccumulator.of(
+                Result.of(
                         name,
                         inputTypeConstructor,
                         partiallyAccumulatedTypeConstructor,
@@ -102,5 +72,70 @@ public class CovariantAccumulatorValidator {
                         leftParameter.getType()
                 )
         );
+    }
+
+    public static final class Result {
+
+        private final String name;
+        private final TypeConstructor inputTypeConstructor;
+        private final TypeConstructor partiallyAccumulatedTypeConstructor;
+        private final TypeConstructor accumulatedTypeConstructor;
+        private final Type firstParameterType;
+
+        public Result(String name, TypeConstructor inputTypeConstructor, TypeConstructor partiallyAccumulatedTypeConstructor, TypeConstructor accumulatedTypeConstructor, Type firstParameterType) {
+            this.name = name;
+            this.inputTypeConstructor = inputTypeConstructor;
+            this.partiallyAccumulatedTypeConstructor = partiallyAccumulatedTypeConstructor;
+            this.accumulatedTypeConstructor = accumulatedTypeConstructor;
+            this.firstParameterType = firstParameterType;
+        }
+
+        public static Result of(String name, TypeConstructor inputTypeConstructor, TypeConstructor partiallyAccumulatedTypeConstructor, TypeConstructor accumulatedTypeConstructor, Type firstParameterType) {
+            return new Result(name, inputTypeConstructor, partiallyAccumulatedTypeConstructor, accumulatedTypeConstructor, firstParameterType);
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public TypeConstructor getInputTypeConstructor() {
+            return inputTypeConstructor;
+        }
+
+        public TypeConstructor getPartiallyAccumulatedTypeConstructor() {
+            return partiallyAccumulatedTypeConstructor;
+        }
+
+        public TypeConstructor getAccumulatedTypeConstructor() {
+            return accumulatedTypeConstructor;
+        }
+
+        public Type getFirstParameterType() {
+            return firstParameterType;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Result result = (Result) o;
+            return Objects.equals(getName(), result.getName()) && Objects.equals(getInputTypeConstructor(), result.getInputTypeConstructor()) && Objects.equals(getPartiallyAccumulatedTypeConstructor(), result.getPartiallyAccumulatedTypeConstructor()) && Objects.equals(getAccumulatedTypeConstructor(), result.getAccumulatedTypeConstructor()) && Objects.equals(getFirstParameterType(), result.getFirstParameterType());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(getName(), getInputTypeConstructor(), getPartiallyAccumulatedTypeConstructor(), getAccumulatedTypeConstructor(), getFirstParameterType());
+        }
+
+        @Override
+        public String toString() {
+            return "Result{" +
+                    "name='" + name + '\'' +
+                    ", inputTypeConstructor=" + inputTypeConstructor +
+                    ", partiallyAccumulatedTypeConstructor=" + partiallyAccumulatedTypeConstructor +
+                    ", accumulatedTypeConstructor=" + accumulatedTypeConstructor +
+                    ", firstParameterType=" + firstParameterType +
+                    '}';
+        }
     }
 }

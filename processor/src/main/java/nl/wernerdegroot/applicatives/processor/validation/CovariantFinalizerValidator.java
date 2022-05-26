@@ -6,69 +6,94 @@ import nl.wernerdegroot.applicatives.processor.domain.TypeParameter;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor;
 
-import java.util.List;
-import java.util.Optional;
-
-import static nl.wernerdegroot.applicatives.processor.domain.Modifier.PRIVATE;
-import static nl.wernerdegroot.applicatives.processor.domain.Modifier.STATIC;
-import static nl.wernerdegroot.applicatives.processor.domain.type.Type.OBJECT;
+import java.util.Objects;
 
 public class CovariantFinalizerValidator {
 
-    public static Validated<ValidCovariantFinalizer> validate(Method method) {
-        if (method.getModifiers().contains(STATIC)) {
-            return Validated.invalid("Method is static and cannot implement an abstract method");
+    public static Validated<Result> validate(Method method) {
+        MethodValidation methodValidation = MethodValidation.of(method)
+                .verifyCanImplementAbstractMethod()
+                .verifyParameterCount("exactly 1", numberOfParameters -> numberOfParameters == 1)
+                .verifyTypeParameterCount("exactly 1", numberOfTypeParameters -> numberOfTypeParameters == 1)
+                .verifyTypeParametersAreUnbounded()
+                .verifyHasReturnType();
+
+        if (!methodValidation.isValid()) {
+            return Validated.invalid(methodValidation.getErrorMessages());
         }
 
-        if (method.getModifiers().contains(PRIVATE)) {
-            return Validated.invalid("Method is private and cannot implement an abstract method");
-        }
+        TypeParameter typeParameter = method.getTypeParameters().get(0);
+
+        Type returnType = methodValidation.getReturnType();
 
         String name = method.getName();
-        List<TypeParameter> typeParameters = method.getTypeParameters();
-        Optional<Type> optionalReturnType = method.getReturnType();
-        List<Parameter> parameters = method.getParameters();
 
-        // We require exactly one type parameter:
-        int numberOfTypeParameters = typeParameters.size();
-        if (numberOfTypeParameters != 1) {
-            return Validated.invalid("Method requires exactly one type parameter, but found " + numberOfTypeParameters);
-        }
-
-        TypeParameter typeParameter = typeParameters.get(0);
-
-        // We require the type parameter to be unbounded:
-        boolean typeParameterHasUpperBound = typeParameter
-                .getUpperBounds()
-                .stream()
-                .anyMatch(type -> !OBJECT.equals(type));
-
-        if (typeParameterHasUpperBound) {
-            return Validated.invalid("The type parameter needs to be unbounded");
-        }
-
-        // We require the method to have a return type:
-        if (!optionalReturnType.isPresent()) {
-            return Validated.invalid("Method needs to return something");
-        }
-
-        // Now that we are sure that there is a result type, extract it from the `Optional`:
-        Type returnType = optionalReturnType.get();
+        Parameter parameter = method.getParameters().get(0);
 
         // Extract the type constructor from the return type:
         TypeConstructor finalizedTypeConstructor = returnType.asTypeConstructorWithPlaceholderFor(typeParameter.getName());
 
-        // We require exactly one parameter:
-        int numberOfParameters = parameters.size();
-        if (numberOfParameters != 1) {
-            return Validated.invalid("Method requires exactly one parameter, but found " + numberOfParameters);
-        }
-
-        Parameter parameter = parameters.get(0);
-
         // Extract the type constructor from the single parameter:
         TypeConstructor toFinalizeTypeConstructor = parameter.getType().asTypeConstructorWithPlaceholderFor(typeParameter.getName());
 
-        return Validated.valid(ValidCovariantFinalizer.of(name, parameter.getType(), toFinalizeTypeConstructor, finalizedTypeConstructor));
+        return Validated.valid(Result.of(name, parameter.getType(), toFinalizeTypeConstructor, finalizedTypeConstructor));
+    }
+
+    public static final class Result {
+
+        private final String name;
+        private final Type parameterType;
+        private final TypeConstructor toFinalizeTypeConstructor;
+        private final TypeConstructor finalizedTypeConstructor;
+
+        public Result(String name, Type parameterType, TypeConstructor toFinalizeTypeConstructor, TypeConstructor finalizedTypeConstructor) {
+            this.name = name;
+            this.parameterType = parameterType;
+            this.toFinalizeTypeConstructor = toFinalizeTypeConstructor;
+            this.finalizedTypeConstructor = finalizedTypeConstructor;
+        }
+
+        public static Result of(String name, Type parameterType, TypeConstructor toFinalizeTypeConstructor, TypeConstructor finalizedTypeConstructor) {
+            return new Result(name, parameterType, toFinalizeTypeConstructor, finalizedTypeConstructor);
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public Type getParameterType() {
+            return parameterType;
+        }
+
+        public TypeConstructor getToFinalizeTypeConstructor() {
+            return toFinalizeTypeConstructor;
+        }
+
+        public TypeConstructor getFinalizedTypeConstructor() {
+            return finalizedTypeConstructor;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Result result = (Result) o;
+            return Objects.equals(getName(), result.getName()) && Objects.equals(getParameterType(), result.getParameterType()) && Objects.equals(getToFinalizeTypeConstructor(), result.getToFinalizeTypeConstructor()) && Objects.equals(getFinalizedTypeConstructor(), result.getFinalizedTypeConstructor());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(getName(), getParameterType(), getToFinalizeTypeConstructor(), getFinalizedTypeConstructor());
+        }
+
+        @Override
+        public String toString() {
+            return "Result{" +
+                    "name='" + name + '\'' +
+                    ", parameterType=" + parameterType +
+                    ", toFinalizeTypeConstructor=" + toFinalizeTypeConstructor +
+                    ", finalizedTypeConstructor=" + finalizedTypeConstructor +
+                    '}';
+        }
     }
 }

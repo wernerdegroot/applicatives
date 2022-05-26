@@ -6,64 +6,31 @@ import nl.wernerdegroot.applicatives.processor.domain.TypeParameter;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor;
 
-import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
-import static nl.wernerdegroot.applicatives.processor.domain.Modifier.PRIVATE;
-import static nl.wernerdegroot.applicatives.processor.domain.Modifier.STATIC;
-import static nl.wernerdegroot.applicatives.processor.domain.type.Type.OBJECT;
 import static nl.wernerdegroot.applicatives.processor.generator.TypeGenerator.generateFrom;
 
 public class CovariantInitializerValidator {
 
-    public static Validated<ValidCovariantInitializer> validate(Method method) {
-        if (method.getModifiers().contains(STATIC)) {
-            return Validated.invalid("Method is static and cannot implement an abstract method");
+    public static Validated<Result> validate(Method method) {
+        MethodValidation methodValidation = MethodValidation.of(method)
+                .verifyCanImplementAbstractMethod()
+                .verifyParameterCount("exactly 1", numberOfParameters -> numberOfParameters == 1)
+                .verifyTypeParameterCount("exactly 1", numberOfTypeParameters -> numberOfTypeParameters == 1)
+                .verifyTypeParametersAreUnbounded()
+                .verifyHasReturnType();
+
+        if (!methodValidation.isValid()) {
+            return Validated.invalid(methodValidation.getErrorMessages());
         }
 
-        if (method.getModifiers().contains(PRIVATE)) {
-            return Validated.invalid("Method is private and cannot implement an abstract method");
-        }
+        TypeParameter typeParameter = method.getTypeParameters().get(0);
+
+        Type returnType = methodValidation.getReturnType();
 
         String name = method.getName();
-        List<TypeParameter> typeParameters = method.getTypeParameters();
-        Optional<Type> optionalReturnType = method.getReturnType();
-        List<Parameter> parameters = method.getParameters();
 
-        // We require exactly one type parameter:
-        int numberOfTypeParameters = typeParameters.size();
-        if (numberOfTypeParameters != 1) {
-            return Validated.invalid("Method requires exactly one type parameter, but found " + numberOfTypeParameters);
-        }
-
-        TypeParameter typeParameter = typeParameters.get(0);
-
-        // We require the type parameter to be unbounded:
-        boolean typeParameterHasUpperBound = typeParameter
-                .getUpperBounds()
-                .stream()
-                .anyMatch(type -> !OBJECT.equals(type));
-
-        if (typeParameterHasUpperBound) {
-            return Validated.invalid("The type parameter needs to be unbounded");
-        }
-
-        // We require the method to have a return type:
-        if (!optionalReturnType.isPresent()) {
-            return Validated.invalid("Method needs to return something");
-        }
-
-        // Now that we are sure that there is a result type, extract it from the `Optional`:
-        Type returnType = optionalReturnType.get();
-
-        // We require exactly one parameter:
-        int numberOfParameters = parameters.size();
-        if (numberOfParameters != 1) {
-            return Validated.invalid("Method requires exactly one parameter, but found " + numberOfParameters);
-        }
-
-        Parameter parameter = parameters.get(0);
+        Parameter parameter = method.getParameters().get(0);
 
         // Check if the parameter is as expected:
         Type expectedParameterType = typeParameter.asType();
@@ -73,6 +40,57 @@ public class CovariantInitializerValidator {
 
         TypeConstructor initializedTypeConstructor = returnType.asTypeConstructorWithPlaceholderFor(typeParameter.getName());
 
-        return Validated.valid(ValidCovariantInitializer.of(name, initializedTypeConstructor, returnType));
+        return Validated.valid(Result.of(name, initializedTypeConstructor, returnType));
+    }
+
+    public static final class Result {
+
+        private final String name;
+        private final TypeConstructor initializedTypeConstructor;
+        private final Type returnType;
+
+        public Result(String name, TypeConstructor initializedTypeConstructor, Type returnType) {
+            this.name = name;
+            this.returnType = returnType;
+            this.initializedTypeConstructor = initializedTypeConstructor;
+        }
+
+        public static Result of(String name, TypeConstructor initializedTypeConstructor, Type returnType) {
+            return new Result(name, initializedTypeConstructor, returnType);
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public TypeConstructor getInitializedTypeConstructor() {
+            return initializedTypeConstructor;
+        }
+
+        public Type getReturnType() {
+            return returnType;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Result result = (Result) o;
+            return Objects.equals(getName(), result.getName()) && Objects.equals(getInitializedTypeConstructor(), result.getInitializedTypeConstructor()) && Objects.equals(getReturnType(), result.getReturnType());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(getName(), getInitializedTypeConstructor(), getReturnType());
+        }
+
+        @Override
+        public String toString() {
+            return "Result{" +
+                    "name='" + name + '\'' +
+                    ", initializedTypeConstructor=" + initializedTypeConstructor +
+                    ", returnType=" + returnType +
+                    '}';
+        }
     }
 }

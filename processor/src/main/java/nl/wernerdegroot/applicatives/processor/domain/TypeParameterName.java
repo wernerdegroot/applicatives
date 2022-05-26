@@ -8,7 +8,7 @@ import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstr
 
 import java.util.Objects;
 
-public class TypeParameterName {
+public final class TypeParameterName {
 
     private final String typeParameterName;
 
@@ -48,8 +48,8 @@ public class TypeParameterName {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        TypeParameterName name1 = (TypeParameterName) o;
-        return raw().equals(name1.raw());
+        TypeParameterName that = (TypeParameterName) o;
+        return Objects.equals(typeParameterName, that.typeParameterName);
     }
 
     @Override

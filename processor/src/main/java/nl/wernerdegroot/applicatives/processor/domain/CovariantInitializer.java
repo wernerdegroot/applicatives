@@ -5,7 +5,7 @@ import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstr
 import java.util.Map;
 import java.util.Objects;
 
-public class CovariantInitializer implements HasReplaceableTypeParameterNames<CovariantInitializer> {
+public final class CovariantInitializer implements HasReplaceableTypeParameterNames<CovariantInitializer> {
     private final String name;
     private final TypeConstructor initializedTypeConstructor;
 
@@ -39,7 +39,7 @@ public class CovariantInitializer implements HasReplaceableTypeParameterNames<Co
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CovariantInitializer that = (CovariantInitializer) o;
-        return getName().equals(that.getName()) && getInitializedTypeConstructor().equals(that.getInitializedTypeConstructor());
+        return Objects.equals(getName(), that.getName()) && Objects.equals(getInitializedTypeConstructor(), that.getInitializedTypeConstructor());
     }
 
     @Override

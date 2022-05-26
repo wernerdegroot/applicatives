@@ -1,5 +1,6 @@
 package nl.wernerdegroot.applicatives.processor.validation;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.wernerdegroot.applicatives.processor.domain.*;
 import nl.wernerdegroot.applicatives.processor.domain.containing.ContainingClass;
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor;
@@ -33,8 +34,8 @@ public class TemplateClassWithMethodsValidatorTest {
                 withInputTypeConstructor(LIST.with(placeholder().covariant())), withPartiallyAccumulatedTypeConstructor(ARRAY_LIST.with(placeholder().covariant())), withAccumulatedTypeConstructor(ARRAY_LIST.with(placeholder().invariant()))
         );
 
-        Validated<TemplateClassWithMethods> expected = Validated.valid(
-                TemplateClassWithMethods.of(
+        Validated<TemplateClassWithMethodsValidator.Result> expected = Validated.valid(
+                TemplateClassWithMethodsValidator.Result.of(
                         containingClass.getTypeParameters(),
                         Optional.empty(),
                         CovariantAccumulator.of(
@@ -47,14 +48,14 @@ public class TemplateClassWithMethodsValidatorTest {
                 )
         );
 
-        Validated<TemplateClassWithMethods> toVerify = TemplateClassWithMethodsValidator.validate(containingClass, accumulator);
+        Validated<TemplateClassWithMethodsValidator.Result> toVerify = TemplateClassWithMethodsValidator.validate(containingClass, accumulator);
 
         assertEquals(expected, toVerify);
     }
 
     @Test
     public void givenInvalidClassAndValidMethod() {
-        Validated<TemplateClassWithMethods> toVerify = TemplateClassWithMethodsValidator.validate(
+        Validated<TemplateClassWithMethodsValidator.Result> toVerify = TemplateClassWithMethodsValidator.validate(
                 getInvalidContainingClass(),
                 getAccumulator(withAnnotations(COVARIANT), withModifiers(PUBLIC), withTypeConstructors(OPTIONAL))
         );
@@ -64,7 +65,7 @@ public class TemplateClassWithMethodsValidatorTest {
 
     @Test
     public void givenValidClassAndInvalidMethod() {
-        Validated<TemplateClassWithMethods> toVerify = TemplateClassWithMethodsValidator.validate(
+        Validated<TemplateClassWithMethodsValidator.Result> toVerify = TemplateClassWithMethodsValidator.validate(
                 getValidContainingClass(),
                 getAccumulator(withAnnotations(COVARIANT), withModifiers(PRIVATE), withTypeConstructors(OPTIONAL))
         );
@@ -74,9 +75,76 @@ public class TemplateClassWithMethodsValidatorTest {
 
     @Test
     public void givenInvalidClassAndInvalidMethod() {
-        Validated<TemplateClassWithMethods> toVerify = TemplateClassWithMethodsValidator.validate(
+        Validated<TemplateClassWithMethodsValidator.Result> toVerify = TemplateClassWithMethodsValidator.validate(
                 getInvalidContainingClass(),
                 getAccumulator(withAnnotations(COVARIANT), withModifiers(PRIVATE), withTypeConstructors(OPTIONAL))
+        );
+
+        assertFalse(toVerify.isValid());
+    }
+
+    @Test
+    public void givenValidClassAndMethodsContainingNoAccumulators() {
+        Validated<TemplateClassWithMethodsValidator.Result> toVerify = TemplateClassWithMethodsValidator.validate(
+                getValidContainingClass(),
+                asList()
+        );
+
+        assertFalse(toVerify.isValid());
+    }
+
+    @Test
+    public void givenValidClassAndMethodsContainingMultipleAccumulators() {
+        Validated<TemplateClassWithMethodsValidator.Result> toVerify = TemplateClassWithMethodsValidator.validate(
+                getValidContainingClass(),
+                asList(
+                        getAccumulator(
+                                withAnnotations(ACCUMULATOR),
+                                withModifiers(PUBLIC),
+                                withInputTypeConstructor(LIST.with(placeholder().covariant())),
+                                withPartiallyAccumulatedTypeConstructor(ARRAY_LIST.with(placeholder().covariant())),
+                                withAccumulatedTypeConstructor(ARRAY_LIST.with(placeholder().invariant())),
+                                "firstAccumulator"
+                        ),
+                        getAccumulator(
+                                withAnnotations(ACCUMULATOR),
+                                withModifiers(PUBLIC),
+                                withInputTypeConstructor(LIST.with(placeholder().covariant())),
+                                withPartiallyAccumulatedTypeConstructor(ARRAY_LIST.with(placeholder().covariant())),
+                                withAccumulatedTypeConstructor(ARRAY_LIST.with(placeholder().invariant())),
+                                "secondAccumulator"
+                        )
+                )
+        );
+
+        assertFalse(toVerify.isValid());
+    }
+
+    @Test
+    public void givenValidClassAndMethodsContainingMultipleInitializers() {
+        Validated<TemplateClassWithMethodsValidator.Result> toVerify = TemplateClassWithMethodsValidator.validate(
+                getValidContainingClass(),
+                asList(
+                        getInitializer(
+                                withAnnotations(INITIALIZER),
+                                withModifiers(PUBLIC),
+                                withInitializedTypeConstructor(ARRAY_LIST.with(placeholder().invariant())),
+                                "firstInitializer"
+                        ),
+                        getInitializer(
+                                withAnnotations(INITIALIZER),
+                                withModifiers(PUBLIC),
+                                withInitializedTypeConstructor(ARRAY_LIST.with(placeholder().invariant())),
+                                "secondInitializer"
+                        ),
+                        getAccumulator(
+                                withAnnotations(ACCUMULATOR),
+                                withModifiers(PUBLIC),
+                                withInputTypeConstructor(LIST.with(placeholder().covariant())),
+                                withPartiallyAccumulatedTypeConstructor(ARRAY_LIST.with(placeholder().covariant())),
+                                withAccumulatedTypeConstructor(ARRAY_LIST.with(placeholder().invariant()))
+                        )
+                )
         );
 
         assertFalse(toVerify.isValid());
@@ -100,8 +168,8 @@ public class TemplateClassWithMethodsValidatorTest {
                 withAccumulatedTypeConstructor(ARRAY_LIST.with(placeholder().invariant()))
         );
 
-        Validated<TemplateClassWithMethods> expected = Validated.valid(
-                TemplateClassWithMethods.of(
+        Validated<TemplateClassWithMethodsValidator.Result> expected = Validated.valid(
+                TemplateClassWithMethodsValidator.Result.of(
                         containingClass.getTypeParameters(),
                         Optional.of(CovariantInitializer.of(initializer.getName(), ARRAY_LIST.with(placeholder().invariant()))),
                         CovariantAccumulator.of(
@@ -114,14 +182,14 @@ public class TemplateClassWithMethodsValidatorTest {
                 )
         );
 
-        Validated<TemplateClassWithMethods> toVerify = TemplateClassWithMethodsValidator.validate(containingClass, asList(initializer, accumulator));
+        Validated<TemplateClassWithMethodsValidator.Result> toVerify = TemplateClassWithMethodsValidator.validate(containingClass, asList(initializer, accumulator));
 
         assertEquals(expected, toVerify);
     }
 
     @Test
     public void givenValidClassAndMethodsContainingValidInitializerAndInvalidAccumulator() {
-        Validated<TemplateClassWithMethods> toVerify = TemplateClassWithMethodsValidator.validate(
+        Validated<TemplateClassWithMethodsValidator.Result> toVerify = TemplateClassWithMethodsValidator.validate(
                 getValidContainingClass(),
                 asList(
                         getInitializer(withAnnotations(INITIALIZER), withModifiers(PRIVATE), withTypeConstructor(OPTIONAL)),
@@ -134,7 +202,7 @@ public class TemplateClassWithMethodsValidatorTest {
 
     @Test
     public void givenValidClassAndMethodsContainingInvalidInitializerAndValidAccumulator() {
-        Validated<TemplateClassWithMethods> toVerify = TemplateClassWithMethodsValidator.validate(
+        Validated<TemplateClassWithMethodsValidator.Result> toVerify = TemplateClassWithMethodsValidator.validate(
                 getValidContainingClass(),
                 asList(
                         getInitializer(withAnnotations(INITIALIZER), withModifiers(PUBLIC), withTypeConstructor(OPTIONAL)),
@@ -147,7 +215,7 @@ public class TemplateClassWithMethodsValidatorTest {
 
     @Test
     public void givenInvalidClassAndMethodsContainingValidInitializerAndValidAccumulator() {
-        Validated<TemplateClassWithMethods> toVerify = TemplateClassWithMethodsValidator.validate(
+        Validated<TemplateClassWithMethodsValidator.Result> toVerify = TemplateClassWithMethodsValidator.validate(
                 getInvalidContainingClass(),
                 asList(
                         getInitializer(withAnnotations(INITIALIZER), withModifiers(PUBLIC), withTypeConstructor(OPTIONAL)),
@@ -160,11 +228,43 @@ public class TemplateClassWithMethodsValidatorTest {
 
     @Test
     public void givenValidClassAndMethodsContainingValidInitializerAndValidAccumulatorButWithoutSharedTypeConstructor() {
-        Validated<TemplateClassWithMethods> toVerify = TemplateClassWithMethodsValidator.validate(
-                getInvalidContainingClass(),
+        Validated<TemplateClassWithMethodsValidator.Result> toVerify = TemplateClassWithMethodsValidator.validate(
+                getValidContainingClass(),
                 asList(
                         getInitializer(withAnnotations(INITIALIZER), withModifiers(PUBLIC), withTypeConstructor(OPTIONAL)),
                         getAccumulator(withAnnotations(ACCUMULATOR), withModifiers(PUBLIC), withTypeConstructors(LIST))
+                )
+        );
+
+        assertFalse(toVerify.isValid());
+    }
+
+    @Test
+    public void givenValidClassAndMethodsContainingMultipleFinalizers() {
+        Validated<TemplateClassWithMethodsValidator.Result> toVerify = TemplateClassWithMethodsValidator.validate(
+                getValidContainingClass(),
+                asList(
+                        getAccumulator(
+                                withAnnotations(ACCUMULATOR),
+                                withModifiers(PUBLIC),
+                                withInputTypeConstructor(LIST.with(placeholder().covariant())),
+                                withPartiallyAccumulatedTypeConstructor(ARRAY_LIST.with(placeholder().covariant())),
+                                withAccumulatedTypeConstructor(ARRAY_LIST.with(placeholder().invariant()))
+                        ),
+                        getFinalizer(
+                                withAnnotations(FINALIZER),
+                                withModifiers(PUBLIC),
+                                withToFinalizeTypeConstructor(ARRAY_LIST.with(placeholder().covariant())),
+                                withToFinalizeTypeConstructor(LIST.with(placeholder().invariant())),
+                                "firstFinalizer"
+                        ),
+                        getFinalizer(
+                                withAnnotations(FINALIZER),
+                                withModifiers(PUBLIC),
+                                withToFinalizeTypeConstructor(ARRAY_LIST.with(placeholder().covariant())),
+                                withToFinalizeTypeConstructor(LIST.with(placeholder().invariant())),
+                                "secondFinalizer"
+                        )
                 )
         );
 
@@ -190,8 +290,8 @@ public class TemplateClassWithMethodsValidatorTest {
                 withFinalizedTypeConstructor(LIST.with(placeholder().invariant()))
         );
 
-        Validated<TemplateClassWithMethods> expected = Validated.valid(
-                TemplateClassWithMethods.of(
+        Validated<TemplateClassWithMethodsValidator.Result> expected = Validated.valid(
+                TemplateClassWithMethodsValidator.Result.of(
                         containingClass.getTypeParameters(),
                         Optional.empty(),
                         CovariantAccumulator.of(
@@ -204,14 +304,14 @@ public class TemplateClassWithMethodsValidatorTest {
                 )
         );
 
-        Validated<TemplateClassWithMethods> toVerify = TemplateClassWithMethodsValidator.validate(containingClass, asList(accumulator, finalizer));
+        Validated<TemplateClassWithMethodsValidator.Result> toVerify = TemplateClassWithMethodsValidator.validate(containingClass, asList(accumulator, finalizer));
 
         assertEquals(expected, toVerify);
     }
 
     @Test
     public void givenValidClassAndMethodsContainingInvalidAccumulatorAndValidFinalizer() {
-        Validated<TemplateClassWithMethods> toVerify = TemplateClassWithMethodsValidator.validate(
+        Validated<TemplateClassWithMethodsValidator.Result> toVerify = TemplateClassWithMethodsValidator.validate(
                 getValidContainingClass(),
                 asList(
                         getAccumulator(withAnnotations(ACCUMULATOR), withModifiers(PRIVATE), withTypeConstructor(LIST), withTypeConstructor(ARRAY_LIST), withTypeConstructor(ARRAY_LIST)),
@@ -224,7 +324,7 @@ public class TemplateClassWithMethodsValidatorTest {
 
     @Test
     public void givenValidClassAndMethodsContainingValidAccumulatorAndInvalidFinalizer() {
-        Validated<TemplateClassWithMethods> toVerify = TemplateClassWithMethodsValidator.validate(
+        Validated<TemplateClassWithMethodsValidator.Result> toVerify = TemplateClassWithMethodsValidator.validate(
                 getValidContainingClass(),
                 asList(
                         getAccumulator(withAnnotations(ACCUMULATOR), withModifiers(PUBLIC), withTypeConstructor(LIST), withTypeConstructor(ARRAY_LIST), withTypeConstructor(ARRAY_LIST)),
@@ -237,7 +337,7 @@ public class TemplateClassWithMethodsValidatorTest {
 
     @Test
     public void givenInvalidClassAndMethodsContainingValidAccumulatorAndValidFinalizer() {
-        Validated<TemplateClassWithMethods> toVerify = TemplateClassWithMethodsValidator.validate(
+        Validated<TemplateClassWithMethodsValidator.Result> toVerify = TemplateClassWithMethodsValidator.validate(
                 getInvalidContainingClass(),
                 asList(
                         getAccumulator(withAnnotations(ACCUMULATOR), withModifiers(PUBLIC), withTypeConstructor(LIST), withTypeConstructor(ARRAY_LIST), withTypeConstructor(ARRAY_LIST)),
@@ -250,8 +350,8 @@ public class TemplateClassWithMethodsValidatorTest {
 
     @Test
     public void givenValidClassAndMethodsContainingValidAccumulatorAndValidFinalizerButWithoutSharedTypeConstructor() {
-        Validated<TemplateClassWithMethods> toVerify = TemplateClassWithMethodsValidator.validate(
-                getInvalidContainingClass(),
+        Validated<TemplateClassWithMethodsValidator.Result> toVerify = TemplateClassWithMethodsValidator.validate(
+                getValidContainingClass(),
                 asList(
                         getAccumulator(withAnnotations(ACCUMULATOR), withModifiers(PUBLIC), withTypeConstructor(LIST), withTypeConstructor(ARRAY_LIST), withTypeConstructor(ARRAY_LIST)),
                         getFinalizer(withAnnotations(FINALIZER), withModifiers(PUBLIC), withTypeConstructor(OPTIONAL), withTypeConstructor(LIST))
@@ -259,6 +359,11 @@ public class TemplateClassWithMethodsValidatorTest {
         );
 
         assertFalse(toVerify.isValid());
+    }
+
+    @Test
+    public void resultEquals() {
+        EqualsVerifier.forClass(TemplateClassWithMethodsValidator.Result.class).verify();
     }
 
     private ContainingClass getValidContainingClass() {
@@ -316,12 +421,16 @@ public class TemplateClassWithMethodsValidatorTest {
     }
 
     private Method getInitializer(Set<FullyQualifiedName> annotations, Set<Modifier> modifiers, TypeConstructor typeConstructor) {
+        return getInitializer(annotations, modifiers, typeConstructor, "initializer");
+    }
+
+    private Method getInitializer(Set<FullyQualifiedName> annotations, Set<Modifier> modifiers, TypeConstructor typeConstructor, String name) {
         return Method.of(
                 annotations,
                 modifiers,
                 asList(T.asTypeParameter()),
                 Optional.of(typeConstructor.apply(T.asType())),
-                "initializer",
+                name,
                 asList(Parameter.of(T.asType(), "value"))
         );
     }
@@ -331,12 +440,16 @@ public class TemplateClassWithMethodsValidatorTest {
     }
 
     private Method getAccumulator(Set<FullyQualifiedName> annotations, Set<Modifier> modifiers, TypeConstructor inputTypeConstructor, TypeConstructor partiallyAccumulatedTypeConstructor, TypeConstructor accumulatedTypeConstructor) {
+        return getAccumulator(annotations, modifiers, inputTypeConstructor, partiallyAccumulatedTypeConstructor, accumulatedTypeConstructor, "accumulator");
+    }
+
+    private Method getAccumulator(Set<FullyQualifiedName> annotations, Set<Modifier> modifiers, TypeConstructor inputTypeConstructor, TypeConstructor partiallyAccumulatedTypeConstructor, TypeConstructor accumulatedTypeConstructor, String name) {
         return Method.of(
                 annotations,
                 modifiers,
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
                 Optional.of(accumulatedTypeConstructor.apply(V.asType())),
-                "accumulator",
+                name,
                 asList(
                         Parameter.of(partiallyAccumulatedTypeConstructor.apply(T.asType()), "left"),
                         Parameter.of(inputTypeConstructor.apply(U.asType()), "right"),
@@ -346,12 +459,16 @@ public class TemplateClassWithMethodsValidatorTest {
     }
 
     private Method getFinalizer(Set<FullyQualifiedName> annotations, Set<Modifier> modifiers, TypeConstructor toFinalizeTypeConstructor, TypeConstructor finalizedTypeConstructor) {
+        return getFinalizer(annotations, modifiers, toFinalizeTypeConstructor, finalizedTypeConstructor, "finalize");
+    }
+
+    private Method getFinalizer(Set<FullyQualifiedName> annotations, Set<Modifier> modifiers, TypeConstructor toFinalizeTypeConstructor, TypeConstructor finalizedTypeConstructor, String name) {
         return Method.of(
                 annotations,
                 modifiers,
                 asList(T.asTypeParameter()),
                 Optional.of(finalizedTypeConstructor.apply(T.asType())),
-                "finalizer",
+                name,
                 asList(Parameter.of(toFinalizeTypeConstructor.apply(T.asType()), "value"))
         );
     }
