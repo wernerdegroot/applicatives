@@ -5,7 +5,7 @@ import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstr
 import java.util.Map;
 import java.util.Objects;
 
-public class CovariantFinalizer implements HasReplaceableTypeParameterNames<CovariantFinalizer> {
+public final class CovariantFinalizer implements HasReplaceableTypeParameterNames<CovariantFinalizer> {
     private final String name;
     private final TypeConstructor toFinalizeTypeConstructor;
     private final TypeConstructor finalizedTypeConstructor;
@@ -46,7 +46,7 @@ public class CovariantFinalizer implements HasReplaceableTypeParameterNames<Cova
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CovariantFinalizer that = (CovariantFinalizer) o;
-        return getName().equals(that.getName()) && getToFinalizeTypeConstructor().equals(that.getToFinalizeTypeConstructor()) && getFinalizedTypeConstructor().equals(that.getFinalizedTypeConstructor());
+        return Objects.equals(getName(), that.getName()) && Objects.equals(getToFinalizeTypeConstructor(), that.getToFinalizeTypeConstructor()) && Objects.equals(getFinalizedTypeConstructor(), that.getFinalizedTypeConstructor());
     }
 
     @Override

@@ -4,7 +4,7 @@ import nl.wernerdegroot.applicatives.processor.domain.containing.ContainingPacka
 
 import java.util.Objects;
 
-public class PackageName {
+public final class PackageName {
     private final String packageName;
 
     public PackageName(String packageName) {
@@ -32,7 +32,7 @@ public class PackageName {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PackageName that = (PackageName) o;
-        return raw().equals(that.raw());
+        return Objects.equals(packageName, that.packageName);
     }
 
     @Override

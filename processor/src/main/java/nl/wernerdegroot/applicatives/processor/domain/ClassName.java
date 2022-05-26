@@ -2,7 +2,7 @@ package nl.wernerdegroot.applicatives.processor.domain;
 
 import java.util.Objects;
 
-public class ClassName {
+public final class ClassName {
 
     private final String className;
 
@@ -23,7 +23,7 @@ public class ClassName {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ClassName className1 = (ClassName) o;
-        return className.equals(className1.className);
+        return Objects.equals(className, className1.className);
     }
 
     @Override

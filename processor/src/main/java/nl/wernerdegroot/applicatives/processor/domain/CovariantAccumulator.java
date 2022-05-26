@@ -5,7 +5,7 @@ import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstr
 import java.util.Map;
 import java.util.Objects;
 
-public class CovariantAccumulator implements HasReplaceableTypeParameterNames<CovariantAccumulator> {
+public final class CovariantAccumulator implements HasReplaceableTypeParameterNames<CovariantAccumulator> {
     private final String name;
     private final TypeConstructor inputTypeConstructor;
     private final TypeConstructor partiallyAccumulatedTypeConstructor;
@@ -53,7 +53,7 @@ public class CovariantAccumulator implements HasReplaceableTypeParameterNames<Co
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CovariantAccumulator that = (CovariantAccumulator) o;
-        return getName().equals(that.getName()) && getInputTypeConstructor().equals(that.getInputTypeConstructor()) && getPartiallyAccumulatedTypeConstructor().equals(that.getPartiallyAccumulatedTypeConstructor()) && getAccumulatedTypeConstructor().equals(that.getAccumulatedTypeConstructor());
+        return Objects.equals(getName(), that.getName()) && Objects.equals(getInputTypeConstructor(), that.getInputTypeConstructor()) && Objects.equals(getPartiallyAccumulatedTypeConstructor(), that.getPartiallyAccumulatedTypeConstructor()) && Objects.equals(getAccumulatedTypeConstructor(), that.getAccumulatedTypeConstructor());
     }
 
     @Override

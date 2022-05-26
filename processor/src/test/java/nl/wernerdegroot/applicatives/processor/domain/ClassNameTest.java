@@ -1,5 +1,6 @@
 package nl.wernerdegroot.applicatives.processor.domain;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -20,5 +21,10 @@ public class ClassNameTest {
         String toVerify = new ClassName("String").raw();
 
         assertEquals(expected, toVerify);
+    }
+
+    @Test
+    public void equals() {
+        EqualsVerifier.forClass(ClassName.class).verify();
     }
 }

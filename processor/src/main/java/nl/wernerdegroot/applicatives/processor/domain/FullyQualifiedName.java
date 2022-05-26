@@ -9,7 +9,7 @@ import java.util.Objects;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 
-public class FullyQualifiedName {
+public final class FullyQualifiedName {
 
     private final String fullyQualifiedName;
 
@@ -46,7 +46,7 @@ public class FullyQualifiedName {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         FullyQualifiedName that = (FullyQualifiedName) o;
-        return raw().equals(that.raw());
+        return Objects.equals(fullyQualifiedName, that.fullyQualifiedName);
     }
 
     @Override
