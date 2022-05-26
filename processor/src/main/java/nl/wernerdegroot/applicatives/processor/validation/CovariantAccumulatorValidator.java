@@ -8,67 +8,38 @@ import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstr
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
-import static nl.wernerdegroot.applicatives.processor.domain.Modifier.PRIVATE;
-import static nl.wernerdegroot.applicatives.processor.domain.Modifier.STATIC;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.BI_FUNCTION;
-import static nl.wernerdegroot.applicatives.processor.domain.type.Type.OBJECT;
 import static nl.wernerdegroot.applicatives.processor.generator.TypeGenerator.generateFrom;
 
 public class CovariantAccumulatorValidator {
 
     public static Validated<ValidCovariantAccumulator> validate(Method method) {
-        if (method.getModifiers().contains(STATIC)) {
-            return Validated.invalid("Method is static and cannot implement an abstract method");
-        }
 
-        if (method.getModifiers().contains(PRIVATE)) {
-            return Validated.invalid("Method is private and cannot implement an abstract method");
-        }
+        MethodValidation methodValidation = MethodValidation.of(method)
+                .verifyCanImplementAbstractMethod()
+                .verifyParameterCount("exactly 3", numberOfParameters -> numberOfParameters == 3)
+                .verifyTypeParameterCount("exactly 3", numberOfTypeParameters -> numberOfTypeParameters == 3)
+                .verifyTypeParametersAreUnbounded()
+                .verifyHasReturnType();
 
-        List<TypeParameter> typeParameters = method.getTypeParameters();
-        Optional<Type> optionalReturnType = method.getReturnType();
-        List<Parameter> parameters = method.getParameters();
-
-        // We require exactly three type parameters:
-        int numberOfTypeParameters = typeParameters.size();
-        if (numberOfTypeParameters != 3) {
-            return Validated.invalid("Method requires exactly 3 type parameters, but found " + numberOfTypeParameters);
-        }
-
-        // We require the (three) type parameters to be unbounded:
-        boolean typeParametersHaveUpperBound = typeParameters
-                .stream()
-                .map(TypeParameter::getUpperBounds)
-                .flatMap(List::stream)
-                .anyMatch(type -> !OBJECT.equals(type));
-        if (typeParametersHaveUpperBound) {
-            return Validated.invalid("The type parameters need to be unbounded");
+        if (!methodValidation.isValid()) {
+            return Validated.invalid(methodValidation.getErrorMessages());
         }
 
         // Assign a meaningful name to each of the (three) type parameters:
+        List<TypeParameter> typeParameters = method.getTypeParameters();
         TypeParameter leftInputTypeConstructorArgument = typeParameters.get(0);
         TypeParameter rightInputTypeConstructorArgument = typeParameters.get(1);
         TypeParameter returnTypeConstructorArgument = typeParameters.get(2);
 
-        // We require the method to have a return type:
-        if (!optionalReturnType.isPresent()) {
-            return Validated.invalid("Method needs to return something");
-        }
-
         // Now that we are sure that there is a return type, extract it from the `Optional`:
-        Type returnType = optionalReturnType.get();
+        Type returnType = methodValidation.getReturnType();
 
         String name = method.getName();
 
-        // We require exactly three parameters:
-        int numberOfParameters = parameters.size();
-        if (numberOfParameters != 3) {
-            return Validated.invalid("Method requires exactly 3 parameters, but found " + numberOfParameters);
-        }
-
         // Assign a meaningful name to each of the (three) parameters:
+        List<Parameter> parameters = method.getParameters();
         Parameter leftParameter = parameters.get(0);
         Parameter rightParameter = parameters.get(1);
         Parameter combinatorParameter = parameters.get(2);

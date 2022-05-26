@@ -83,7 +83,7 @@ public class CovariantInitializerValidatorTest {
                 asList(Parameter.of(T.asType(), "value"))
         );
 
-        Validated<ValidCovariantInitializer> expected = Validated.invalid("The type parameter needs to be unbounded");
+        Validated<ValidCovariantInitializer> expected = Validated.invalid("The type parameters need to be unbounded");
         Validated<ValidCovariantInitializer> toVerify = CovariantInitializerValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
@@ -100,7 +100,7 @@ public class CovariantInitializerValidatorTest {
                 asList(Parameter.of(T.asType(), "value"))
         );
 
-        Validated<ValidCovariantInitializer> expected = Validated.invalid("Method requires exactly one type parameter, but found 0");
+        Validated<ValidCovariantInitializer> expected = Validated.invalid("Method requires exactly 1 type parameters, but found 0");
         Validated<ValidCovariantInitializer> toVerify = CovariantInitializerValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
@@ -117,7 +117,7 @@ public class CovariantInitializerValidatorTest {
                 asList(Parameter.of(T.asType(), "value"))
         );
 
-        Validated<ValidCovariantInitializer> expected = Validated.invalid("Method requires exactly one type parameter, but found 2");
+        Validated<ValidCovariantInitializer> expected = Validated.invalid("Method requires exactly 1 type parameters, but found 2");
         Validated<ValidCovariantInitializer> toVerify = CovariantInitializerValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
@@ -134,7 +134,7 @@ public class CovariantInitializerValidatorTest {
                 asList()
         );
 
-        Validated<ValidCovariantInitializer> expected = Validated.invalid("Method requires exactly one parameter, but found 0");
+        Validated<ValidCovariantInitializer> expected = Validated.invalid("Method requires exactly 1 parameters, but found 0");
         Validated<ValidCovariantInitializer> toVerify = CovariantInitializerValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
@@ -151,7 +151,7 @@ public class CovariantInitializerValidatorTest {
                 asList(Parameter.of(T.asType(), "left"), Parameter.of(T.asType(), "right"))
         );
 
-        Validated<ValidCovariantInitializer> expected = Validated.invalid("Method requires exactly one parameter, but found 2");
+        Validated<ValidCovariantInitializer> expected = Validated.invalid("Method requires exactly 1 parameters, but found 2");
         Validated<ValidCovariantInitializer> toVerify = CovariantInitializerValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
