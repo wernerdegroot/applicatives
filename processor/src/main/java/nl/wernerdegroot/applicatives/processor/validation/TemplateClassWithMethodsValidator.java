@@ -125,7 +125,7 @@ public class TemplateClassWithMethodsValidator {
         );
     }
 
-    public static class Result implements HasReplaceableTypeParameterNames<Result> {
+    public static final class Result implements HasReplaceableTypeParameterNames<Result> {
 
         private final List<TypeParameter> classTypeParameters;
         private final Optional<CovariantInitializer> optionalInitializer;
@@ -173,8 +173,8 @@ public class TemplateClassWithMethodsValidator {
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            Result that = (Result) o;
-            return getClassTypeParameters().equals(that.getClassTypeParameters()) && getOptionalInitializer().equals(that.getOptionalInitializer()) && getAccumulator().equals(that.getAccumulator()) && getOptionalFinalizer().equals(that.getOptionalFinalizer());
+            Result result = (Result) o;
+            return Objects.equals(getClassTypeParameters(), result.getClassTypeParameters()) && Objects.equals(getOptionalInitializer(), result.getOptionalInitializer()) && Objects.equals(getAccumulator(), result.getAccumulator()) && Objects.equals(getOptionalFinalizer(), result.getOptionalFinalizer());
         }
 
         @Override

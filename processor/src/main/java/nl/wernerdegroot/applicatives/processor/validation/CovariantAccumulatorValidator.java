@@ -74,7 +74,7 @@ public class CovariantAccumulatorValidator {
         );
     }
 
-    public static class Result {
+    public static final class Result {
 
         private final String name;
         private final TypeConstructor inputTypeConstructor;
@@ -118,8 +118,8 @@ public class CovariantAccumulatorValidator {
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            Result that = (Result) o;
-            return getName().equals(that.getName()) && getInputTypeConstructor().equals(that.getInputTypeConstructor()) && getPartiallyAccumulatedTypeConstructor().equals(that.getPartiallyAccumulatedTypeConstructor()) && getAccumulatedTypeConstructor().equals(that.getAccumulatedTypeConstructor()) && getFirstParameterType().equals(that.getFirstParameterType());
+            Result result = (Result) o;
+            return Objects.equals(getName(), result.getName()) && Objects.equals(getInputTypeConstructor(), result.getInputTypeConstructor()) && Objects.equals(getPartiallyAccumulatedTypeConstructor(), result.getPartiallyAccumulatedTypeConstructor()) && Objects.equals(getAccumulatedTypeConstructor(), result.getAccumulatedTypeConstructor()) && Objects.equals(getFirstParameterType(), result.getFirstParameterType());
         }
 
         @Override

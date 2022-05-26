@@ -43,7 +43,7 @@ public class CovariantInitializerValidator {
         return Validated.valid(Result.of(name, initializedTypeConstructor, returnType));
     }
 
-    public static class Result {
+    public static final class Result {
 
         private final String name;
         private final TypeConstructor initializedTypeConstructor;
@@ -75,8 +75,8 @@ public class CovariantInitializerValidator {
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            Result that = (Result) o;
-            return getName().equals(that.getName()) && getInitializedTypeConstructor().equals(that.getInitializedTypeConstructor()) && getReturnType().equals(that.getReturnType());
+            Result result = (Result) o;
+            return Objects.equals(getName(), result.getName()) && Objects.equals(getInitializedTypeConstructor(), result.getInitializedTypeConstructor()) && Objects.equals(getReturnType(), result.getReturnType());
         }
 
         @Override

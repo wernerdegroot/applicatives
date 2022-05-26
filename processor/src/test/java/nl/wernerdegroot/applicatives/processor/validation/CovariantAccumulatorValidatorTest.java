@@ -1,5 +1,6 @@
 package nl.wernerdegroot.applicatives.processor.validation;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.wernerdegroot.applicatives.processor.domain.Method;
 import nl.wernerdegroot.applicatives.processor.domain.Parameter;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
@@ -290,7 +291,7 @@ public class CovariantAccumulatorValidatorTest {
     }
 
     @Test
-    public void validateGivenMethodWithNoSharedTypeConstructorBetweenLeftInputParameterAndReturnType() {
+    public void validateGivenMethodWithNoSharedTypeConstructorBetweenInputParametersAndReturnType() {
         Method toValidate = Method.of(
                 emptySet(),
                 modifiers(PUBLIC),
@@ -305,6 +306,27 @@ public class CovariantAccumulatorValidatorTest {
         );
 
         Validated<CovariantAccumulatorValidator.Result> expected = Validated.invalid("No shared type constructor between parameters (java.util.Optional<T> and java.util.Optional<U>) and result (java.util.concurrent.CompletableFuture<V>)");
+        Validated<CovariantAccumulatorValidator.Result> toVerify = CovariantAccumulatorValidator.validate(toValidate);
+
+        assertEquals(expected, toVerify);
+    }
+
+    @Test
+    public void validateGivenMethodWithNoSharedTypeConstructorBetweenLeftInputParameterAndReturnType() {
+        Method toValidate = Method.of(
+                emptySet(),
+                modifiers(PUBLIC),
+                asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
+                Optional.of(COMPLETABLE_FUTURE.with(V)),
+                "myFunction",
+                asList(
+                        Parameter.of(LIST.with(T), "left"),
+                        Parameter.of(OPTIONAL.with(U), "right"),
+                        Parameter.of(BI_FUNCTION.with(T.asType().contravariant(), U.asType().contravariant(), V.asType().covariant()), "compose")
+                )
+        );
+
+        Validated<CovariantAccumulatorValidator.Result> expected = Validated.invalid("No shared type constructor between first parameter (java.util.List<T>) and result (java.util.concurrent.CompletableFuture<V>)");
         Validated<CovariantAccumulatorValidator.Result> toVerify = CovariantAccumulatorValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
@@ -335,6 +357,11 @@ public class CovariantAccumulatorValidatorTest {
         Validated<CovariantAccumulatorValidator.Result> toVerify = CovariantAccumulatorValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
+    }
+
+    @Test
+    public void resultEquals() {
+        EqualsVerifier.forClass(CovariantAccumulatorValidator.Result.class).verify();
     }
 
     @SafeVarargs

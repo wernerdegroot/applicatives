@@ -1,5 +1,6 @@
 package nl.wernerdegroot.applicatives.processor.validation;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.wernerdegroot.applicatives.processor.domain.Method;
 import nl.wernerdegroot.applicatives.processor.domain.Parameter;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
@@ -189,6 +190,11 @@ public class CovariantInitializerValidatorTest {
         Validated<CovariantInitializerValidator.Result> toVerify = CovariantInitializerValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
+    }
+
+    @Test
+    public void resultEquals() {
+        EqualsVerifier.forClass(CovariantInitializerValidator.Result.class).verify();
     }
 
     @SafeVarargs

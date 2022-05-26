@@ -39,7 +39,7 @@ public class CovariantFinalizerValidator {
         return Validated.valid(Result.of(name, parameter.getType(), toFinalizeTypeConstructor, finalizedTypeConstructor));
     }
 
-    public static class Result {
+    public static final class Result {
 
         private final String name;
         private final Type parameterType;
@@ -77,8 +77,8 @@ public class CovariantFinalizerValidator {
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            Result that = (Result) o;
-            return getName().equals(that.getName()) && getParameterType().equals(that.getParameterType()) && getToFinalizeTypeConstructor().equals(that.getToFinalizeTypeConstructor()) && getFinalizedTypeConstructor().equals(that.getFinalizedTypeConstructor());
+            Result result = (Result) o;
+            return Objects.equals(getName(), result.getName()) && Objects.equals(getParameterType(), result.getParameterType()) && Objects.equals(getToFinalizeTypeConstructor(), result.getToFinalizeTypeConstructor()) && Objects.equals(getFinalizedTypeConstructor(), result.getFinalizedTypeConstructor());
         }
 
         @Override

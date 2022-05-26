@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toSet;
 
-public class Validated<T> {
+public final class Validated<T> {
 
     private final Set<String> errorMessages;
     private final T value;
@@ -54,10 +54,6 @@ public class Validated<T> {
 
             return Validated.invalid(errorMessages);
         }
-    }
-
-    public static <A, B, C, D> Validated<D> combine(Validated<A> first, Validated<B> second, Validated<C> third, Function3<? super A, ? super B, ? super C, ? extends D> fn) {
-        return combine(Validated.tuple(first, second, 2), third, (tuple, element) -> fn.apply(tuple.getFirst(), tuple.getSecond(), element));
     }
 
     public static <A, B, C, D, E> Validated<E> combine(Validated<A> first, Validated<B> second, Validated<C> third, Validated<D> fourth, Function4<? super A, ? super B, ? super C, ? super D, ? extends E> fn) {
