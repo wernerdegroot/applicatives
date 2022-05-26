@@ -26,11 +26,31 @@ import static nl.wernerdegroot.applicatives.processor.Classes.COVARIANT_CLASS_NA
 @SupportedAnnotationTypes(COVARIANT_CLASS_NAME)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @AutoService(Processor.class)
-public class CovariantProcessor extends AbstractCovariantProcessor {
+public class CovariantProcessor extends AbstractCovariantProcessor<Covariant> {
 
     @Override
     public Class<?> getAnnotationType() {
         return COVARIANT_CLASS;
+    }
+
+    @Override
+    public Covariant getAnnotation(Element element) {
+        return element.getAnnotation(Covariant.class);
+    }
+
+    @Override
+    public String getClassNameToGenerate(Covariant annotation) {
+        return annotation.className();
+    }
+
+    @Override
+    public String getLiftMethodName(Covariant annotation) {
+        return annotation.liftMethodName();
+    }
+
+    @Override
+    public int getMaxArity(Covariant annotation) {
+        return annotation.maxArity();
     }
 
     @Override
