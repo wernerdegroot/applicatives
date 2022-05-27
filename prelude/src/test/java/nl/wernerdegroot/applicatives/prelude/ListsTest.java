@@ -129,7 +129,7 @@ public class ListsTest {
                         )
                 )
         );
-        List<PokemonCard> toVerify = new Lists().combine(name, hp, energyType, moves, PokemonCard::new);
+        List<PokemonCard> toVerify = Lists.instance().combine(name, hp, energyType, moves, PokemonCard::new);
         assertEquals(expected, toVerify);
     }
 }

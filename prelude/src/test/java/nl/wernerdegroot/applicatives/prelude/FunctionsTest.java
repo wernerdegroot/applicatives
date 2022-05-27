@@ -20,9 +20,9 @@ public class FunctionsTest {
         Function<Random, List<EnergyType>> randomMoveCost = listOf(1, 2, EnergyType.values());
         Function<Random, String> randomMoveName = oneOf("Bubble", "Withdraw", "Ember", "Razor Leaf");
         Function<Random, Integer> randomMoveDamage = oneOf(10, 20, 30);
-        Function<Random, Move> randomMove = new Functions<Random>().combine(randomMoveCost, randomMoveName, randomMoveDamage, Move::new);
+        Function<Random, Move> randomMove = Functions.<Random>instance().combine(randomMoveCost, randomMoveName, randomMoveDamage, Move::new);
         Function<Random, List<Move>> randomMoves = listOf(1, 2, randomMove);
-        Function<Random, PokemonCard> randomPokemonCard = new Functions<Random>().lift(PokemonCard::new).apply(randomName, randomHp, randomEnergyType, randomMoves);
+        Function<Random, PokemonCard> randomPokemonCard = Functions.<Random>instance().lift(PokemonCard::new).apply(randomName, randomHp, randomEnergyType, randomMoves);
         PokemonCard toVerify = randomPokemonCard.apply(new Random(43));
         PokemonCard expected = PokemonCard.of(
                 "Bulbasaur",

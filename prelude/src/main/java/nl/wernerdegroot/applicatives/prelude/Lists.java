@@ -18,32 +18,31 @@ import java.util.function.BiFunction;
 @Covariant.Builder(className = "ListsApplicative")
 public class Lists implements ListsApplicative {
 
-    @Override
-    @Initializer
-    public <A> ArrayList<A> singleton(A value) {
-        ArrayList<A> result = new ArrayList<>(1);
-        result.add(value);
-        return result;
+    private static final Lists INSTANCE = new Lists();
+
+    public static Lists instance() {
+        return INSTANCE;
     }
 
-    // The fact that we are returning an `ArrayList` (implementation detail)
-    // is a temporary situation while we allow the left type constructor and
-    // the right type constructor to diverge (work in progress).
+    @Override
+    @Initializer
+    public <A> CartesianList<A> singleton(A value) {
+        return CartesianList.singleton(value);
+    }
+
     @Override
     @Accumulator
-    public <A, B, C> ArrayList<C> combine(ArrayList<? extends A> left, List<? extends B> right, BiFunction<? super A, ? super B, ? extends C> fn) {
-        ArrayList<C> result = new ArrayList<>(left.size() * right.size());
-        for (A elementFromLeft : left) {
-            for (B elementFromRight : right) {
-                result.add(fn.apply(elementFromLeft, elementFromRight));
-            }
-        }
-        return result;
+    public <A, B, C> CartesianList<C> combine(CartesianList<? extends A> left, List<? extends B> right, BiFunction<? super A, ? super B, ? extends C> fn) {
+        return CartesianList.of(left, right, fn);
     }
 
     @Override
     @Finalizer
-    public <A> List<A> finalize(ArrayList<? extends A> toFinalize) {
-        return new ArrayList<>(toFinalize);
+    public <A> List<A> finalize(CartesianList<? extends A> toFinalize) {
+        ArrayList<A> finalized = new ArrayList<>(toFinalize.getSize());
+        for (A value : toFinalize) {
+            finalized.add(value);
+        }
+        return finalized;
     }
 }

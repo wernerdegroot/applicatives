@@ -1,25 +1,43 @@
 package nl.wernerdegroot.applicatives.prelude;
 
+import nl.wernerdegroot.applicatives.runtime.Accumulator;
 import nl.wernerdegroot.applicatives.runtime.Covariant;
+import nl.wernerdegroot.applicatives.runtime.Finalizer;
+import nl.wernerdegroot.applicatives.runtime.Initializer;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.BiFunction;
 
+@Covariant.Builder(className = "ZipListsApplicative")
 public class ZipLists implements ZipListsApplicative {
 
+    private static final ZipLists INSTANCE = new ZipLists();
+
+    public static ZipLists instance() {
+        return INSTANCE;
+    }
+
     @Override
-    @Covariant(className = "ZipListsApplicative")
-    public <A, B, C> List<C> combine(List<? extends A> left, List<? extends B> right, BiFunction<? super A, ? super B, ? extends C> fn) {
-        List<C> result = new ArrayList<>(Math.max(left.size(), right.size()));
-        Iterator<? extends A> leftIterator = left.iterator();
-        Iterator<? extends B> rightIterator = right.iterator();
-        while (leftIterator.hasNext() && rightIterator.hasNext()) {
-            A elementFromLeft = leftIterator.next();
-            B elementFromRight = rightIterator.next();
-            result.add(fn.apply(elementFromLeft, elementFromRight));
+    @Initializer
+    public <A> ZipList<A> singleton(A value) {
+        return ZipList.singleton(value);
+    }
+
+    @Override
+    @Accumulator
+    public <A, B, C> ZipList<C> combine(ZipList<? extends A> left, List<? extends B> right, BiFunction<? super A, ? super B, ? extends C> fn) {
+            return ZipList.of(left, right, fn);
+    }
+
+    @Override
+    @Finalizer
+    public <A> List<A> finalize(ZipList<A> toFinalize) {
+        ArrayList<A> finalized = new ArrayList<>(toFinalize.getSize());
+        for (A value : toFinalize) {
+            finalized.add(value);
         }
-        return result;
+        return finalized;
     }
 }

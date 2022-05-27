@@ -7,6 +7,12 @@ import java.util.function.Function;
 
 public class Functions<P> implements FunctionsApplicative<P> {
 
+    private static final Functions<?> INSTANCE = new Functions<>();
+
+    public static <P> Functions<P> instance() {
+        return (Functions<P>) INSTANCE;
+    }
+
     @Covariant(className = "FunctionsApplicative")
     public <A, B, C> Function<P, C> combine(Function<? super P, ? extends A> left, Function<? super P, ? extends B> right, BiFunction<? super A, ? super B, ? extends C> fn) {
         return p -> {
