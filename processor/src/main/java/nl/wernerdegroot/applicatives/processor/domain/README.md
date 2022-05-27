@@ -1,44 +1,44 @@
 # Domain
 
-initializedTypeConstructor
+We have to assign some meaningful names to things, to be able to manipulate them in code without having to describe them every them.
 
-accumulatedTypeConstructor
+Consider
 
-partiallyAccumulatedTypeConstructor
+```java
+public class Lists {
 
-inputTypeConstructor
+    @Initializer
+    public <A> ArrayList<A> singleton(A value) {
+        ...
+    }
 
-toFinalizeTypeConstructor
+    @Accumulator
+    public <A, B, C> ArrayList<C> combine(ArrayList<? extends A> left, List<? extends B> right, BiFunction<? super A, ? super B, ? extends C> fn) {
+        ...
+    }
 
-finalizedTypeConstructor
+    @Finalizer
+    public <A> List<A> finalize(ArrayList<? extends A> toFinalize) {
+        ...
+    }
+}
+```
 
-A **type constructor** is a function from one type to another.
+* **Initializer method** -- A (optional) method to wrap a value in an **initialized type constructor**.
+* **Accumulator method** -- A (mandatory) method to combine two values wrapped in type constructors (`left` wrapped by a **partially accumulated type constructor** and `right` wrapped by a **input type constructor**) into one (wrapped by a **accumulated type constructor**).
+* **Finalizer method** -- A (optional) method to do some last minute transformations from a value wrapped by a **to finalize type constructor** into a value wrapped by a **finalized type constructor**.
 
-The **input type constructor arguments**
+Overloads like the following are generated:
 
-The **result type constructor arguments**
+```java
+interface Generated {
+    
+    default <P1, P2, R> List<R> combine(List<? extends P1> first, List<? extends P2> second, BiFunction<? super P1, ? super P2, ? extends R> fn) {
+        ...
+    }
+}
+```
 
-The **(permissive) accumulation type constructor**
-
-The **(permissive) accumulation type constructor argument**
-What about "(permissive) accumulation type"? Not really correct, since the `C` is not "accumulating" anything.
-
-The **(permissive) accumulation type**
-
-The **permissive accumulation parameter**
-
-The **input type constructor**
-
-The **input type constructor arguments**
-
-The **input types**
-
-The **input parameters**
-
-The **result type constructor**
-
-The **result type constructor agument**
-
-The **result (type)**
-
-An **accumulator**
+* The parameters `first` and `second` are the **parameters** (a value of one of the **type parameters**, wrapped by the appropriate type constructor, which is usually a **input type constructor**).
+* The `BiFunction` is called the **combinator parameter**.
+* The method returns a value of the **result type parameter** wrapped by the appropriate type constructor, which is usually the **finalized type constructor**.
