@@ -109,6 +109,25 @@ public class ConcreteTypeConstructorTest {
     }
 
     @Test
+    public void referencesTypeParameterGivenConcreteTypeConstructorThatDoesNotReferenceTypeParameter() {
+        ConcreteTypeConstructor concreteTypeConstructor = new ConcreteTypeConstructor(
+                ERUDITE,
+                asList(new GenericTypeConstructor(U).covariant())
+        );
+        assertFalse(concreteTypeConstructor.referencesTypeParameter(T));
+    }
+
+    @Test
+    public void referencesTypeParameterGivenConcreteTypeConstructorThatReferencesTypeParameter() {
+        ConcreteTypeConstructor concreteTypeConstructor = new ConcreteTypeConstructor(
+                ERUDITE,
+                asList(new GenericTypeConstructor(T).covariant())
+        );
+        assertTrue(concreteTypeConstructor.referencesTypeParameter(T));
+    }
+
+
+    @Test
     public void invariantConcreteTypeConstructorCanAcceptGivenGenericTypeConstructor() {
         ConcreteTypeConstructor target = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.invariant());
         GenericTypeConstructor source = TypeConstructor.generic(T);

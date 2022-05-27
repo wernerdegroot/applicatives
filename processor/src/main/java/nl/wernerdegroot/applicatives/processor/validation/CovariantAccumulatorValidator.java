@@ -3,14 +3,19 @@ package nl.wernerdegroot.applicatives.processor.validation;
 import nl.wernerdegroot.applicatives.processor.domain.Method;
 import nl.wernerdegroot.applicatives.processor.domain.Parameter;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameter;
+import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
+import static java.util.stream.Collectors.toSet;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.BI_FUNCTION;
 import static nl.wernerdegroot.applicatives.processor.generator.TypeGenerator.generateFrom;
+import static nl.wernerdegroot.applicatives.processor.generator.TypeGenerator.type;
 
 public class CovariantAccumulatorValidator {
 
@@ -63,6 +68,14 @@ public class CovariantAccumulatorValidator {
             }
         }
 
+        Set<String> errorMessages = new HashSet<>();
+        errorMessages.addAll(checkCrossReferences(typeParameters, rightParameter.getType(), inputTypeConstructor, "type of the second parameter"));
+        errorMessages.addAll(checkCrossReferences(typeParameters, leftParameter.getType(), partiallyAccumulatedTypeConstructor, "type of the first parameter"));
+        errorMessages.addAll(checkCrossReferences(typeParameters, returnType, accumulatedTypeConstructor, "return type"));
+        if (!errorMessages.isEmpty()) {
+            return Validated.invalid(errorMessages);
+        }
+
         return Validated.valid(
                 Result.of(
                         name,
@@ -72,6 +85,15 @@ public class CovariantAccumulatorValidator {
                         leftParameter.getType()
                 )
         );
+    }
+
+    private static Set<String> checkCrossReferences(List<TypeParameter> typeParameters, Type type, TypeConstructor typeConstructor, String descriptionOfType) {
+        return typeParameters
+                .stream()
+                .map(TypeParameter::getName)
+                .filter(typeConstructor::referencesTypeParameter)
+                .map(typeParameterName -> String.format("The %s (%s) is not allowed to reference type parameter '%s'", descriptionOfType, generateFrom(type), typeParameterName.raw()))
+                .collect(toSet());
     }
 
     public static final class Result {

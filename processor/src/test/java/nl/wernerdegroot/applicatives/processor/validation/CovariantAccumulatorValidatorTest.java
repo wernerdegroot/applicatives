@@ -360,6 +360,36 @@ public class CovariantAccumulatorValidatorTest {
     }
 
     @Test
+    public void validateGivenParametersThatReferenceTheWrongTypeParameters() {
+
+        // Note: it is currently impossible for the accumulated type constructor and
+        // the partially accumulated type constructor to mention the first or the second
+        // type parameter. If they do, they accumulated type constructor can never
+        // be assigned to the partially accumulated type constructor.
+
+        Method toValidate = Method.of(
+                emptySet(),
+                modifiers(PUBLIC),
+                asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
+                Optional.of(FUNCTION.with(U, V)),
+                "myFunction",
+                asList(
+                        Parameter.of(FUNCTION.with(U, T), "left"),
+                        Parameter.of(FUNCTION.with(U, U), "right"),
+                        Parameter.of(BI_FUNCTION.with(T.asType().contravariant(), U.asType().contravariant(), V.asType().covariant()), "compose")
+                )
+        );
+
+        Validated<CovariantAccumulatorValidator.Result> expected = Validated.invalid(
+                "The type of the first parameter (java.util.function.Function<U, T>) is not allowed to reference type parameter 'U'",
+                "The return type (java.util.function.Function<U, V>) is not allowed to reference type parameter 'U'"
+        );
+        Validated<CovariantAccumulatorValidator.Result> toVerify = CovariantAccumulatorValidator.validate(toValidate);
+
+        assertEquals(expected, toVerify);
+    }
+
+    @Test
     public void resultEquals() {
         EqualsVerifier.forClass(CovariantAccumulatorValidator.Result.class).verify();
     }

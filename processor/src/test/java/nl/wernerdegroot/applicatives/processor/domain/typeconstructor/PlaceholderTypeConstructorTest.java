@@ -35,6 +35,12 @@ public class PlaceholderTypeConstructorTest {
     }
 
     @Test
+    public void referencesTypeParameterGivenPlaceholderTypeConstructor() {
+        PlaceholderTypeConstructor placeholderTypeConstructor = new PlaceholderTypeConstructor();
+        assertFalse(placeholderTypeConstructor.referencesTypeParameter(T));
+    }
+
+    @Test
     public void placeholderTypeConstructorCanAcceptGivenArrayTypeConstructor() {
         assertFalse(new PlaceholderTypeConstructor().canAccept(new ArrayTypeConstructor(STRING_TYPE_CONSTRUCTOR)));
     }

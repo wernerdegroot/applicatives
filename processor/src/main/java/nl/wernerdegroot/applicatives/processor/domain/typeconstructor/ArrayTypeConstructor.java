@@ -25,6 +25,11 @@ public class ArrayTypeConstructor implements TypeConstructor {
     }
 
     @Override
+    public boolean referencesTypeParameter(TypeParameterName typeParameterName) {
+        return type.referencesTypeParameter(typeParameterName);
+    }
+
+    @Override
     public boolean canAccept(TypeConstructor typeConstructor) {
         if (typeConstructor instanceof ArrayTypeConstructor) {
             ArrayTypeConstructor that = (ArrayTypeConstructor) typeConstructor;
