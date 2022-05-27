@@ -1,5 +1,6 @@
 package nl.wernerdegroot.applicatives.processor.domain.typeconstructor;
 
+import nl.wernerdegroot.applicatives.processor.domain.MayContainReferenceToTypeParameter;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
 import nl.wernerdegroot.applicatives.processor.domain.Variance;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
@@ -10,7 +11,7 @@ import java.util.Objects;
 
 import static nl.wernerdegroot.applicatives.processor.domain.Variance.INVARIANT;
 
-public class TypeConstructorArgument {
+public class TypeConstructorArgument implements MayContainReferenceToTypeParameter {
 
     private final Variance variance;
     private final TypeConstructor typeConstructor;
@@ -22,6 +23,11 @@ public class TypeConstructorArgument {
 
     public static TypeConstructorArgument of(Variance variance, TypeConstructor typeConstructor) {
         return new TypeConstructorArgument(variance, typeConstructor);
+    }
+
+    @Override
+    public boolean referencesTypeParameter(TypeParameterName typeParameterName) {
+        return typeConstructor.referencesTypeParameter(typeParameterName);
     }
 
     public TypeConstructorArgument replaceAllTypeParameterNames(Map<TypeParameterName, TypeParameterName> replacement) {

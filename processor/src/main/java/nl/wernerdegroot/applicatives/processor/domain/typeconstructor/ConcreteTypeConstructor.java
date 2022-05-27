@@ -1,6 +1,7 @@
 package nl.wernerdegroot.applicatives.processor.domain.typeconstructor;
 
 import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
+import nl.wernerdegroot.applicatives.processor.domain.MayContainReferenceToTypeParameter;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
 import nl.wernerdegroot.applicatives.processor.domain.type.ConcreteType;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
@@ -34,6 +35,11 @@ public class ConcreteTypeConstructor implements TypeConstructor {
                 .collect(toList());
 
         return TypeConstructor.concrete(fullyQualifiedName, replacedTypeConstructorArguments);
+    }
+
+    @Override
+    public boolean referencesTypeParameter(TypeParameterName typeParameterName) {
+        return typeConstructorArguments.stream().anyMatch(argument -> argument.referencesTypeParameter(typeParameterName));
     }
 
     @Override

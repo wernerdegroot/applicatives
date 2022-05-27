@@ -2,6 +2,7 @@ package nl.wernerdegroot.applicatives.processor.domain.typeconstructor;
 
 import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
 import nl.wernerdegroot.applicatives.processor.domain.HasReplaceableTypeParameterNames;
+import nl.wernerdegroot.applicatives.processor.domain.MayContainReferenceToTypeParameter;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 
@@ -32,7 +33,7 @@ import static nl.wernerdegroot.applicatives.processor.domain.Variance.*;
  *     Type listOfT = list.apply(t);
  * </pre>
  */
-public interface TypeConstructor extends HasReplaceableTypeParameterNames<TypeConstructor> {
+public interface TypeConstructor extends HasReplaceableTypeParameterNames<TypeConstructor>, MayContainReferenceToTypeParameter {
 
     /**
      * Checks whether a value of type {@code that} is assignable to a variable of type {@code this}. Returns true

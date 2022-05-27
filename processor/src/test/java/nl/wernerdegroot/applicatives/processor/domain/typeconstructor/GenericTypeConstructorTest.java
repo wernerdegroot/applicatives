@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -52,6 +53,18 @@ public class GenericTypeConstructorTest {
         GenericTypeConstructor toVerify = new GenericTypeConstructor(V).replaceTypeParameterNames(mapping);
 
         assertEquals(expected, toVerify);
+    }
+
+    @Test
+    public void referencesTypeParameterGivenGenericTypeConstructorThatDoesNotReferenceTypeParameter() {
+        GenericTypeConstructor genericTypeConstructor = new GenericTypeConstructor(U);
+        assertFalse(genericTypeConstructor.referencesTypeParameter(T));
+    }
+
+    @Test
+    public void referencesTypeParameterGivenGenericTypeConstructorThatReferencesTypeParameter() {
+        GenericTypeConstructor genericTypeConstructor = new GenericTypeConstructor(T);
+        assertTrue(genericTypeConstructor.referencesTypeParameter(T));
     }
 
     @Test

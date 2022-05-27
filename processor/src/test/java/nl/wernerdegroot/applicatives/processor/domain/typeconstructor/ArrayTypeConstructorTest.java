@@ -58,6 +58,18 @@ public class ArrayTypeConstructorTest {
     }
 
     @Test
+    public void referencesTypeParameterGivenArrayTypeConstructorThatDoesNotReferenceTypeParameter() {
+        ArrayTypeConstructor arrayTypeConstructor = new ArrayTypeConstructor(new GenericTypeConstructor(U));
+        assertFalse(arrayTypeConstructor.referencesTypeParameter(T));
+    }
+
+    @Test
+    public void referencesTypeParameterGivenArrayTypeConstructorThatReferencesTypeParameter() {
+        ArrayTypeConstructor arrayTypeConstructor = new ArrayTypeConstructor(new GenericTypeConstructor(T));
+        assertTrue(arrayTypeConstructor.referencesTypeParameter(T));
+    }
+
+    @Test
     public void canAcceptGivenConcreteTypeConstructor() {
         assertFalse(new ArrayTypeConstructor(STRING_TYPE_CONSTRUCTOR).canAccept(STRING_TYPE_CONSTRUCTOR));
     }

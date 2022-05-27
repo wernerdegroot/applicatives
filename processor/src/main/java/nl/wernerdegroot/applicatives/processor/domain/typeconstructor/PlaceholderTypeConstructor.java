@@ -13,6 +13,11 @@ public class PlaceholderTypeConstructor implements TypeConstructor {
     }
 
     @Override
+    public boolean referencesTypeParameter(TypeParameterName typeParameterName) {
+        return false;
+    }
+
+    @Override
     public boolean canAccept(TypeConstructor that) {
         return this.equals(that);
     }
