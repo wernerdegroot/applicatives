@@ -10,46 +10,12 @@ public interface ZipList<T> {
 
     Iterator<? extends T> iterator();
 
-    static <T> ZipList<T> singleton(T value) {
-        return new Singleton<>(value);
-    }
-
     static <T> ZipList<T> of(List<? extends T> elements) {
         return new Wrapper<>(elements);
     }
 
     static <A, B, C> ZipList<C> of(ZipList<A> left, List<B> right, BiFunction<? super A, ? super B, ? extends C> combinator) {
         return new Composite<>(left, right, combinator);
-    }
-
-
-    class Singleton<T> implements ZipList<T> {
-        private final T value;
-
-        public Singleton(T value) {
-            this.value = value;
-        }
-
-        @Override
-        public int getSize() {
-            return Integer.MAX_VALUE;
-        }
-
-        @Override
-        public Iterator<T> iterator() {
-            return new Iterator<T>() {
-
-                @Override
-                public boolean hasNext() {
-                    return true;
-                }
-
-                @Override
-                public T next() {
-                    return value;
-                }
-            };
-        }
     }
 
     class Wrapper<T> implements ZipList<T> {

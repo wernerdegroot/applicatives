@@ -12,16 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class CartesianListTest {
 
     @Test
-    public void singletonGetSize() {
-        assertEquals(1, CartesianList.singleton("element").getSize());
-    }
-
-    @Test
-    public void singletonIterator() {
-        assertEquals(asList("element"), collect(CartesianList.singleton("element").iterator()));
-    }
-
-    @Test
     public void wrapperGetSize() {
         assertEquals(4, CartesianList.of(asList("one", "two", "three", "four")).getSize());
     }

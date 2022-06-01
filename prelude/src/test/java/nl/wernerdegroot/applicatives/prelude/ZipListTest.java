@@ -12,11 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class ZipListTest {
 
     @Test
-    public void singletonGetSize() {
-        assertEquals(Integer.MAX_VALUE, ZipList.singleton("element").getSize());
-    }
-
-    @Test
     public void wrapperGetSize() {
         assertEquals(4, ZipList.of(asList("one", "two", "three", "four")).getSize());
     }
@@ -66,13 +61,6 @@ public class ZipListTest {
         List<Integer> left = asList(1, 2, 3);
         List<Boolean> right = asList(true, false);
         assertEquals(asList("1!", "2?"), collect(ZipList.of(ZipList.of(left), right, this::combineIntAndBoolean).iterator()));
-    }
-
-    @Test
-    public void compositeIteratorGivenSingleton() {
-        int left = 99;
-        List<Boolean> right = asList(true, false);
-        assertEquals(asList("99!", "99?"), collect(ZipList.of(ZipList.singleton(left), right, this::combineIntAndBoolean).iterator()));
     }
 
     private String combineIntAndBoolean(int i, boolean b) {

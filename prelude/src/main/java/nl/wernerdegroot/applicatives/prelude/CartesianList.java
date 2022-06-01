@@ -11,49 +11,12 @@ public interface CartesianList<T> {
 
     Iterator<? extends T> iterator();
 
-    static <T> CartesianList<T> singleton(T value) {
-        return new Singleton<>(value);
-    }
-
     static <T> CartesianList<T> of(List<? extends T> elements) {
         return new Wrapper<>(elements);
     }
 
     static <A, B, C> CartesianList<C> of(CartesianList<A> left, List<B> right, BiFunction<? super A, ? super B, ? extends C> combinator) {
         return new Composite<>(left, right, combinator);
-    }
-
-    class Singleton<T> implements CartesianList<T> {
-
-        private final T value;
-
-        public Singleton(T value) {
-            this.value = value;
-        }
-
-        @Override
-        public Iterator<T> iterator() {
-            return new Iterator<T>() {
-
-                private boolean hasNext = true;
-
-                @Override
-                public boolean hasNext() {
-                    return hasNext;
-                }
-
-                @Override
-                public T next() {
-                    hasNext = false;
-                    return value;
-                }
-            };
-        }
-
-        @Override
-        public int getSize() {
-            return 1;
-        }
     }
 
     class Wrapper<T> implements CartesianList<T> {
