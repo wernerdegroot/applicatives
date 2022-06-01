@@ -1,28 +1,26 @@
 package nl.wernerdegroot.applicatives.prelude;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.function.BiFunction;
 
-public interface CartesianList<T> {
+public interface CartesianIterable<T> {
 
     int getSize();
 
     Iterator<? extends T> iterator();
 
-    static <T> CartesianList<T> of(List<? extends T> elements) {
+    static <T> CartesianIterable<T> of(Collection<? extends T> elements) {
         return new Wrapper<>(elements);
     }
 
-    static <A, B, C> CartesianList<C> of(CartesianList<A> left, List<B> right, BiFunction<? super A, ? super B, ? extends C> combinator) {
+    static <A, B, C> CartesianIterable<C> of(CartesianIterable<? extends A> left, Collection<? extends B> right, BiFunction<? super A, ? super B, ? extends C> combinator) {
         return new Composite<>(left, right, combinator);
     }
 
-    class Wrapper<T> implements CartesianList<T> {
-        private final List<? extends T> wrapped;
+    class Wrapper<T> implements CartesianIterable<T> {
+        private final Collection<? extends T> wrapped;
 
-        public Wrapper(List<? extends T> wrapped) {
+        public Wrapper(Collection<? extends T> wrapped) {
             this.wrapped = wrapped;
         }
 
@@ -36,12 +34,12 @@ public interface CartesianList<T> {
         }
     }
 
-    class Composite<A, B, C> implements CartesianList<C> {
-        private final CartesianList<? extends A> left;
-        private final List<? extends B> right;
+    class Composite<A, B, C> implements CartesianIterable<C> {
+        private final CartesianIterable<? extends A> left;
+        private final Collection<? extends B> right;
         private final BiFunction<? super A, ? super B, ? extends C> combinator;
 
-        public Composite(CartesianList<? extends A> left, List<? extends B> right, BiFunction<? super A, ? super B, ? extends C> combinator) {
+        public Composite(CartesianIterable<? extends A> left, Collection<? extends B> right, BiFunction<? super A, ? super B, ? extends C> combinator) {
             this.left = left;
             this.right = right;
             this.combinator = combinator;

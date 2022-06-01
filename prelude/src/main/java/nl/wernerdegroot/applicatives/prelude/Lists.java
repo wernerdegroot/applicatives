@@ -27,19 +27,19 @@ public class Lists implements ListsApplicative {
 
     @Override
     @Initializer
-    public <A> CartesianList<A> initialize(List<? extends A> value) {
-        return CartesianList.of(value);
+    public <A> CartesianIterable<A> initialize(List<? extends A> value) {
+        return CartesianIterable.of(value);
     }
 
     @Override
     @Accumulator
-    public <A, B, C> CartesianList<C> combine(CartesianList<? extends A> left, List<? extends B> right, BiFunction<? super A, ? super B, ? extends C> fn) {
-        return CartesianList.of(left, right, fn);
+    public <A, B, C> CartesianIterable<C> combine(CartesianIterable<? extends A> left, List<? extends B> right, BiFunction<? super A, ? super B, ? extends C> fn) {
+        return CartesianIterable.of(left, right, fn);
     }
 
     @Override
     @Finalizer
-    public <A> List<A> finalize(CartesianList<? extends A> toFinalize) {
+    public <A> List<A> finalize(CartesianIterable<? extends A> toFinalize) {
         ArrayList<A> finalized = new ArrayList<>(toFinalize.getSize());
         Iterator<? extends A> iterator = toFinalize.iterator();
         while (iterator.hasNext()) {
