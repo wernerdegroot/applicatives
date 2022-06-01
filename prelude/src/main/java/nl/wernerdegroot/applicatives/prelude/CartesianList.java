@@ -5,15 +5,17 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.function.BiFunction;
 
-public interface CartesianList<T> extends Iterable<T> {
+public interface CartesianList<T> {
 
     int getSize();
+
+    Iterator<? extends T> iterator();
 
     static <T> CartesianList<T> singleton(T value) {
         return new Singleton<>(value);
     }
 
-    static <T> CartesianList<T> of(List<T> elements) {
+    static <T> CartesianList<T> of(List<? extends T> elements) {
         return new Wrapper<>(elements);
     }
 
@@ -55,14 +57,13 @@ public interface CartesianList<T> extends Iterable<T> {
     }
 
     class Wrapper<T> implements CartesianList<T> {
-        private final List<T> wrapped;
+        private final List<? extends T> wrapped;
 
-        public Wrapper(List<T> wrapped) {
+        public Wrapper(List<? extends T> wrapped) {
             this.wrapped = wrapped;
         }
 
-        @Override
-        public Iterator<T> iterator() {
+        public Iterator<? extends T> iterator() {
             return wrapped.iterator();
         }
 
@@ -73,26 +74,26 @@ public interface CartesianList<T> extends Iterable<T> {
     }
 
     class Composite<A, B, C> implements CartesianList<C> {
-        private final CartesianList<A> left;
-        private final List<B> right;
+        private final CartesianList<? extends A> left;
+        private final List<? extends B> right;
         private final BiFunction<? super A, ? super B, ? extends C> combinator;
 
-        public Composite(CartesianList<A> left, List<B> right, BiFunction<? super A, ? super B, ? extends C> combinator) {
+        public Composite(CartesianList<? extends A> left, List<? extends B> right, BiFunction<? super A, ? super B, ? extends C> combinator) {
             this.left = left;
             this.right = right;
             this.combinator = combinator;
         }
 
         @Override
-        public Iterator<C> iterator() {
+        public Iterator<? extends C> iterator() {
             if (left.getSize() > 0 && right.size() > 0) {
 
                 return new Iterator<C>() {
 
                     private boolean initialized = false;
                     private A leftValue = null;
-                    private Iterator<A> leftIterator = left.iterator();
-                    private Iterator<B> rightIterator = null;
+                    private Iterator<? extends A> leftIterator = left.iterator();
+                    private Iterator<? extends B> rightIterator = null;
 
                     @Override
                     public boolean hasNext() {

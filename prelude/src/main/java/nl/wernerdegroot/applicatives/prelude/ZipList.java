@@ -4,15 +4,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.BiFunction;
 
-public interface ZipList<T> extends Iterable<T> {
+public interface ZipList<T> {
 
     int getSize();
+
+    Iterator<? extends T> iterator();
 
     static <T> ZipList<T> singleton(T value) {
         return new Singleton<>(value);
     }
 
-    static <T> ZipList<T> of(List<T> elements) {
+    static <T> ZipList<T> of(List<? extends T> elements) {
         return new Wrapper<>(elements);
     }
 
@@ -51,9 +53,9 @@ public interface ZipList<T> extends Iterable<T> {
     }
 
     class Wrapper<T> implements ZipList<T> {
-        private final List<T> wrapped;
+        private final List<? extends T> wrapped;
 
-        public Wrapper(List<T> wrapped) {
+        public Wrapper(List<? extends T> wrapped) {
             this.wrapped = wrapped;
         }
 
@@ -63,17 +65,17 @@ public interface ZipList<T> extends Iterable<T> {
         }
 
         @Override
-        public Iterator<T> iterator() {
+        public Iterator<? extends T> iterator() {
             return wrapped.iterator();
         }
     }
 
     class Composite<A, B, C> implements ZipList<C> {
-        private final ZipList<A> left;
-        private final List<B> right;
+        private final ZipList<? extends A> left;
+        private final List<? extends B> right;
         private final BiFunction<? super A, ? super B, ? extends C> combinator;
 
-        public Composite(ZipList<A> left, List<B> right, BiFunction<? super A, ? super B, ? extends C> combinator) {
+        public Composite(ZipList<? extends A> left, List<? extends B> right, BiFunction<? super A, ? super B, ? extends C> combinator) {
             this.left = left;
             this.right = right;
             this.combinator = combinator;
@@ -85,11 +87,11 @@ public interface ZipList<T> extends Iterable<T> {
         }
 
         @Override
-        public Iterator<C> iterator() {
+        public Iterator<? extends C> iterator() {
             return new Iterator<C>() {
 
-                private final Iterator<A> leftIterator = left.iterator();
-                private final Iterator<B> rightIterator = right.iterator();
+                private final Iterator<? extends A> leftIterator = left.iterator();
+                private final Iterator<? extends B> rightIterator = right.iterator();
 
                 @Override
                 public boolean hasNext() {

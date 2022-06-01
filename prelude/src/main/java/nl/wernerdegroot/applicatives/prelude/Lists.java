@@ -6,6 +6,7 @@ import nl.wernerdegroot.applicatives.runtime.Finalizer;
 import nl.wernerdegroot.applicatives.runtime.Initializer;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.BiFunction;
 
@@ -26,8 +27,8 @@ public class Lists implements ListsApplicative {
 
     @Override
     @Initializer
-    public <A> CartesianList<A> singleton(A value) {
-        return CartesianList.singleton(value);
+    public <A> CartesianList<A> initialize(List<? extends A> value) {
+        return CartesianList.of(value);
     }
 
     @Override
@@ -40,8 +41,9 @@ public class Lists implements ListsApplicative {
     @Finalizer
     public <A> List<A> finalize(CartesianList<? extends A> toFinalize) {
         ArrayList<A> finalized = new ArrayList<>(toFinalize.getSize());
-        for (A value : toFinalize) {
-            finalized.add(value);
+        Iterator<? extends A> iterator = toFinalize.iterator();
+        while (iterator.hasNext()) {
+            finalized.add(iterator.next());
         }
         return finalized;
     }

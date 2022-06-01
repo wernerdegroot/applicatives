@@ -21,8 +21,8 @@ public class ZipLists implements ZipListsApplicative {
 
     @Override
     @Initializer
-    public <A> ZipList<A> singleton(A value) {
-        return ZipList.singleton(value);
+    public <A> ZipList<A> initialize(List<? extends A> value) {
+        return ZipList.of(value);
     }
 
     @Override
@@ -33,10 +33,11 @@ public class ZipLists implements ZipListsApplicative {
 
     @Override
     @Finalizer
-    public <A> List<A> finalize(ZipList<A> toFinalize) {
+    public <A> List<A> finalize(ZipList<? extends A> toFinalize) {
         ArrayList<A> finalized = new ArrayList<>(toFinalize.getSize());
-        for (A value : toFinalize) {
-            finalized.add(value);
+        Iterator<? extends A> iterator = toFinalize.iterator();
+        while (iterator.hasNext()) {
+            finalized.add(iterator.next());
         }
         return finalized;
     }

@@ -73,11 +73,6 @@ public class FastTupleTest {
 
         FastTuple<String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String> copied;
 
-        copied = mutated.withSecond("-...");
-        assertNotSame(mutated, copied);
-        assertEquals("bravo", mutated.getSecond());
-        assertEquals("-...", copied.getSecond());
-
         copied = mutated.withThird("-.-.");
         assertNotSame(mutated, copied);
         assertEquals("charlie", mutated.getThird());

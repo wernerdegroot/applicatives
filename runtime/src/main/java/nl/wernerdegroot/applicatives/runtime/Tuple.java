@@ -5,14 +5,6 @@ public final class Tuple {
     private Tuple() {
     }
 
-    public static Tuple0 of() {
-        return new FastTuple<>(new Object[]{});
-    }
-
-    public static <First> Tuple1<First> of(First first) {
-        return new FastTuple<>(new Object[]{first});
-    }
-
     public static <First, Second> Tuple2<First, Second> of(First first, Second second) {
         return new FastTuple<>(new Object[]{first, second});
     }

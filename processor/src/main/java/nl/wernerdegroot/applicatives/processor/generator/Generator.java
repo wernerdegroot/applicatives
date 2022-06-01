@@ -192,7 +192,7 @@ public class Generator {
                         .withTypeParameters(returnTypeConstructorArgument.getName())
                         .withReturnType(returnTypeConstructorArgument.asType().using(initializer.getInitializedTypeConstructor()))
                         .withName(initializer.getName())
-                        .withParameter(returnTypeConstructorArgument.asType(), valueParameterName)
+                        .withParameter(returnTypeConstructorArgument.asType().using(initializer.getToInitializeTypeConstructor()), valueParameterName)
         );
     }
 
@@ -215,7 +215,7 @@ public class Generator {
         // (`partiallyAccumulatedTypeConstructor` and `inputTypeConstructor` respectively). The
         // concrete method's parameters all use the same type constructor (`inputTypeConstructor`).
         if (hasInitializer()) {
-            combineMethods.add(combineMethodWithArity(2));
+            combineMethods.add(combineMethodWithArityTwo());
         }
 
         IntStream.rangeClosed(3, maxArity).forEach(arity -> {
@@ -243,6 +243,32 @@ public class Generator {
                         ),
                         combinatorParameterName
                 );
+    }
+
+    private MethodGenerator combineMethodWithArityTwo() {
+        int arity = 2;
+        List<String> inputParameterNames = takeInputParameterNames(arity);
+        String firstInputParameterName = inputParameterNames.get(0);
+        String secondInputParameterName = inputParameterNames.get(1);
+        String methodBody = methodCall()
+                .withObjectPath(THIS)
+                .withMethodName(accumulator.getName())
+                .withArguments(
+                        optionalInitializer
+                                .map(initializer -> methodCall().withObjectPath(THIS).withMethodName(initializer.getName()).withArguments(firstInputParameterName).generate())
+                                .orElse(firstInputParameterName),
+                        secondInputParameterName,
+                        combinatorParameterName
+                )
+                .generate();
+
+        return combineMethodWithArity(
+                arity,
+                optionalFinalizer
+                        .map(CovariantFinalizer::getName)
+                        .map(finalizerMethodName -> methodCall().withObjectPath(THIS).withMethodName(finalizerMethodName).withArguments(methodBody).generate())
+                        .orElse(methodBody)
+        );
     }
 
     private MethodGenerator combineMethodWithArity(int arity) {
@@ -341,13 +367,7 @@ public class Generator {
     private List<MethodGenerator> tupleMethods() {
         List<MethodGenerator> tupleMethods = new ArrayList<>();
 
-        if (optionalInitializer.isPresent()) {
-            CovariantInitializer initializer = optionalInitializer.get();
-
-            tupleMethods.add(tupleMethodWithArityZero(initializer.getName()));
-            tupleMethods.add(tupleMethodWithArity(1));
-            tupleMethods.add(tupleMethodWithArity(2));
-        } else {
+        if (maxArity >= 3) {
             tupleMethods.add(tupleMethodWithArityTwo());
         }
 
@@ -359,33 +379,17 @@ public class Generator {
         return tupleMethods;
     }
 
-    private MethodGenerator tupleMethodWithArityZero(String initializerMethodName) {
-        return tupleMethodWithArity(
-                0,
-                methodCall()
-                        .withObjectPath(selfParameterName)
-                        .withMethodName(initializerMethodName)
-                        .withArguments(
-                                methodCall()
-                                        .withType(FAST_TUPLE)
-                                        .withMethodName(FAST_TUPLE_EMPTY_WITH_MAX_SIZE_METHOD_NAME)
-                                        .withArguments(maxTupleSizeParameterName)
-                                        .generate()
-                        )
-                        .generate()
-
-        );
-    }
-
     private MethodGenerator tupleMethodWithArityTwo() {
+        String firstInputParameterName = inputParameterNames.get(0);
+        String secondInputParameterName = inputParameterNames.get(1);
         return tupleMethodWithArity(
                 2,
                 methodCall()
                         .withObjectPath(selfParameterName)
                         .withMethodName(accumulator.getName())
                         .withArguments(
-                                inputParameterNames.get(0),
-                                inputParameterNames.get(1),
+                                optionalInitializer.map(initializer -> methodCall().withObjectPath(selfParameterName).withMethodName(initializer.getName()).withArguments(firstInputParameterName).generate()).orElse(firstInputParameterName),
+                                secondInputParameterName,
                                 methodCall()
                                         .withType(FAST_TUPLE)
                                         .withMethodName(FAST_TUPLE_WITH_MAX_SIZE_METHOD_NAME)
