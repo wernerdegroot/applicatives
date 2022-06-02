@@ -128,8 +128,12 @@ public class CovariantAccumulatorValidatorTest {
         Validated<CovariantAccumulatorValidator.Result> expected = Validated.valid(
                 CovariantAccumulatorValidator.Result.of(
                         "myFunction",
-                        OPTIONAL.asTypeConstructor(), OPTIONAL.asTypeConstructor(), OPTIONAL.asTypeConstructor(),
-                        OPTIONAL.with(T)
+                        OPTIONAL.asTypeConstructor(),
+                        OPTIONAL.asTypeConstructor(),
+                        OPTIONAL.asTypeConstructor(),
+                        OPTIONAL.with(T),
+                        OPTIONAL.with(U),
+                        OPTIONAL.with(V)
                 )
         );
         Validated<CovariantAccumulatorValidator.Result> toVerify = CovariantAccumulatorValidator.validate(toValidate);
@@ -281,8 +285,12 @@ public class CovariantAccumulatorValidatorTest {
         Validated<CovariantAccumulatorValidator.Result> expected = Validated.valid(
                 CovariantAccumulatorValidator.Result.of(
                         "myFunction",
-                        COMPLETABLE_FUTURE.asTypeConstructor(), OPTIONAL.asTypeConstructor(), OPTIONAL.asTypeConstructor(),
-                        OPTIONAL.with(T)
+                        COMPLETABLE_FUTURE.asTypeConstructor(),
+                        OPTIONAL.asTypeConstructor(),
+                        OPTIONAL.asTypeConstructor(),
+                        OPTIONAL.with(T),
+                        COMPLETABLE_FUTURE.with(U),
+                        OPTIONAL.with(V)
                 )
         );
         Validated<CovariantAccumulatorValidator.Result> toVerify = CovariantAccumulatorValidator.validate(toValidate);
@@ -350,8 +358,12 @@ public class CovariantAccumulatorValidatorTest {
         Validated<CovariantAccumulatorValidator.Result> expected = Validated.valid(
                 CovariantAccumulatorValidator.Result.of(
                         "myFunction",
-                        FUNCTION.with(P.asTypeConstructor().contravariant(), placeholder().covariant()), FUNCTION.with(P.asTypeConstructor().contravariant(), placeholder().covariant()), FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()),
-                        FUNCTION.with(P.asType().contravariant(), T.asType().covariant())
+                        FUNCTION.with(P.asTypeConstructor().contravariant(), placeholder().covariant()),
+                        FUNCTION.with(P.asTypeConstructor().contravariant(), placeholder().covariant()),
+                        FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()),
+                        FUNCTION.with(P.asType().contravariant(), T.asType().covariant()),
+                        FUNCTION.with(P.asType().contravariant(), U.asType().covariant()),
+                        FUNCTION.with(P.asType().invariant(), V.asType().invariant())
                 )
         );
         Validated<CovariantAccumulatorValidator.Result> toVerify = CovariantAccumulatorValidator.validate(toValidate);

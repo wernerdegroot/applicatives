@@ -1,4 +1,6 @@
-* Allow non-builder to have method type parameters again.
+* No access modifiers should be a validation error too
+* Are the initializer and finalizer always the same, validation-wise?
+* Static -> class, abstract instance method -> abstract class
 * Because builder-methods are not for exposing, perhaps pass reference to builder object instead (make this configurable `style = "inheritance"` or `style = "delegation"`).
 * Return type of `lift` does not need to be co- or contravariant in its arguments
 * Solve warnings about missing encoding
@@ -9,7 +11,6 @@
 * Collector applicative
 * combineAndThen
 * Validation should be able to accept context object to use in message templates
-* Allow for statics (just a single super-class allowed though)
 * Document process to publish
 * Github Actions
 * Code coverage

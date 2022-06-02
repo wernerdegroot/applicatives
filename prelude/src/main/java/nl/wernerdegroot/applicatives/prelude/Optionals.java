@@ -7,6 +7,12 @@ import java.util.function.BiFunction;
 
 public class Optionals implements OptionalsApplicative {
 
+    private static final Optionals INSTANCE = new Optionals();
+
+    public static Optionals instance() {
+        return INSTANCE;
+    }
+
     @Override
     @Covariant(className = "OptionalsApplicative")
     public <A, B, C> Optional<C> combine(Optional<? extends A> left, Optional<? extends B> right, BiFunction<? super A, ? super B, ? extends C> fn) {

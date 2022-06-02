@@ -12,8 +12,6 @@ import java.util.function.BiFunction;
  */
 @SuppressWarnings("unchecked")
 public class FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth> implements
-        Tuple0,
-        Tuple1<First>,
         Tuple2<First, Second>,
         Tuple3<First, Second, Third>,
         Tuple4<First, Second, Third, Fourth>,
@@ -88,10 +86,6 @@ public class FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eigh
         this.elements[1] = second;
     }
 
-    public static Tuple0 emptyWithMaxSize(int maxSize) {
-        return new FastTuple<>(maxSize);
-    }
-
     public static <First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth> BiFunction<First, Second, FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth>> withMaxSize(int maxSize) {
         return (first, second) -> new FastTuple<>(first, second, maxSize);
     }
@@ -100,18 +94,8 @@ public class FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eigh
         return (First) elements[0];
     }
 
-    @Override
-    public <T> FastTuple<T, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth> withFirst(T value) {
-        return (FastTuple<T, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth>) mutateOrCopy(0, value);
-    }
-
     public Second getSecond() {
         return (Second) elements[1];
-    }
-
-    @Override
-    public <T> FastTuple<First, T, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth> withSecond(T value) {
-        return (FastTuple<First, T, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth>) mutateOrCopy(1, value);
     }
 
     public Third getThird() {

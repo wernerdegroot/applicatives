@@ -11,9 +11,6 @@ public interface OptionalsMixin {
 
     class Tuples {
 
-        public static <P1, P2> java.util.Optional<nl.wernerdegroot.applicatives.runtime.Tuple2<P1, P2>> tuple(nl.wernerdegroot.applicatives.OptionalsMixin self, java.util.Optional<? extends P1> first, java.util.Optional<? extends P2> second, int maxSize) {
-            return self.compose(first, second, nl.wernerdegroot.applicatives.runtime.FastTuple.withMaxSize(maxSize));
-        }
 
     }
 

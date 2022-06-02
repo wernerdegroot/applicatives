@@ -67,8 +67,9 @@ public class GeneratorTest {
                 .withOptionalInitializer(
                         Optional.of(
                                 CovariantInitializer.of(
-                                        "singleton",
-                                        ARRAY_LIST.asTypeConstructor()
+                                        "initialize",
+                                        LIST.with(placeholder().covariant()),
+                                        ARRAY_LIST.with(placeholder().invariant())
                                 )
                         )
                 )

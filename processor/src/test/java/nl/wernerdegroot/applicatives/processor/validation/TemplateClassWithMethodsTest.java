@@ -33,6 +33,7 @@ public class TemplateClassWithMethodsTest {
                 Optional.of(
                         CovariantInitializer.of(
                                 "initializer",
+                                ARDUOUS.with(A.asTypeConstructor().covariant(), placeholder().invariant(), B.asTypeConstructor().contravariant()),
                                 ERUDITE.with(A.asTypeConstructor().invariant(), placeholder().invariant(), B.asTypeConstructor().invariant())
                         )
                 ),
@@ -56,6 +57,7 @@ public class TemplateClassWithMethodsTest {
                 Optional.of(
                         CovariantInitializer.of(
                                 "initializer",
+                                ARDUOUS.with(B.asTypeConstructor().covariant(), placeholder().invariant(), A.asTypeConstructor().contravariant()),
                                 ERUDITE.with(B.asTypeConstructor().invariant(), placeholder().invariant(), A.asTypeConstructor().invariant())
                         )
                 ),

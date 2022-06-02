@@ -62,11 +62,18 @@ public class Person {
         this.lastName = lastName;
     }
 
-    // Getters, hashCode, equals and toString omitted for brevity
+    // Getters, hashCode, equals and toString
 }
 ```
 
-Let's pretend it will take some time for the application to come up with a `firstName` and a `lastName`. Perhaps you need to load those from a slow database, or make a network request.
+Let's pretend it will take some time for the application to come up with a `firstName` and a `lastName`. Perhaps you need to load those from a slow database, or make a network request:
+
+```java
+String firstName = "Jack";
+TimeUnit.HOURS.sleep(24);
+String lastName = "Bauer";
+Person person = new Person(firstName, lastName);
+```
 
 Instead of blocking the main thread of your application, you decide to switch to non-blocking `CompletableFuture`s. Although it will take some time to obtain the `firstName` and `lastName` and combine those into a `Person`, the application is free to perform other, useful tasks while it waits:
 
@@ -87,7 +94,7 @@ CompletableFuture<String> futureLastName =
 CompletableFuture<Person> futurePerson =
         futureFirstName.thenCombine(futureLastName, Person::new);
 
-// Do something useful while we wait for the `Person`. 
+// Do something useful while we wait for the Person. 
 ```
 
 The method [`thenCombine`](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFuture.html#thenCombine-java.util.concurrent.CompletionStage-java.util.function.BiFunction-) combines the result of two `CompletableFuture`s (by using a `BiFunction` that you provide). However, if you want to combine more than two `CompletableFuture`s you are out of luck.
@@ -111,7 +118,7 @@ public class PokemonCard {
         this.moves = moves;
     }
 
-    // Getters, hashCode, equals and toString omitted for brevity
+    // Getters, hashCode, equals and toString
 }
 ```
 
@@ -186,7 +193,7 @@ With these overloads in our toolbox, combining four `CompletableFuture`s is as e
 
 ```java
 CompletableFuture<PokemonCard> futurePokemonCard =
-        CompletableFutures.combine(
+        CompletableFutures.instance().combine(
                 futureName,
                 futureHp,
                 futureEnergyType,
@@ -195,9 +202,28 @@ CompletableFuture<PokemonCard> futurePokemonCard =
         );
 ```
 
+In the example above, I took the liberty to add a method `instance` to `CompletableFutures`. This method is not essential to make the overloads work.
+
+```java
+public class CompletableFutures implements CompletableFuturesApplicative {
+    
+    private static final CompletableFutures INSTANCE = new CompletableFutures(); 
+
+    // Because `CompletableFutures.instance()` reads just a tad nicer
+    // than `new CompletableFutures()` and provides opportunities to
+    // reuse the same instance over and over again:
+    public static CompletableFutures instance() {
+        return INSTANCE;
+    }
+
+    // Like before
+
+}
+```
+
 ## Another example
 
-In order to test the new application that you and your co-workers are building, it would be helpful to be able to generate a bunch of random `PokemonCard` objects to seed the test environment with. One of your co-workers already did much of the hard work, and she wrote the following functions:
+In order to test the new Pokemon card application that you and your co-workers are building, it would be helpful to be able to generate a bunch of random `PokemonCard` objects to seed the test environment with. One of your co-workers already did much of the hard work, and she wrote the following functions:
 
 ```java
 // Generate a random name:
@@ -228,12 +254,18 @@ Function<Random, PokemonCard> randomPokemonCard = random -> {
 };
 ```
 
-There is a more convenient way to combine these four generators into a generator for `Person` objects. 
+There is a more convenient and elegant way to combine these four generators into a generator for `PokemonCard` objects. 
 
-We provide a way to combine two random generator functions, and are rewarded with a bunch of overloads that combine three or more of those:
+If we write a method to combine two random generator functions, the Applicatives library will reward us with a bunch of overloads that combine three or more of those:
 
 ```java
 public class RandomGeneratorFunctions implements RandomGeneratorFunctionsApplicative {
+    
+    private static final RandomGeneratorFunctions INSTANCE = new RandomGeneratorFunctions();
+    
+    public static RandomGeneratorFunctions instance() {
+        return INSTANCE;
+    }
 
     @Override
     @Covariant(className = "RandomGeneratorFunctionsApplicative")
@@ -253,14 +285,14 @@ public class RandomGeneratorFunctions implements RandomGeneratorFunctionsApplica
 All that's left for us is to reap the benefits:
 
 ```java
-Function<Random, Person> randomPerson = new RandomGeneratorFunctions()
-    .combine(
-        randomPersonId,
-        randomFirstName,
-        randomLastName,
-        randomBirthDate,
-        Person::new
-    );
+Function<Random, Person> randomPerson = 
+        RandomGeneratorFunctions.instance().combine(
+            randomPersonId,
+            randomFirstName,
+            randomLastName,
+            randomBirthDate,
+            Person::new
+        );
 ```
 
 ## The rules
@@ -268,66 +300,44 @@ Function<Random, Person> randomPerson = new RandomGeneratorFunctions()
 You will need to write a class that looks like the following (for a given, imaginary class `Foo`):
 
 ```
-  ┌────────────────────────────────────────────────────────────────────────────────────┐         ┌──────────────────────────────────────────────────────────────────────────────────────────────┐
-  │                         BiFunction<String, String, Person>                         │         │                              BiFunction<String, String, Person>                              │
-  └────────────────────────────────────────────────────────────────────────────────────┘         └──────────────────────────────────────────────────────────────────────────────────────────────┘
-                                             │                                                                                                   │                                               
-                                             │  Optionals.lift                                                                                   │  CompletableFutures.lift                      
-                                             ▼                                                                                                   ▼                                               
-  ┌────────────────────────────────────────────────────────────────────────────────────┐         ┌──────────────────────────────────────────────────────────────────────────────────────────────┐
-  │          BiFunction<Optional<String>, Optional<String>, Optional<Person>>          │         │ BiFunction<CompletableFuture<String>, CompletableFuture<String>, CompletableFuture<Person>>  │
-  └────────────────────────────────────────────────────────────────────────────────────┘         └──────────────────────────────────────────────────────────────────────────────────────────────┘
-                                             │                                                                                                                                                   
-                                             │  Lists.lift                                                                                                                                       
-                                             ▼                                                                                                                                                   
-  ┌────────────────────────────────────────────────────────────────────────────────────┐                                                                                                         
-  │ BiFunction<List<Optional<String>>, List<Optional<String>>, List<Optional<Person>>> │                                                                                                         
-  └────────────────────────────────────────────────────────────────────────────────────┘                                                                                                         
-                                                                                                                                                                                                 
-                                                                                                                                                                                                 
-                                                                                                                                                                                                 
-                                                                                                                                                                                                 
- ┌─────────────────────────────────────┐                                                                                                                                                         
- │ Name of the class is not important. │                                                                                                                                                         
- └──────────────────┬──────────────────┘                                                                                                                                                         
-                    │         ┌─────────────────────────────────────────────┐                                                                                                                    
-                    │         │ Class can have type parameters. These need  │                                                                                                                    
-                    │         │ to provided to the generated class as well. │                                                                                                                    
-                    │         └──────────┬────────────────────────────┬─────┘                                                                                                                    
-                    ▼                    ▼                            ▼                                                                                                                          
-public class CanBeAnything<C1, C2, ..., CN> implements GeneratedClass<C1, C2, ..., CN> {                                                                                                         
-                                                                                                                                                                                                 
-                 ┌──────────────────────────────────┐      ┌─────────────────────────────┐                                                                                                       
-                 │ Specify name of generated class. │   ┌──│ Explained in next section.  │                                                                                                       
-                 └─────────────────┬────────────────┘   │  └─────────────────────────────┘                                                                                                       
-    @Override                      ▼                    ▼                                                                                                                                        
-    @Covariant(className = "GeneratedClass", liftMethodName = "lift", maxArity = 26)                                                                                                             
-                                                                                                                                                                                                 
-  ┌─────────────────────────────────────────────┐        ┌────────────────────────────┐                                                                                                          
-  │ Method needs at least three type parameters │        │ Name of the method is not  │                                                                                                          
-  │  (although name is not important). You can  │    ┌───│  important, but overloads  │                                                                                                          
-  │   specify additional type parameters too.   │    │   │  will have the same name.  │                                                                                                          
-  └──────────────────────┬──────────────────────┘    │   └────────────────────────────┘                                                                                                          
-                         ▼                           ▼                                                                                                                                           
-    public <A, B, C, M1, M2, ..., MN> Foo<C> whateverYouLike(     ┌───────────────────────────┐                                                                                                  
-                                       ▲                          │  Typically, the types of  │                                                                                                  
-            Foo<A> left,  ◀──────┐     │                          │  these are identical. In  │                                                                                                  
-                                 ├─────┴──────────────────────────│ some cases, the types are │                                                                                                  
-            Foo<B> right, ◀──────┘                                │  allowed to diverge. See  │                                                                                                  
-                                                                  │   "Type constructors".    │                                                                                                  
-            BiFunction<? super A, ? super B, ? extends C> fn,     └───────────────────────────┘                                                                                                  
-                                                                                                                                                                                                 
-            Bar<M1> bar,  ◀───┐                                                                                                                                                                  
-                              │    ┌────────────────────────────────────────┐                                                                                                                    
-            Baz baz,      ◀───┤    │ Method can have additional parameters. │                                                                                                                    
-                              ├────│    These need to be provided to the    │                                                                                                                    
-            ...,          ◀───┤    │    overloads of the method as well.    │                                                                                                                    
-                              │    └────────────────────────────────────────┘                                                                                                                    
-            Qux qux) {    ◀───┘                                                                                                                                                                  
-                                   ┌────────────────────┐                                                                                                                                        
-        return ...;  ◀─────────────│ This is up to you! │                                                                                                                                        
-    }                              └────────────────────┘                                                                                                                                        
-}                                                                                                                                                                                                
+ ┌─────────────────────────────────────┐                                                          
+ │ Name of the class is not important. │                                                          
+ └──────────────────┬──────────────────┘                                                          
+                    │            ┌─────────────────────────────────────────────┐                  
+                    │            │ Class can have type parameters. These need  │                  
+                    │            │ to provided to the generated class as well. │                  
+                    │            └───────┬────────────────────────────┬────────┘                  
+                    ▼                    ▼                            ▼                           
+public class CanBeAnything<C1, C2, ..., CN> implements GeneratedClass<C1, C2, ..., CN> {          
+                                                                                                  
+                 ┌──────────────────────────────────┐      ┌─────────────────────────────┐        
+                 │ Specify name of generated class. │   ┌──┤ Explained in next section.  │        
+                 └─────────────────┬────────────────┘   │  └─────────────────────────────┘        
+    @Override                      ▼                    ▼                                         
+    @Covariant(className = "GeneratedClass", liftMethodName = "lift", maxArity = 26)              
+                                                                                                  
+ ┌────────────────────────────┐        ┌────────────────────────────┐                             
+ │ Method needs exactly three │        │ Name of the method is not  │                             
+ │ type parameters (although  │    ┌───┤  important, but overloads  │                             
+ │  name is not important).   │    │   │  will have the same name.  │                             
+ └─────────────┬──────────────┘    │   └────────────────────────────┘                             
+               ▼                   ▼                                 ┌───────────────────────────┐
+    public <A, B, C> Foo<C> whateverYouLike(                         │  Typically, the types of  │
+                        ▲                                            │  these are identical. In  │
+        Foo<A> left,  ◀─┼────────────────────────────────────────────┤ some cases, the types are │
+                        │                                            │  allowed to diverge. See  │
+        Foo<B> right, ◀─┘                                            │   "Type constructors".    │
+                                                                     └───────────────────────────┘
+        BiFunction<? super A, ? super B, ? extends C> combinator) {                               
+                                                          ▲                                       
+                        ┌────────────────────┐            │                                       
+        return ...;  ◀──┤ This is up to you! │            │                                       
+                        └────────────────────┘            │                                       
+    }                                 ┌───────────────────┴───────────────────┐                   
+}                                     │    Combinator function is always a    │                   
+                                      │     BiFunction with contravariant     │                   
+                                      │ parameters and covariant return type. │                   
+                                      └───────────────────────────────────────┘                   
 ```
 
 `Foo` can be any data structure for which you can write a class like above. Such data structures are called ["applicatives"](https://en.wikipedia.org/wiki/Applicative_functor). Common examples from the Java standard library are:
@@ -335,40 +345,27 @@ public class CanBeAnything<C1, C2, ..., CN> implements GeneratedClass<C1, C2, ..
 * `java.util.Optional`
 * `java.util.concurrent.CompletableFuture`
 * `java.util.function.Function`
+* `java.util.function.BiFunction`
 * `java.util.List`
 * `java.util.Map`
 * `java.util.Set`
 * `java.util.Stream`
+* `java.util.stream.Collector`
 
 There are many other data structures like this, such as `Mono`/`Flux` from [Reactor](https://projectreactor.io/), [parser combinators](https://en.wikipedia.org/wiki/Parser_combinator), validators, predicates, etc.
 
-Moreover, any "stack" of these data structures (a `List` of `Optional`s, or a `Function` that returns a `Stream` of `CompletableFuture`s) can automatically be combined this way too!
+Moreover, any "stack" of these data structures (a `List` of `Optional`s, or a `Function` that returns a `Stream` of `CompletableFuture`s) can automatically be combined this way too! The sections `Lift` and `Stacking` describe how stacking of applicatives works.
 
 ## Type constructors
 
-Note that, in the example above, the types of the parameters `left` and `right` are too strict. Applicatives are typically covariant, and you may want to adjust the types of the parameters to reflect this (`Foo<? extends A>` and `Foo<? extends B>` instead of `Foo<A>` and `Foo<B>`). This is similar to something you'll find in [the definition of `CompletableFuture.thenCombine`](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFuture.html#thenCombine-java.util.concurrent.CompletionStage-java.util.function.BiFunction-) and is [generally recommended](https://en.wikipedia.org/wiki/Robustness_principle):
+Note that, in the example above, the types of the parameters `left` and `right` are too strict. Applicatives are typically covariant, and you may want to adjust the types of the parameters to reflect this (use `Foo<? extends A>` and `Foo<? extends B>` instead of `Foo<A>` and `Foo<B>`). This is similar to something you'll find in [the definition of `CompletableFuture.thenCombine`](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFuture.html#thenCombine-java.util.concurrent.CompletionStage-java.util.function.BiFunction-) and is [generally recommended](https://en.wikipedia.org/wiki/Robustness_principle):
 
 > Among programmers, to produce [compatible functions](https://en.wikipedia.org/wiki/Liskov_substitution_principle), the principle is also known in the form [be contravariant in the input type and covariant in the output type](https://en.wikipedia.org/wiki/Covariance_and_contravariance_(computer_science)).
 
 The types of `left` and `right` are allowed to diverge as well. This is considered to be an advanced feature, but could be necessary to prevent the execution time overhead of excessive copying. See [the implementation of the applicative for `List`](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/main/java/nl/wernerdegroot/applicatives/prelude/Lists.java) for inspiration. 
 
 ## Lift
-
-Using `lift`, you can transform every `BiFunction<A, B, C>` into a `BiFunction<CompletableFuture<A>, CompletableFuture<B>, CompletableFuture<C>>` or `BiFunction<Stream<A>, Stream<B>, Stream<C>>` or whatever applicative you may choose to lift this function into. You are not limited to a `BiFunction` either. Any function with up to 26 arguments can be lifted in this fashion. Let's check out an example:
-
-```java
-// Ordinary function to construct a `Person` from a `String` (first name) and another `String` (last name):
-BiFunction<String, String, Person> createPerson = Person::new;
-
-// Lifted function that's just like `createPerson` but is able to deal with `CompletableFuture`s:
-BiFunction<CompletableFuture<String>, CompletableFuture<String>, CompletableFuture<Person>> createFuturePerson =
-        CompletableFutures.lift(person);
-
-// Call the lifted function:
-CompletableFuture<Person> futurePerson = createFuturePerson.apply(futureFirstName, futureLastName);
-```
-
-Lifting is a way to "upgrade" a function that works with regular values like `String`s and `Integer`s (usually very easy to write) to a similar function that works with `CompletableFuture`s like `CompletableFuture<String>`s and `CompletableFuture<Integer>`s instead (usually much more tiresome to write):
+Lifting is a way to "upgrade" a function that works with regular values like `String`s and `Integer`s (usually very easy to write) to a similar function that works with, for example, `CompletableFuture`s like `CompletableFuture<String>`s and `CompletableFuture<Integer>`s instead (which is usually much more tiresome to write).
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -382,67 +379,74 @@ Lifting is a way to "upgrade" a function that works with regular values like `St
 └──────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-Why would you prefer using `lift` over calling the `combine`-overload that accepts two `CompletableFuture`s?
+Using `lift`, you can transform any `BiFunction<A, B, C>` into a `BiFunction<CompletableFuture<A>, CompletableFuture<B>, CompletableFuture<C>>` or `BiFunction<Stream<A>, Stream<B>, Stream<C>>` or whatever applicative you may choose to lift this function into. You are not limited to a `BiFunction` either. Any function with up to 26 arguments can be lifted in this fashion.
+
+Let's check out an example:
+
+```java
+CompletableFuture<Person> futurePerson = 
+        CompletableFutures.instance().lift(Person::new).apply(
+            futureFirstName, 
+            futureLastName
+        );
+```
+
+You may want to argue that the code above could be written just as succinctly as:
+
+```java
+CompletableFuture<Person> futurePerson = 
+        CompletableFutures.instance().combine(
+            futureFirstName, 
+            futureLastName,
+            Person::new
+        );
+```
+
+And you would be right! So, why would you ever prefer using `lift` over calling the `combine`-overload that accepts two `CompletableFuture`s?
 
 ## Stacking
 
 The nice thing about applicatives is that a "stack" of two applicatives is an applicative as well.
 
-Because both `Optional` and `List` are applicatives, the combination (a list of optionals) is an applicative too. We can combine a `List<Optional<String>>` (first names) and another `List<Optional<String>>` (last names) into a `List<Optional<Person>>` as easily as creating a `Person` from two `String`s directly:
+Because both `CompletableFuture` and `List` are applicatives, the combination (a list of optionals) is an applicative too. We can combine a `CompletableFuture<List<String>>` (first names) and another `CompletableFuture<List<String>>` (last names) into a `CompletableFuture<List<Person>>` by lifting the combinator `Person::new` twice:
 
 ```java
-List<Optional<String>> firstNames = asList(
-        Optional.of("Jack"), 
-        Optional.of("Kim")
-);
+CompletableFuture<List<String>> futureFirstNames =
+        CompletableFuture.completedFuture(asList("Jack", "Kim"));
 
-List<Optional<String>> lastNames = asList(
-        Optional.of("Bauer"),
-        Optional.empty()
-);
+CompletableFuture<List<String>> futureLastNames =
+        CompletableFuture.supplyAsync(() -> {
+            TimeUnit.HOURS.sleep(24);
+            return asList("Bauer");
+        });
 
-List<Optional<Person>> persons = 
-        Lists.lift(Optionals.lift(Person::new)).apply(firstNames, lastNames);
-
-assertEquals(
-        // Expected:
-        asList(
-            // Combination of `Optional.of("Jack")` and `Optional.of("Bauer")`:
-            Optional.of(new Person("Jack", "Bauer")),
-        
-            // Combination of `Optional.of("Jack")` and `Optional.empty()`:
-            Optional.empty(),
-
-            // Combination of `Optional.of("Kim")` and `Optional.of("Bauer")`:
-            Optional.of(new Person("Kim", "Bauer")),
-
-            // Combination of `Optional.of("Kim")` and `Optional.empty()`:
-            Optional.empty(),
-        ),
-
-        // Actual:
-        persons
-);
+// Will yield `new Person("Jack", "Bauer")` and `new Person("Kim", "Bauer")` 
+// as soon as `futureLastNames` resolves.
+CompletableFuture<List<Person>> futurePersons = 
+        CompletableFutures.instance().lift(Lists.instance().lift(Person::new)).apply(
+            futureFirstNames, 
+            futureLastNames
+        );
 ```
 
 We are lifting `Person::new` twice:
 
 ```
-┌────────────────────────────────────────────────────────────────────────────────────┐
-│                         BiFunction<String, String, Person>                         │
-└────────────────────────────────────────────────────────────────────────────────────┘
-                                           │                                          
-                                           │  Optionals.lift                          
-                                           ▼                                          
-┌────────────────────────────────────────────────────────────────────────────────────┐
-│          BiFunction<Optional<String>, Optional<String>, Optional<Person>>          │
-└────────────────────────────────────────────────────────────────────────────────────┘
-                                           │                                          
-                                           │  Lists.lift                              
-                                           ▼                                          
-┌────────────────────────────────────────────────────────────────────────────────────┐
-│ BiFunction<List<Optional<String>>, List<Optional<String>>, List<Optional<Person>>> │
-└────────────────────────────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                       BiFunction<String, String, Person>                                       │
+└────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+                                                         │                                                        
+                                                         │  Lists.lift                                            
+                                                         ▼                                                        
+┌────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                              BiFunction<List<String>, List<String>, List<Person>>                              │
+└────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+                                                         │                                                        
+                                                         │  CompletableFutures.lift                               
+                                                         ▼                                                        
+┌────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ BiFunction<CompletableFuture<List<String>>, CompletableFuture<List<String>>,  CompletableFuture<List<Person>>> │
+└────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 If we wanted to, we could even lift the result once more. You can keep stacking applicatives!

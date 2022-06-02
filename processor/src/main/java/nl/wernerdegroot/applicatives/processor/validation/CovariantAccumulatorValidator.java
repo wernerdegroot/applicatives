@@ -3,7 +3,6 @@ package nl.wernerdegroot.applicatives.processor.validation;
 import nl.wernerdegroot.applicatives.processor.domain.Method;
 import nl.wernerdegroot.applicatives.processor.domain.Parameter;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameter;
-import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor;
 
@@ -15,7 +14,6 @@ import java.util.Set;
 import static java.util.stream.Collectors.toSet;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.BI_FUNCTION;
 import static nl.wernerdegroot.applicatives.processor.generator.TypeGenerator.generateFrom;
-import static nl.wernerdegroot.applicatives.processor.generator.TypeGenerator.type;
 
 public class CovariantAccumulatorValidator {
 
@@ -82,7 +80,9 @@ public class CovariantAccumulatorValidator {
                         inputTypeConstructor,
                         partiallyAccumulatedTypeConstructor,
                         accumulatedTypeConstructor,
-                        leftParameter.getType()
+                        leftParameter.getType(),
+                        rightParameter.getType(),
+                        returnType
                 )
         );
     }
@@ -103,17 +103,21 @@ public class CovariantAccumulatorValidator {
         private final TypeConstructor partiallyAccumulatedTypeConstructor;
         private final TypeConstructor accumulatedTypeConstructor;
         private final Type firstParameterType;
+        private final Type secondParameterType;
+        private final Type returnType;
 
-        public Result(String name, TypeConstructor inputTypeConstructor, TypeConstructor partiallyAccumulatedTypeConstructor, TypeConstructor accumulatedTypeConstructor, Type firstParameterType) {
+        public Result(String name, TypeConstructor inputTypeConstructor, TypeConstructor partiallyAccumulatedTypeConstructor, TypeConstructor accumulatedTypeConstructor, Type firstParameterType, Type secondParameterType, Type returnType) {
             this.name = name;
             this.inputTypeConstructor = inputTypeConstructor;
             this.partiallyAccumulatedTypeConstructor = partiallyAccumulatedTypeConstructor;
             this.accumulatedTypeConstructor = accumulatedTypeConstructor;
             this.firstParameterType = firstParameterType;
+            this.secondParameterType = secondParameterType;
+            this.returnType = returnType;
         }
 
-        public static Result of(String name, TypeConstructor inputTypeConstructor, TypeConstructor partiallyAccumulatedTypeConstructor, TypeConstructor accumulatedTypeConstructor, Type firstParameterType) {
-            return new Result(name, inputTypeConstructor, partiallyAccumulatedTypeConstructor, accumulatedTypeConstructor, firstParameterType);
+        public static Result of(String name, TypeConstructor inputTypeConstructor, TypeConstructor partiallyAccumulatedTypeConstructor, TypeConstructor accumulatedTypeConstructor, Type firstParameterType, Type secondParameterType, Type returnType) {
+            return new Result(name, inputTypeConstructor, partiallyAccumulatedTypeConstructor, accumulatedTypeConstructor, firstParameterType, secondParameterType, returnType);
         }
 
         public String getName() {
@@ -136,17 +140,25 @@ public class CovariantAccumulatorValidator {
             return firstParameterType;
         }
 
+        public Type getSecondParameterType() {
+            return secondParameterType;
+        }
+
+        public Type getReturnType() {
+            return returnType;
+        }
+
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Result result = (Result) o;
-            return Objects.equals(getName(), result.getName()) && Objects.equals(getInputTypeConstructor(), result.getInputTypeConstructor()) && Objects.equals(getPartiallyAccumulatedTypeConstructor(), result.getPartiallyAccumulatedTypeConstructor()) && Objects.equals(getAccumulatedTypeConstructor(), result.getAccumulatedTypeConstructor()) && Objects.equals(getFirstParameterType(), result.getFirstParameterType());
+            return Objects.equals(getName(), result.getName()) && Objects.equals(getInputTypeConstructor(), result.getInputTypeConstructor()) && Objects.equals(getPartiallyAccumulatedTypeConstructor(), result.getPartiallyAccumulatedTypeConstructor()) && Objects.equals(getAccumulatedTypeConstructor(), result.getAccumulatedTypeConstructor()) && Objects.equals(getFirstParameterType(), result.getFirstParameterType()) && Objects.equals(getSecondParameterType(), result.getSecondParameterType()) && Objects.equals(getReturnType(), result.getReturnType());
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(getName(), getInputTypeConstructor(), getPartiallyAccumulatedTypeConstructor(), getAccumulatedTypeConstructor(), getFirstParameterType());
+            return Objects.hash(getName(), getInputTypeConstructor(), getPartiallyAccumulatedTypeConstructor(), getAccumulatedTypeConstructor(), getFirstParameterType(), getSecondParameterType(), getReturnType());
         }
 
         @Override
@@ -157,6 +169,8 @@ public class CovariantAccumulatorValidator {
                     ", partiallyAccumulatedTypeConstructor=" + partiallyAccumulatedTypeConstructor +
                     ", accumulatedTypeConstructor=" + accumulatedTypeConstructor +
                     ", firstParameterType=" + firstParameterType +
+                    ", secondParameterType=" + secondParameterType +
+                    ", returnType=" + returnType +
                     '}';
         }
     }
