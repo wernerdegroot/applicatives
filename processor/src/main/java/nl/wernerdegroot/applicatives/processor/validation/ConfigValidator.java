@@ -8,7 +8,7 @@ public class ConfigValidator {
 
     private static final Pattern VALID_IDENTIFIER = Pattern.compile("^([a-zA-Z_$][a-zA-Z\\d_$]*)$");
 
-    public static Validated<Void> validate(String classNameToGenerate, String liftMethodName, int maxArity) {
+    public static Validated<String, Void> validate(String classNameToGenerate, String liftMethodName, int maxArity) {
         Set<String> errorMessages = new HashSet<>();
         errorMessages.addAll(isClassNameToGenerateValid(classNameToGenerate));
         errorMessages.addAll(isLiftMethodNameToGenerateValid(liftMethodName));

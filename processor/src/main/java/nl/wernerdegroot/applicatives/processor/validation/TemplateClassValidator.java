@@ -8,7 +8,7 @@ import java.util.Objects;
 
 public class TemplateClassValidator {
 
-    public static Validated<Result> validate(ContainingClass containingClass) {
+    public static Validated<String, Result> validate(ContainingClass containingClass) {
 
         // We check whether we're dealing with an outer class or a static inner class.
         // Why is this required? Consider the following scenario:

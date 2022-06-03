@@ -33,8 +33,8 @@ public class CovariantInitializerOrFinalizerValidatorTest {
                 asList(Parameter.of(ARRAY_LIST.with(T), "value"))
         );
 
-        Validated<CovariantInitializerOrFinalizerValidator.Result> expected = Validated.invalid("Method needs to return something");
-        Validated<CovariantInitializerOrFinalizerValidator.Result> toVerify = CovariantInitializerOrFinalizerValidator.validate(toValidate);
+        Validated<String, CovariantInitializerOrFinalizerValidator.Result> expected = Validated.invalid("Method needs to return something");
+        Validated<String, CovariantInitializerOrFinalizerValidator.Result> toVerify = CovariantInitializerOrFinalizerValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -50,8 +50,8 @@ public class CovariantInitializerOrFinalizerValidatorTest {
                 asList(Parameter.of(ARRAY_LIST.with(T), "value"))
         );
 
-        Validated<CovariantInitializerOrFinalizerValidator.Result> expected = Validated.invalid("Method is static and cannot implement an abstract method");
-        Validated<CovariantInitializerOrFinalizerValidator.Result> toVerify = CovariantInitializerOrFinalizerValidator.validate(toValidate);
+        Validated<String, CovariantInitializerOrFinalizerValidator.Result> expected = Validated.invalid("Method is static and cannot implement an abstract method");
+        Validated<String, CovariantInitializerOrFinalizerValidator.Result> toVerify = CovariantInitializerOrFinalizerValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -67,8 +67,8 @@ public class CovariantInitializerOrFinalizerValidatorTest {
                 asList(Parameter.of(ARRAY_LIST.with(T), "value"))
         );
 
-        Validated<CovariantInitializerOrFinalizerValidator.Result> expected = Validated.invalid("Method is private and cannot implement an abstract method");
-        Validated<CovariantInitializerOrFinalizerValidator.Result> toVerify = CovariantInitializerOrFinalizerValidator.validate(toValidate);
+        Validated<String, CovariantInitializerOrFinalizerValidator.Result> expected = Validated.invalid("Method is private and cannot implement an abstract method");
+        Validated<String, CovariantInitializerOrFinalizerValidator.Result> toVerify = CovariantInitializerOrFinalizerValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -84,8 +84,8 @@ public class CovariantInitializerOrFinalizerValidatorTest {
                 asList(Parameter.of(ARRAY_LIST.with(T), "value"))
         );
 
-        Validated<CovariantInitializerOrFinalizerValidator.Result> expected = Validated.invalid("The type parameters need to be unbounded");
-        Validated<CovariantInitializerOrFinalizerValidator.Result> toVerify = CovariantInitializerOrFinalizerValidator.validate(toValidate);
+        Validated<String, CovariantInitializerOrFinalizerValidator.Result> expected = Validated.invalid("The type parameters need to be unbounded");
+        Validated<String, CovariantInitializerOrFinalizerValidator.Result> toVerify = CovariantInitializerOrFinalizerValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -101,8 +101,8 @@ public class CovariantInitializerOrFinalizerValidatorTest {
                 asList(Parameter.of(ARRAY_LIST.with(STRING), "value"))
         );
 
-        Validated<CovariantInitializerOrFinalizerValidator.Result> expected = Validated.invalid("Method requires exactly 1 type parameters, but found 0");
-        Validated<CovariantInitializerOrFinalizerValidator.Result> toVerify = CovariantInitializerOrFinalizerValidator.validate(toValidate);
+        Validated<String, CovariantInitializerOrFinalizerValidator.Result> expected = Validated.invalid("Method requires exactly 1 type parameters, but found 0");
+        Validated<String, CovariantInitializerOrFinalizerValidator.Result> toVerify = CovariantInitializerOrFinalizerValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -118,8 +118,8 @@ public class CovariantInitializerOrFinalizerValidatorTest {
                 asList(Parameter.of(ARRAY_LIST.with(T), "value"))
         );
 
-        Validated<CovariantInitializerOrFinalizerValidator.Result> expected = Validated.invalid("Method requires exactly 1 type parameters, but found 2");
-        Validated<CovariantInitializerOrFinalizerValidator.Result> toVerify = CovariantInitializerOrFinalizerValidator.validate(toValidate);
+        Validated<String, CovariantInitializerOrFinalizerValidator.Result> expected = Validated.invalid("Method requires exactly 1 type parameters, but found 2");
+        Validated<String, CovariantInitializerOrFinalizerValidator.Result> toVerify = CovariantInitializerOrFinalizerValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -135,8 +135,8 @@ public class CovariantInitializerOrFinalizerValidatorTest {
                 asList()
         );
 
-        Validated<CovariantInitializerOrFinalizerValidator.Result> expected = Validated.invalid("Method requires exactly 1 parameters, but found 0");
-        Validated<CovariantInitializerOrFinalizerValidator.Result> toVerify = CovariantInitializerOrFinalizerValidator.validate(toValidate);
+        Validated<String, CovariantInitializerOrFinalizerValidator.Result> expected = Validated.invalid("Method requires exactly 1 parameters, but found 0");
+        Validated<String, CovariantInitializerOrFinalizerValidator.Result> toVerify = CovariantInitializerOrFinalizerValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -152,8 +152,8 @@ public class CovariantInitializerOrFinalizerValidatorTest {
                 asList(Parameter.of(ARRAY_LIST.with(T), "left"), Parameter.of(ARRAY_LIST.with(T), "right"))
         );
 
-        Validated<CovariantInitializerOrFinalizerValidator.Result> expected = Validated.invalid("Method requires exactly 1 parameters, but found 2");
-        Validated<CovariantInitializerOrFinalizerValidator.Result> toVerify = CovariantInitializerOrFinalizerValidator.validate(toValidate);
+        Validated<String, CovariantInitializerOrFinalizerValidator.Result> expected = Validated.invalid("Method requires exactly 1 parameters, but found 2");
+        Validated<String, CovariantInitializerOrFinalizerValidator.Result> toVerify = CovariantInitializerOrFinalizerValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -169,8 +169,8 @@ public class CovariantInitializerOrFinalizerValidatorTest {
                 asList(Parameter.of(ARRAY_LIST.with(T), "value"))
         );
 
-        Validated<CovariantInitializerOrFinalizerValidator.Result> expected = Validated.valid(CovariantInitializerOrFinalizerValidator.Result.of("myFunction", ARRAY_LIST.with(T), ARRAY_LIST.asTypeConstructor(), LIST.with(T), LIST.asTypeConstructor()));
-        Validated<CovariantInitializerOrFinalizerValidator.Result> toVerify = CovariantInitializerOrFinalizerValidator.validate(toValidate);
+        Validated<String, CovariantInitializerOrFinalizerValidator.Result> expected = Validated.valid(CovariantInitializerOrFinalizerValidator.Result.of("myFunction", ARRAY_LIST.with(T), ARRAY_LIST.asTypeConstructor(), LIST.with(T), LIST.asTypeConstructor()));
+        Validated<String, CovariantInitializerOrFinalizerValidator.Result> toVerify = CovariantInitializerOrFinalizerValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }

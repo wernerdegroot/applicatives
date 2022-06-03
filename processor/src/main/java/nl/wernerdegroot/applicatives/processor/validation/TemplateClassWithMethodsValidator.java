@@ -12,7 +12,7 @@ import static nl.wernerdegroot.applicatives.processor.generator.TypeGenerator.ge
 
 public class TemplateClassWithMethodsValidator {
 
-    public static Validated<Result> validate(ContainingClass containingClass, Method method) {
+    public static Validated<String, Result> validate(ContainingClass containingClass, Method method) {
         return Validated.combine(
                 validateTemplateClass(containingClass),
                 validateAccumulator(method),
@@ -20,7 +20,7 @@ public class TemplateClassWithMethodsValidator {
         );
     }
 
-    public static Validated<Result> validate(ContainingClass containingClass, List<Method> methods) {
+    public static Validated<String, Result> validate(ContainingClass containingClass, List<Method> methods) {
         return Validated.combine(
                 validateTemplateClass(containingClass),
                 validateInitializer(methods),
@@ -51,17 +51,17 @@ public class TemplateClassWithMethodsValidator {
                     }
 
                     return messages.isEmpty()
-                            ? Validated.valid(templateClassWithMethods(templateClass, optionalInitializer, accumulator, optionalFinalizer))
-                            : Validated.<Result>invalid(messages);
+                            ? Validated.<String, Result>valid(templateClassWithMethods(templateClass, optionalInitializer, accumulator, optionalFinalizer))
+                            : Validated.<String, Result>invalid(messages);
                 }
         ).flatMap(Function.identity());
     }
 
-    private static Validated<TemplateClassValidator.Result> validateTemplateClass(ContainingClass containingClass) {
+    private static Validated<String, TemplateClassValidator.Result> validateTemplateClass(ContainingClass containingClass) {
         return TemplateClassValidator.validate(containingClass);
     }
 
-    private static Validated<Optional<CovariantInitializerOrFinalizerValidator.Result>> validateInitializer(List<Method> methods) {
+    private static Validated<String, Optional<CovariantInitializerOrFinalizerValidator.Result>> validateInitializer(List<Method> methods) {
         List<Method> candidates = methods
                 .stream()
                 .filter(method -> method.hasAnnotation(INITIALIZER))
@@ -76,11 +76,11 @@ public class TemplateClassWithMethodsValidator {
         }
     }
 
-    private static Validated<CovariantAccumulatorValidator.Result> validateAccumulator(Method method) {
+    private static Validated<String, CovariantAccumulatorValidator.Result> validateAccumulator(Method method) {
         return CovariantAccumulatorValidator.validate(method);
     }
 
-    private static Validated<CovariantAccumulatorValidator.Result> validateAccumulator(List<Method> methods) {
+    private static Validated<String, CovariantAccumulatorValidator.Result> validateAccumulator(List<Method> methods) {
         List<Method> candidates = methods
                 .stream()
                 .filter(method -> method.hasAnnotation(ACCUMULATOR))
@@ -95,7 +95,7 @@ public class TemplateClassWithMethodsValidator {
         }
     }
 
-    private static Validated<Optional<CovariantInitializerOrFinalizerValidator.Result>> validateFinalizer(List<Method> methods) {
+    private static Validated<String, Optional<CovariantInitializerOrFinalizerValidator.Result>> validateFinalizer(List<Method> methods) {
         List<Method> candidates = methods
                 .stream()
                 .filter(method -> method.hasAnnotation(FINALIZER))

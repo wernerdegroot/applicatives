@@ -9,16 +9,17 @@ import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.stream.Collector;
 
-public class Collectors<T> implements CollectorsApplicative<T> {
+public class Collectors<T> implements CollectorsOverloads<T> {
 
     private static final Collectors<Object> INSTANCE = new Collectors<>();
 
+    @SuppressWarnings("unchecked")
     public static <T> Collectors<T> instance() {
         return (Collectors<T>) INSTANCE;
     }
 
     @Override
-    @Covariant(className = "CollectorsApplicative")
+    @Covariant(className = "CollectorsOverloads")
     public <A, B, C> Collector<T, ?, C> combine(Collector<T, ?, A> left, Collector<T, ?, B> right, BiFunction<? super A, ? super B, ? extends C> fn) {
         return typeSafeCombine(left, right, fn);
     }
