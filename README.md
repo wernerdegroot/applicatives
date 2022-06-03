@@ -5,14 +5,12 @@ Java code generation for applicative functors, selective functors and more.
 - [Applicatives](#applicatives)
     * [Getting started](#getting-started)
     * [Motivating example](#motivating-example)
-        + [Combining two `CompletableFuture`s](#combining-two--completablefuture-s)
-        + [Combining more `CompletableFuture`s](#combining-more--completablefuture-s)
+        + [Combining two `CompletableFuture`s](#combining-two-completablefutures)
+        + [Combining more `CompletableFuture`s](#combining-more-completablefutures)
     * [Another example](#another-example)
     * [The rules](#the-rules)
     * [`lift`](#-lift-)
     * [Stacking](#stacking)
-
-<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
 
 ## Getting started
 
@@ -171,10 +169,10 @@ All that it requires of you is to provide a way to combine two `CompletableFutur
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 
-public class CompletableFutures implements CompletableFuturesApplicative {
+public class CompletableFutures implements CompletableFuturesOverloads {
 
     @Override
-    @Covariant(className = "CompletableFuturesApplicative")
+    @Covariant(className = "CompletableFuturesOverloads")
     public <A, B, C> CompletableFuture<C> combine(
             CompletableFuture<A> left,
             CompletableFuture<B> right,
@@ -187,7 +185,7 @@ public class CompletableFutures implements CompletableFuturesApplicative {
 }
 ```
 
-When you compile, an interface named `CompletableFuturesApplicative` will be generated. This interface will have overloads for the `combine`-method which accept three or more `CompletableFuture`s to combine. If you want, you can specify how many overloads you'll need with the attribute `maxArity`.
+When you compile, an interface named `CompletableFuturesOverloads` will be generated. This interface will have overloads for the `combine`-method which accept three or more `CompletableFuture`s to combine. If you want, you can specify how many overloads you'll need with the attribute `maxArity`.
 
 With these overloads in our toolbox, combining four `CompletableFuture`s is as easy as combining two:
 
@@ -205,7 +203,7 @@ CompletableFuture<PokemonCard> futurePokemonCard =
 In the example above, I took the liberty to add a method `instance` to `CompletableFutures`. This method is not essential to make the overloads work.
 
 ```java
-public class CompletableFutures implements CompletableFuturesApplicative {
+public class CompletableFutures implements CompletableFuturesOverloads {
     
     private static final CompletableFutures INSTANCE = new CompletableFutures(); 
 
@@ -259,7 +257,7 @@ There is a more convenient and elegant way to combine these four generators into
 If we write a method to combine two random generator functions, the Applicatives library will reward us with a bunch of overloads that combine three or more of those:
 
 ```java
-public class RandomGeneratorFunctions implements RandomGeneratorFunctionsApplicative {
+public class RandomGeneratorFunctions implements RandomGeneratorFunctionsOverloads {
     
     private static final RandomGeneratorFunctions INSTANCE = new RandomGeneratorFunctions();
     
@@ -268,7 +266,7 @@ public class RandomGeneratorFunctions implements RandomGeneratorFunctionsApplica
     }
 
     @Override
-    @Covariant(className = "RandomGeneratorFunctionsApplicative")
+    @Covariant(className = "RandomGeneratorFunctionsOverloads")
     public <A, B, C> Function<Random, C> combine(
             Function<Random, A> left,
             Function<Random, B> right,
@@ -368,30 +366,31 @@ The types of `left` and `right` are allowed to diverge as well. This is consider
 Lifting is a way to "upgrade" a function that works with regular values like `String`s and `Integer`s (usually very easy to write) to a similar function that works with, for example, `CompletableFuture`s like `CompletableFuture<String>`s and `CompletableFuture<Integer>`s instead (which is usually much more tiresome to write).
 
 ```
-┌──────────────────────────────────────────────────────────────────────────────────────────────┐
-│                              BiFunction<String, String, Person>                              │
-└──────────────────────────────────────────────────────────────────────────────────────────────┘
-                                                │                                               
-                                                │  CompletableFutures.lift                       
-                                                ▼                                               
-┌──────────────────────────────────────────────────────────────────────────────────────────────┐
-│ BiFunction<CompletableFuture<String>, CompletableFuture<String>, CompletableFuture<Person>>  │
-└──────────────────────────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────────────────────┐
+│                              BiFunction<String, String, Person>                             │
+└─────────────────────────────────────────────────────────────────────────────────────────────┘
+                                                │                                              
+                                                │  CompletableFutures.lift                      
+                                                ▼                                              
+┌─────────────────────────────────────────────────────────────────────────────────────────────┐
+│ BiFunction<CompletableFuture<String>, CompletableFuture<String>, CompletableFuture<Person>> │
+└─────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-Using `lift`, you can transform any `BiFunction<A, B, C>` into a `BiFunction<CompletableFuture<A>, CompletableFuture<B>, CompletableFuture<C>>` or `BiFunction<Stream<A>, Stream<B>, Stream<C>>` or whatever applicative you may choose to lift this function into. You are not limited to a `BiFunction` either. Any function with up to 26 arguments can be lifted in this fashion.
+Using `lift`, you can transform any `BiFunction<A, B, C>` into a `BiFunction<CompletableFuture<A>, CompletableFuture<B>, CompletableFuture<C>>` or `BiFunction<List<A>, List<B>, List<C>>` or whatever applicative you may choose to lift this function into. You are not limited to a `BiFunction` either. Any function with up to 26 arguments can be lifted in this fashion.
 
 Let's check out an example:
 
 ```java
-CompletableFuture<Person> futurePerson = 
+// Lift `BiFunction<String, String, Person>` and then apply:
+CompletableFuture<Person> futurePerson =
         CompletableFutures.instance().lift(Person::new).apply(
             futureFirstName, 
             futureLastName
         );
 ```
 
-You may want to argue that the code above could be written just as succinctly as:
+You may want to argue that the code above could be written more succinctly as:
 
 ```java
 CompletableFuture<Person> futurePerson = 
@@ -402,13 +401,15 @@ CompletableFuture<Person> futurePerson =
         );
 ```
 
-And you would be right! So, why would you ever prefer using `lift` over calling the `combine`-overload that accepts two `CompletableFuture`s?
+And you would be right! So, when would you ever prefer using `lift` over calling the `combine`-overload that accepts two `CompletableFuture`s?
 
 ## Stacking
 
 The nice thing about applicatives is that a "stack" of two applicatives is an applicative as well.
 
-Because both `CompletableFuture` and `List` are applicatives, the combination (a list of optionals) is an applicative too. We can combine a `CompletableFuture<List<String>>` (first names) and another `CompletableFuture<List<String>>` (last names) into a `CompletableFuture<List<Person>>` by lifting the combinator `Person::new` twice:
+Because both `CompletableFuture` and `List` are applicatives[^1], their combination is an applicative too. We can combine a `CompletableFuture<List<String>>` (first names) and another `CompletableFuture<List<String>>` (last names) into a `CompletableFuture<List<Person>>` by lifting the combinator `Person::new` twice:
+
+[^1]: The applicative for lists provides the [cartesian product](https://www.geeksforgeeks.org/cartesian-product-of-sets/) of two lists.
 
 ```java
 CompletableFuture<List<String>> futureFirstNames =
@@ -420,6 +421,7 @@ CompletableFuture<List<String>> futureLastNames =
             return asList("Bauer");
         });
 
+// Lift *twice* and then apply.
 // Will yield `new Person("Jack", "Bauer")` and `new Person("Kim", "Bauer")` 
 // as soon as `futureLastNames` resolves.
 CompletableFuture<List<Person>> futurePersons = 
@@ -432,21 +434,21 @@ CompletableFuture<List<Person>> futurePersons =
 We are lifting `Person::new` twice:
 
 ```
-┌────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│                                       BiFunction<String, String, Person>                                       │
-└────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                       BiFunction<String, String, Person>                                      │
+└───────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
                                                          │                                                        
                                                          │  Lists.lift                                            
                                                          ▼                                                        
-┌────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│                              BiFunction<List<String>, List<String>, List<Person>>                              │
-└────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                              BiFunction<List<String>, List<String>, List<Person>>                             │
+└───────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
                                                          │                                                        
                                                          │  CompletableFutures.lift                               
                                                          ▼                                                        
-┌────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ BiFunction<CompletableFuture<List<String>>, CompletableFuture<List<String>>,  CompletableFuture<List<Person>>> │
-└────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ BiFunction<CompletableFuture<List<String>>, CompletableFuture<List<String>>, CompletableFuture<List<Person>>> │
+└───────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 If we wanted to, we could even lift the result once more. You can keep stacking applicatives!

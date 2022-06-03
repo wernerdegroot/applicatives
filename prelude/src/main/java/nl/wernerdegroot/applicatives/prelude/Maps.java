@@ -10,11 +10,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
 
-@Covariant.Builder(className = "MapsApplicative")
-public class Maps<K> implements MapsApplicative<K> {
+@Covariant.Builder(className = "MapsOverloads")
+public class Maps<K> implements MapsOverloads<K> {
 
     private static final Maps<?> INSTANCE = new Maps<>();
 
+    @SuppressWarnings("unchecked")
     public static <K> Maps<K> instance() {
         return (Maps<K>) INSTANCE;
     }

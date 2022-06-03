@@ -9,15 +9,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.stream.Collector;
 
-/**
- * When combining <strong>more</strong> than two lists, it is strongly advised
- * to use {@link nl.wernerdegroot.applicatives.prelude.Streams Streams} instead
- * to avoid many intermediate lists that need to be created and then garbage
- * collected.
- */
-@Covariant.Builder(className = "ListsApplicative")
-public class Lists implements ListsApplicative {
+@Covariant.Builder(className = "ListsOverloads")
+public class Lists implements ListsOverloads {
 
     private static final Lists INSTANCE = new Lists();
 
@@ -46,5 +41,9 @@ public class Lists implements ListsApplicative {
             finalized.add(iterator.next());
         }
         return finalized;
+    }
+
+    public <T, A, R> Collector<? super List<T>, ?, List<R>> collector(Collector<T, A, R> collector) {
+        return CartesianCollectable.collector(collector);
     }
 }

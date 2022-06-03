@@ -7,9 +7,11 @@ import nl.wernerdegroot.applicatives.runtime.Initializer;
 
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
-@Covariant.Builder(className = "SetsApplicative")
-public class Sets implements SetsApplicative {
+@Covariant.Builder(className = "SetsOverloads")
+public class Sets implements SetsOverloads {
 
     private static final Sets INSTANCE = new Sets();
 
@@ -38,5 +40,9 @@ public class Sets implements SetsApplicative {
             finalized.add(iterator.next());
         }
         return finalized;
+    }
+
+    public <T, A, R> Collector<? super Set<T>, ?, Set<R>> collector(Collector<T, A, R> collector) {
+        return Collectors.collectingAndThen(CartesianCollectable.collector(collector), HashSet::new);
     }
 }
