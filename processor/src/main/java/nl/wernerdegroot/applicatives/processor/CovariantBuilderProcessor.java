@@ -100,7 +100,7 @@ public class CovariantBuilderProcessor extends AbstractCovariantProcessor<Covari
 
         noteClassFound(containingClass, methods);
 
-        Validated<TemplateClassWithMethodsValidator.Result> validatedTemplateClassWithMethods = TemplateClassWithMethodsValidator.validate(containingClass, methods);
+        Validated<Log, TemplateClassWithMethodsValidator.Result> validatedTemplateClassWithMethods = TemplateClassWithMethodsValidator.validate(containingClass, methods);
         if (!validatedTemplateClassWithMethods.isValid()) {
             errorValidationFailed(containingClass, validatedTemplateClassWithMethods);
             return;
@@ -126,9 +126,9 @@ public class CovariantBuilderProcessor extends AbstractCovariantProcessor<Covari
         });
     }
 
-    private void errorValidationFailed(ContainingClass containingClass, Validated<TemplateClassWithMethodsValidator.Result> validatedTemplateClassWithMethods) {
+    private void errorValidationFailed(ContainingClass containingClass, Validated<Log, TemplateClassWithMethodsValidator.Result> validatedTemplateClassWithMethods) {
         Log.of("Class '%s' does not meet all criteria for code generation", containingClass.getFullyQualifiedName().raw())
-                .withDetails(validatedTemplateClassWithMethods.getErrorMessages())
+                .withLogs(validatedTemplateClassWithMethods.getErrorMessages())
                 .append(asError());
     }
 

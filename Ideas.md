@@ -1,16 +1,13 @@
 * No access modifiers should be a validation error too
-* Are the initializer and finalizer always the same, validation-wise?
 * Static -> class, abstract instance method -> abstract class
 * Because builder-methods are not for exposing, perhaps pass reference to builder object instead (make this configurable `style = "inheritance"` or `style = "delegation"`).
 * Return type of `lift` does not need to be co- or contravariant in its arguments
-* Solve warnings about missing encoding
 * Provide more context for errors:
     > [ERROR] Method 'combine' in package 'nl.wernerdegroot.applicatives.prelude' does not meet all criteria for code generation
     > [ERROR]  - Method requires exactly 3 type parameters, but found 4
     > [ERROR] -> [Help 1]
-* Collector applicative
+* Traversal (perhaps requires `Hkt<List<?>, T>`)
 * combineAndThen
-* Validation should be able to accept context object to use in message templates
 * Document process to publish
 * Github Actions
 * Code coverage
@@ -21,3 +18,12 @@
 * Implement free applicative functors
 * Allow subtypes in return type (return `CartesianProductList` in applicative for `List`)
 * Increase coverage of processor-classes (now almost 0%)
+* Introduce monad, with a builder like `FastTuple` that allows:
+    
+    ```
+    var personFuture = PersonFuture
+      .bindFirstName(ctx -> getFutureFirstName())
+      .letLastName(ctx -> getLastName())
+      .bind(ctx -> somethingElse)
+      .returning(ctx -> new Person(ctx.getFirstName(), ctx.getLastName());
+    ```

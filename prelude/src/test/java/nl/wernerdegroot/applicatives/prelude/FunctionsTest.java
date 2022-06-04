@@ -47,11 +47,13 @@ public class FunctionsTest {
         };
     }
 
-    private <T> Function<Random, List<T>> listOf(int lowerBound, int upperBound, T... options) {
+    @SafeVarargs
+    private final <T> Function<Random, List<T>> listOf(int lowerBound, int upperBound, T... options) {
         return listOf(lowerBound, upperBound, oneOf(options));
     }
 
-    private <T> Function<Random, T> oneOf(T... options) {
+    @SafeVarargs
+    private final <T> Function<Random, T> oneOf(T... options) {
         List<T> optionsAsList = asList(options);
         return random -> {
             int randomIndex = random.nextInt(options.length);

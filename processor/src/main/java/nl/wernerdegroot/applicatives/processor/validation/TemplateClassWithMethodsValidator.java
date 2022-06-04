@@ -2,6 +2,7 @@ package nl.wernerdegroot.applicatives.processor.validation;
 
 import nl.wernerdegroot.applicatives.processor.domain.*;
 import nl.wernerdegroot.applicatives.processor.domain.containing.ContainingClass;
+import nl.wernerdegroot.applicatives.processor.logging.Log;
 
 import java.util.*;
 import java.util.function.Function;
@@ -12,7 +13,7 @@ import static nl.wernerdegroot.applicatives.processor.generator.TypeGenerator.ge
 
 public class TemplateClassWithMethodsValidator {
 
-    public static Validated<Result> validate(ContainingClass containingClass, Method method) {
+    public static Validated<Log, Result> validate(ContainingClass containingClass, Method method) {
         return Validated.combine(
                 validateTemplateClass(containingClass),
                 validateAccumulator(method),
@@ -20,24 +21,24 @@ public class TemplateClassWithMethodsValidator {
         );
     }
 
-    public static Validated<Result> validate(ContainingClass containingClass, List<Method> methods) {
+    public static Validated<Log, Result> validate(ContainingClass containingClass, List<Method> methods) {
         return Validated.combine(
                 validateTemplateClass(containingClass),
                 validateInitializer(methods),
                 validateAccumulator(methods),
                 validateFinalizer(methods),
                 (templateClass, optionalInitializer, accumulator, optionalFinalizer) -> {
-                    Set<String> messages = new HashSet<>();
+                    Set<Log> messages = new HashSet<>();
                     if (optionalInitializer.isPresent()) {
                         CovariantInitializerOrFinalizerValidator.Result initializer = optionalInitializer.get();
 
                         if (!initializer.getToInitializeOrFinalizeTypeConstructor().canAccept(accumulator.getInputTypeConstructor())) {
-                            String message = String.format("No shared type constructor between second parameter of '%s' (%s) and parameter of '%s' (%s)", accumulator.getName(), generateFrom(accumulator.getSecondParameterType()), initializer.getName(), generateFrom(initializer.getParameterType()));
+                            Log message = Log.of("No shared type constructor between second parameter of '%s' (%s) and parameter of '%s' (%s)", accumulator.getName(), generateFrom(accumulator.getSecondParameterType()), initializer.getName(), generateFrom(initializer.getParameterType()));
                             messages.add(message);
                         }
 
                         if (!accumulator.getPartiallyAccumulatedTypeConstructor().canAccept(initializer.getInitializedOrFinalizedTypeConstructor())) {
-                            String message = String.format("No shared type constructor between return type of '%s' (%s) and first parameter of '%s' (%s)", initializer.getName(), generateFrom(initializer.getReturnType()), accumulator.getName(), generateFrom(accumulator.getFirstParameterType()));
+                            Log message = Log.of("No shared type constructor between return type of '%s' (%s) and first parameter of '%s' (%s)", initializer.getName(), generateFrom(initializer.getReturnType()), accumulator.getName(), generateFrom(accumulator.getFirstParameterType()));
                             messages.add(message);
                         }
                     }
@@ -45,23 +46,24 @@ public class TemplateClassWithMethodsValidator {
                     if (optionalFinalizer.isPresent()) {
                         CovariantInitializerOrFinalizerValidator.Result finalizer = optionalFinalizer.get();
                         if (!finalizer.getToInitializeOrFinalizeTypeConstructor().canAccept(accumulator.getAccumulatedTypeConstructor())) {
-                            String message = String.format("No shared type constructor between return type of '%s' (%s) and parameter of '%s' (%s)", accumulator.getName(), generateFrom(accumulator.getReturnType()), finalizer.getName(), generateFrom(finalizer.getParameterType()));
+                            Log message = Log.of("No shared type constructor between return type of '%s' (%s) and parameter of '%s' (%s)", accumulator.getName(), generateFrom(accumulator.getReturnType()), finalizer.getName(), generateFrom(finalizer.getParameterType()));
                             messages.add(message);
                         }
                     }
 
                     return messages.isEmpty()
-                            ? Validated.valid(templateClassWithMethods(templateClass, optionalInitializer, accumulator, optionalFinalizer))
-                            : Validated.<Result>invalid(messages);
+                            ? Validated.<Log, Result>valid(templateClassWithMethods(templateClass, optionalInitializer, accumulator, optionalFinalizer))
+                            : Validated.<Log, Result>invalid(messages);
                 }
         ).flatMap(Function.identity());
     }
 
-    private static Validated<TemplateClassValidator.Result> validateTemplateClass(ContainingClass containingClass) {
-        return TemplateClassValidator.validate(containingClass);
+    private static Validated<Log, TemplateClassValidator.Result> validateTemplateClass(ContainingClass containingClass) {
+        return TemplateClassValidator.validate(containingClass)
+                .fold(invalidFor("Class '%s'", containingClass.getFullyQualifiedName().raw()), valid());
     }
 
-    private static Validated<Optional<CovariantInitializerOrFinalizerValidator.Result>> validateInitializer(List<Method> methods) {
+    private static Validated<Log, Optional<CovariantInitializerOrFinalizerValidator.Result>> validateInitializer(List<Method> methods) {
         List<Method> candidates = methods
                 .stream()
                 .filter(method -> method.hasAnnotation(INITIALIZER))
@@ -70,32 +72,38 @@ public class TemplateClassWithMethodsValidator {
         if (candidates.size() == 0) {
             return Validated.valid(Optional.empty());
         } else if (candidates.size() > 1) {
-            return Validated.invalid(String.format("More than one method annotated with '%s'", INITIALIZER.raw()));
+            return Validated.invalid(Log.of("More than one method annotated with '%s'", INITIALIZER.raw()));
         } else {
-            return CovariantInitializerOrFinalizerValidator.validate(candidates.iterator().next()).map(Optional::of);
+            Method initializer = candidates.iterator().next();
+            return CovariantInitializerOrFinalizerValidator.validate(initializer)
+                    .map(Optional::of)
+                    .fold(invalidFor("Method '%s'", initializer.getName()), valid());
         }
     }
 
-    private static Validated<CovariantAccumulatorValidator.Result> validateAccumulator(Method method) {
-        return CovariantAccumulatorValidator.validate(method);
+    private static Validated<Log, CovariantAccumulatorValidator.Result> validateAccumulator(Method method) {
+        return CovariantAccumulatorValidator.validate(method)
+                .fold(invalidFor("Method '%s'", method.getName()), valid());
     }
 
-    private static Validated<CovariantAccumulatorValidator.Result> validateAccumulator(List<Method> methods) {
+    private static Validated<Log, CovariantAccumulatorValidator.Result> validateAccumulator(List<Method> methods) {
         List<Method> candidates = methods
                 .stream()
                 .filter(method -> method.hasAnnotation(ACCUMULATOR))
                 .collect(toList());
 
         if (candidates.size() == 0) {
-            return Validated.invalid(String.format("No method annotated with '%s'", ACCUMULATOR.raw()));
+            return Validated.invalid(Log.of("No method annotated with '%s'", ACCUMULATOR.raw()));
         } else if (candidates.size() > 1) {
-            return Validated.invalid(String.format("More than one method annotated with '%s'", ACCUMULATOR.raw()));
+            return Validated.invalid(Log.of("More than one method annotated with '%s'", ACCUMULATOR.raw()));
         } else {
-            return CovariantAccumulatorValidator.validate(candidates.iterator().next());
+            Method accumulator = candidates.iterator().next();
+            return CovariantAccumulatorValidator.validate(accumulator)
+                    .fold(invalidFor("Method '%s'", accumulator.getName()), valid());
         }
     }
 
-    private static Validated<Optional<CovariantInitializerOrFinalizerValidator.Result>> validateFinalizer(List<Method> methods) {
+    private static Validated<Log, Optional<CovariantInitializerOrFinalizerValidator.Result>> validateFinalizer(List<Method> methods) {
         List<Method> candidates = methods
                 .stream()
                 .filter(method -> method.hasAnnotation(FINALIZER))
@@ -104,9 +112,12 @@ public class TemplateClassWithMethodsValidator {
         if (candidates.size() == 0) {
             return Validated.valid(Optional.empty());
         } else if (candidates.size() > 1) {
-            return Validated.invalid(String.format("More than one method annotated with '%s'", FINALIZER.raw()));
+            return Validated.invalid(Log.of("More than one method annotated with '%s'", FINALIZER.raw()));
         } else {
-            return CovariantInitializerOrFinalizerValidator.validate(candidates.iterator().next()).map(Optional::of);
+            Method finalizer = candidates.iterator().next();
+            return CovariantInitializerOrFinalizerValidator.validate(candidates.iterator().next())
+                    .map(Optional::of)
+                    .fold(invalidFor("Method '%s'", finalizer.getName()), valid());
         }
     }
 
@@ -197,5 +208,13 @@ public class TemplateClassWithMethodsValidator {
                     ", optionalFinalizer=" + optionalFinalizer +
                     '}';
         }
+    }
+
+    private static <E, T> Function<T, Validated<E, T>> valid() {
+        return Validated::valid;
+    }
+
+    private static <T> Function<Set<String>, Validated<Log, T>> invalidFor(String description, Object... arguments) {
+        return messages -> Validated.invalid(Log.of(String.format(description, arguments)).withDetails(messages));
     }
 }

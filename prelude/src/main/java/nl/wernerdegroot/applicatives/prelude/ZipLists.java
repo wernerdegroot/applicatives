@@ -10,8 +10,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.BiFunction;
 
-@Covariant.Builder(className = "ZipListsApplicative")
-public class ZipLists implements ZipListsApplicative {
+@Covariant.Builder(className = "ZipListsOverloads")
+public class ZipLists implements ZipListsOverloads {
 
     private static final ZipLists INSTANCE = new ZipLists();
 

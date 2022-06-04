@@ -17,7 +17,7 @@ import static nl.wernerdegroot.applicatives.processor.generator.TypeGenerator.ge
 
 public class CovariantAccumulatorValidator {
 
-    public static Validated<Result> validate(Method method) {
+    public static Validated<String, Result> validate(Method method) {
 
         MethodValidation methodValidation = MethodValidation.of(method)
                 .verifyCanImplementAbstractMethod()

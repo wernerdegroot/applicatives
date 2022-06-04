@@ -52,7 +52,7 @@ public abstract class AbstractCovariantProcessor<T> extends AbstractProcessor {
             roundEnv.getElementsAnnotatedWith(annotation).forEach(element -> {
                 try {
                     T elementAnnotation = getAnnotation(element);
-                    Validated<Void> validatedConfig = ConfigValidator.validate(getClassNameToGenerate(elementAnnotation), getLiftMethodName(elementAnnotation), getMaxArity(elementAnnotation));
+                    Validated<String, Void> validatedConfig = ConfigValidator.validate(getClassNameToGenerate(elementAnnotation), getLiftMethodName(elementAnnotation), getMaxArity(elementAnnotation));
 
                     if (!validatedConfig.isValid()) {
                         Log.of("Configuration of '%s' not valid", getAnnotationType().getCanonicalName())

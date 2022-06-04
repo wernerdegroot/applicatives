@@ -10,7 +10,7 @@ import java.util.Objects;
 
 public class CovariantInitializerOrFinalizerValidator {
 
-    public static Validated<Result> validate(Method method) {
+    public static Validated<String, Result> validate(Method method) {
         MethodValidation methodValidation = MethodValidation.of(method)
                 .verifyCanImplementAbstractMethod()
                 .verifyParameterCount("exactly 1", numberOfParameters -> numberOfParameters == 1)
