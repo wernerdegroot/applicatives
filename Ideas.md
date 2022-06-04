@@ -1,7 +1,5 @@
-* No access modifiers should be a validation error too
 * Static -> class, abstract instance method -> abstract class
 * Because builder-methods are not for exposing, perhaps pass reference to builder object instead (make this configurable `style = "inheritance"` or `style = "delegation"`).
-* Return type of `lift` does not need to be co- or contravariant in its arguments
 * combineAndThen
 * Implement free applicative functors
 * Traversal (perhaps requires `Hkt<List<?>, T>`)

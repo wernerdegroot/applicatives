@@ -8,6 +8,8 @@ import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstr
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
@@ -30,7 +32,6 @@ public class Generator {
     private static final String TUPLE_METHOD_NAME = "tuple";
     private static final FullyQualifiedName FAST_TUPLE = FullyQualifiedName.of("nl.wernerdegroot.applicatives.runtime.FastTuple");
     private static final String FAST_TUPLE_WITH_MAX_SIZE_METHOD_NAME = "withMaxSize";
-    private static final String FAST_TUPLE_EMPTY_WITH_MAX_SIZE_METHOD_NAME = "emptyWithMaxSize";
     private static final String APPLY_METHOD = "apply";
 
     private PackageName packageName;
@@ -324,7 +325,7 @@ public class Generator {
                 .withName(accumulator.getName())
                 .withParameterTypes(takeParameterTypes(arity))
                 .andParameterNames(takeInputParameterNames(arity))
-                .withParameter(lambdaType(TypeConstructor.placeholder(), TypeConstructor.placeholder(), TypeConstructor.placeholder(), arity), combinatorParameterName)
+                .withParameter(lambdaParameterType(TypeConstructor.placeholder(), TypeConstructor.placeholder(), TypeConstructor.placeholder(), arity), combinatorParameterName)
                 .withReturnStatement(returnStatement);
     }
 
@@ -353,9 +354,9 @@ public class Generator {
                 .withModifiers(DEFAULT)
                 .withTypeParameters(takeParameterTypeConstructorArguments(arity))
                 .withTypeParameters(returnTypeConstructorArgument.getName())
-                .withReturnType(lambdaType(getReturnTypeConstructor(), getOtherParametersTypeConstructor(), getFirstParameterTypeConstructor(), arity))
+                .withReturnType(lambdaReturnType(getReturnTypeConstructor(), getOtherParametersTypeConstructor(), getFirstParameterTypeConstructor(), arity))
                 .withName(liftMethodName)
-                .withParameter(lambdaType(TypeConstructor.placeholder(), TypeConstructor.placeholder(), TypeConstructor.placeholder(), arity), combinatorParameterName)
+                .withParameter(lambdaParameterType(TypeConstructor.placeholder(), TypeConstructor.placeholder(), TypeConstructor.placeholder(), arity), combinatorParameterName)
                 .withReturnStatement(
                         lambda()
                                 .withParameterNames(takeInputParameterNames(arity))
@@ -443,13 +444,22 @@ public class Generator {
                 .withReturnStatement(methodBody);
     }
 
-    private Type lambdaType(TypeConstructor returnTypeConstructor, TypeConstructor firstParameterTypeConstructor, TypeConstructor otherParametersTypeConstructor, int arity) {
+
+    private Type lambdaParameterType(TypeConstructor returnTypeConstructor, TypeConstructor firstParameterTypeConstructor, TypeConstructor otherParametersTypeConstructor, int arity) {
+        return lambdaType(returnTypeConstructor, firstParameterTypeConstructor, otherParametersTypeConstructor, arity, Type::contravariant, Type::covariant);
+    }
+
+    private Type lambdaReturnType(TypeConstructor returnTypeConstructor, TypeConstructor firstParameterTypeConstructor, TypeConstructor otherParametersTypeConstructor, int arity) {
+        return lambdaType(returnTypeConstructor, firstParameterTypeConstructor, otherParametersTypeConstructor, arity, Type::invariant, Type::invariant);
+    }
+
+    private Type lambdaType(TypeConstructor returnTypeConstructor, TypeConstructor firstParameterTypeConstructor, TypeConstructor otherParametersTypeConstructor, int arity, Function<Type, TypeArgument> parameterVariance, Function<Type, TypeArgument> returnTypeVariance) {
         List<TypeArgument> typeArguments = new ArrayList<>();
         takeParameterTypes(arity, firstParameterTypeConstructor, otherParametersTypeConstructor)
                 .stream()
-                .map(Type::contravariant)
+                .map(parameterVariance)
                 .forEachOrdered(typeArguments::add);
-        typeArguments.add(returnTypeConstructorArgument.asType().using(returnTypeConstructor).covariant());
+        typeArguments.add(returnTypeVariance.apply(returnTypeConstructorArgument.asType().using(returnTypeConstructor)));
 
         return Type.concrete(fullyQualifiedNameOfFunction(arity), typeArguments);
     }
