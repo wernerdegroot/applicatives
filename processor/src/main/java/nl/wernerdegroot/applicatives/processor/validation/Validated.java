@@ -85,6 +85,14 @@ public final class Validated<E, T> {
         }
     }
 
+    public <R> R fold(Function<Set<E>, R> invalid, Function<T, R> valid) {
+        if (isValid()) {
+            return valid.apply(getValue());
+        } else {
+            return invalid.apply(getErrorMessages());
+        }
+    }
+
     public Set<E> getErrorMessages() {
         if (isValid) {
             throw new NoSuchElementException();

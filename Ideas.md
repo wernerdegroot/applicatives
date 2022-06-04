@@ -18,3 +18,12 @@
 * Implement free applicative functors
 * Allow subtypes in return type (return `CartesianProductList` in applicative for `List`)
 * Increase coverage of processor-classes (now almost 0%)
+* Introduce monad, with a builder like `FastTuple` that allows:
+    
+    ```
+    var personFuture = PersonFuture
+      .bindFirstName(ctx -> getFutureFirstName())
+      .letLastName(ctx -> getLastName())
+      .bind(ctx -> somethingElse)
+      .returning(ctx -> new Person(ctx.getFirstName(), ctx.getLastName());
+    ```

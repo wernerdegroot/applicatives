@@ -30,13 +30,18 @@ public class Log {
         return this;
     }
 
-    public Log withDetail(Log toAdd) {
+    public Log withLog(Log toAdd) {
         details.add(LIST_ITEM_PREFIX + toAdd.message);
 
         for (String detailToAdd : toAdd.details) {
             details.add(INDENT + detailToAdd);
         }
 
+        return this;
+    }
+
+    public Log withLogs(Collection<Log> toAdd) {
+        toAdd.forEach(this::withLog);
         return this;
     }
 

@@ -2,7 +2,6 @@ package nl.wernerdegroot.applicatives.processor.logging;
 
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.util.Optional;
 
 import static java.util.Arrays.asList;
@@ -40,8 +39,8 @@ public class LogTest {
         StringBuilderLoggingBackend loggingBackend = new StringBuilderLoggingBackend();
 
         Log.of("This is a simple message")
-                .withDetail(Log.of("This is a detail...").withDetail(Log.of("...which contains its own details")))
-                .withDetail(Log.of("This is another detail"))
+                .withLog(Log.of("This is a detail...").withLog(Log.of("...which contains its own details")))
+                .withLog(Log.of("This is another detail"))
                 .append(loggingBackend);
 
         String expected = "This is a simple message\n" +

@@ -79,7 +79,7 @@ public class CovariantProcessor extends AbstractCovariantProcessor<Covariant> {
 
         noteMethodFound(containingClass, method);
 
-        Validated<String, TemplateClassWithMethodsValidator.Result> validatedTemplateClassWithMethods = TemplateClassWithMethodsValidator.validate(containingClass, method);
+        Validated<Log, TemplateClassWithMethodsValidator.Result> validatedTemplateClassWithMethods = TemplateClassWithMethodsValidator.validate(containingClass, method);
         if (!validatedTemplateClassWithMethods.isValid()) {
             errorValidationFailed(containingClass, method, validatedTemplateClassWithMethods);
             return;
@@ -98,9 +98,9 @@ public class CovariantProcessor extends AbstractCovariantProcessor<Covariant> {
         );
     }
 
-    private void errorValidationFailed(ContainingClass containingClass, Method method, Validated<String, TemplateClassWithMethodsValidator.Result> validatedTemplateClassWithMethods) {
+    private void errorValidationFailed(ContainingClass containingClass, Method method, Validated<Log, TemplateClassWithMethodsValidator.Result> validatedTemplateClassWithMethods) {
         Log.of("Method '%s' in class '%s' does not meet all criteria for code generation", method.getName(), containingClass.getFullyQualifiedName().raw())
-                .withDetails(validatedTemplateClassWithMethods.getErrorMessages())
+                .withLogs(validatedTemplateClassWithMethods.getErrorMessages())
                 .append(asError());
     }
 
