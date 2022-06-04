@@ -43,7 +43,7 @@ public class CovariantInitializerOrFinalizerValidatorTest {
     public void validateGivenStaticMethod() {
         Method toValidate = Method.of(
                 emptySet(),
-                modifiers(STATIC),
+                modifiers(PUBLIC, STATIC),
                 asList(T.asTypeParameter()),
                 Optional.of(LIST.with(T)),
                 "myFunction",
@@ -67,7 +67,7 @@ public class CovariantInitializerOrFinalizerValidatorTest {
                 asList(Parameter.of(ARRAY_LIST.with(T), "value"))
         );
 
-        Validated<String, CovariantInitializerOrFinalizerValidator.Result> expected = Validated.invalid("Method is private and cannot implement an abstract method");
+        Validated<String, CovariantInitializerOrFinalizerValidator.Result> expected = Validated.invalid("Method needs to be public to implement an abstract method");
         Validated<String, CovariantInitializerOrFinalizerValidator.Result> toVerify = CovariantInitializerOrFinalizerValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
@@ -94,7 +94,7 @@ public class CovariantInitializerOrFinalizerValidatorTest {
     public void validateGivenMethodWithLessThanOneTypeParameters() {
         Method toValidate = Method.of(
                 emptySet(),
-                emptySet(),
+                modifiers(PUBLIC),
                 asList(),
                 Optional.of(LIST.with(STRING)),
                 "myFunction",
@@ -111,7 +111,7 @@ public class CovariantInitializerOrFinalizerValidatorTest {
     public void validateGivenMethodWithMoreThanOneTypeParameters() {
         Method toValidate = Method.of(
                 emptySet(),
-                emptySet(),
+                modifiers(PUBLIC),
                 asList(T.asTypeParameter(), U.asTypeParameter()),
                 Optional.of(LIST.with(T)),
                 "myFunction",

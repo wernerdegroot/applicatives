@@ -51,7 +51,7 @@ public class CovariantAccumulatorValidatorTest {
     public void validateGivenStaticMethod() {
         Method toValidate = Method.of(
                 emptySet(),
-                modifiers(STATIC),
+                modifiers(PUBLIC, STATIC),
                 asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
                 Optional.of(OPTIONAL.with(V)),
                 "myFunction",
@@ -83,7 +83,7 @@ public class CovariantAccumulatorValidatorTest {
                 )
         );
 
-        Validated<String, CovariantAccumulatorValidator.Result> expected = Validated.invalid("Method is private and cannot implement an abstract method");
+        Validated<String, CovariantAccumulatorValidator.Result> expected = Validated.invalid("Method needs to be public to implement an abstract method");
         Validated<String, CovariantAccumulatorValidator.Result> toVerify = CovariantAccumulatorValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);

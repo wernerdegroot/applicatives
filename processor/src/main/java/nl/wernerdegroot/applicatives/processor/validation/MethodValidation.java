@@ -9,8 +9,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import static nl.wernerdegroot.applicatives.processor.domain.Modifier.PRIVATE;
-import static nl.wernerdegroot.applicatives.processor.domain.Modifier.STATIC;
+import static nl.wernerdegroot.applicatives.processor.domain.Modifier.*;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.OBJECT;
 
 /**
@@ -67,8 +66,8 @@ class MethodValidation {
             errorMessages.add("Method is static and cannot implement an abstract method");
         }
 
-        if (method.getModifiers().contains(PRIVATE)) {
-            errorMessages.add("Method is private and cannot implement an abstract method");
+        if (!method.getModifiers().contains(PUBLIC)) {
+            errorMessages.add("Method needs to be public to implement an abstract method");
         }
 
         return this;

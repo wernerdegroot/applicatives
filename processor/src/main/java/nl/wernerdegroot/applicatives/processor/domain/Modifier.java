@@ -1,6 +1,8 @@
 package nl.wernerdegroot.applicatives.processor.domain;
 
+import java.util.EnumSet;
 import java.util.Objects;
+import java.util.Set;
 
 public enum Modifier {
     PUBLIC("public"),
@@ -17,6 +19,8 @@ public enum Modifier {
     SYNCHRONIZED("synchronized"),
     NATIVE("native"),
     STRICTFP("strictfp");
+
+    public static final Set<Modifier> ACCESS_MODIFIERS = EnumSet.of(PUBLIC, PRIVATE, PROTECTED);
 
     private final String stringValue;
 
