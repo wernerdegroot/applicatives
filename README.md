@@ -22,13 +22,13 @@ Add the following dependencies:
 <dependency>
     <groupId>nl.wernerdegroot.applicatives</groupId>
     <artifactId>runtime</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.3</version>
 </dependency>
 
 <dependency>
     <groupId>nl.wernerdegroot.applicatives</groupId>
     <artifactId>processor</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.3</version>
     <scope>provided</scope>
 </dependency>
 ```
@@ -39,7 +39,7 @@ You may also want to include `prelude`, for applicative instances for some commo
 <dependency>
     <groupId>nl.wernerdegroot.applicatives</groupId>
     <artifactId>prelude</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.3</version>
 </dependency>
 ```
 

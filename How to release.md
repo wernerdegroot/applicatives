@@ -13,13 +13,24 @@ mvn versions:commit
 
 ## Update the URL to the license
 
-The url includes the tag name (version).
+The root `pom.xml` contains a tag which includes the tag name (version):
+
+```xml
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://github.com/wernerdegroot/applicatives/blob/v1.0.1/LICENSE</url>
+        </license>
+    </licenses>
+```
 
 ## Update the version in `README.md`
 
-The section "Prerequisites" mentions the version twice.
+The section "Prerequisites" mentions the version three times (when describing the dependencies you need).
 
 ## Commit, push and tag
+
+Commit name should be something like `Release v1.0.3`.
 
 ## Push to Artifactory
 

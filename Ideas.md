@@ -1,3 +1,5 @@
+* Contravariant (selective) functors 
+* Remove Google testing library because it's all pretty easy to do manually (check TypeConstructor tests)
 * Static -> class, abstract instance method -> abstract class
 * Because builder-methods are not for exposing, perhaps pass reference to builder object instead (make this configurable `style = "inheritance"` or `style = "delegation"`).
 * combineAndThen
@@ -6,7 +8,7 @@
 * Document process to publish
 * Github Actions
 * Code coverage
-* Remove Google auto-registration
+* Remove Google auto-registration. Why again?
 * element.getKind == record?
 * Imports
 * Introduce `ParameterName` and `ClassName`?
