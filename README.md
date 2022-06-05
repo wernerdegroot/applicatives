@@ -10,7 +10,7 @@ Java code generation for applicative functors, selective functors and more.
     * [Another example](#another-example)
     * [The rules](#the-rules)
     * [Variance](#variance)
-    * [`lift`](#-lift-)
+    * [Lift](#Lift)
     * [Stacking](#stacking)
 
 ## Getting started
@@ -21,7 +21,7 @@ Add the required dependencies:
 
 * [nl.wernerdegroot.applicatives.processor:1.0.3](https://mvnrepository.com/artifact/nl.wernerdegroot.applicatives/processor/1.0.3)  
 
-    Annotation processor. Only needed during compilation. Hook into `maven-compiler-plugin` or include as dependency with scope `provided`.
+    Annotation processor. Only needed during compilation. Hook it into `maven-compiler-plugin` or include it as dependency with scope `provided`.
 * [nl.wernerdegroot.applicatives.runtime:1.0.3](https://mvnrepository.com/artifact/nl.wernerdegroot.applicatives/runtime/1.0.3)
 
     Required runtime dependencies (only a handful of classes, and no transitive dependencies).
@@ -128,7 +128,7 @@ CompletableFuture<Person> futurePerson =
 
 The method [`thenCombine`](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFuture.html#thenCombine-java.util.concurrent.CompletionStage-java.util.function.BiFunction-) is a nifty function that combines the result of two `CompletableFuture`s (by using a `BiFunction` that you provide). In this case, the `BiFunction` combines a first name (`String`) and last name (`String`) into a `Person` object.
 
-Useful though `thenCombine` might be, if you want to combine more than two `CompletableFuture`s you are out of luck. Although it is not impossible to do so with the functions that the Java standard library provides, you will have to accept a lot of boilerplate code. The next section describes the problem of combining more than two `CompletableFuture`s, and shows you how to solve it using the Java standard library. The solution should leave you somewhat dissatisfied. The section will continue by showing you how you can use this library to reduce the boilerplate to a minimum.
+The method `thenCombine` is doubtless very useful, but if you want to combine more than two `CompletableFuture`s it won't get you very far. Although it is not impossible to combine four `CompletableFuture`s with the functions that the Java standard library provides, you will have to accept a lot of boilerplate code. The next section describes the problem of combining more than two `CompletableFuture`s, and shows you how to solve it using the Java standard library. The solution should leave you somewhat dissatisfied. The section will continue by showing you how you can use this library to reduce the boilerplate to a minimum.
 
 ### Combining more `CompletableFuture`s
 
@@ -171,9 +171,9 @@ CompletableFuture<List<Move>> futureMoves = ...;
 
 How do you combine those?
 
-Unfortunately, `thenCombine` won't be of much help. It's capable of combining two `CompletableFuture`s, but not any more than that. Unfortunately, the authors of the Java standard library did not provide an overload for `thenCombine` that three or more `CompletableFuture`s. 
+Like I claimed in the previous section, `thenCombine` won't be of much help. It's capable of combining two `CompletableFuture`s, but not any more than that. Unfortunately, the authors of the Java standard library did not provide an overload for `thenCombine` to combine three or more `CompletableFuture`s. 
 
-If you are very brave, you can still use `thenCombine` to combine four `CompletableFuture`s, but you'll have to call that method no less than three times: once to combine `futureName` and `futureHp` into a `CompletableFuture` of some intermediate data structure (`NameAndHp`), then again to combine that with `futureEnergyType` into a `CompletableFuture` of yet another intermediate data structure (`NameAndHpAndEnergyType`), and once more to combine that with `futureMoves` into a `CompletableFuture` of a `PokemonCard`:
+If you are very brave, you can still use `thenCombine` to combine four `CompletableFuture`s, but you'll have to call that method no less than three times: once to combine `futureName` and `futureHp` into a `CompletableFuture` of some intermediate data structure (`NameAndHp`), then again to combine that with `futureEnergyType` into a `CompletableFuture` of yet another intermediate data structure (`NameAndHpAndEnergyType`), and one last time to combine that with `futureMoves` into a `CompletableFuture` of a `PokemonCard`:
 
 ```java
 CompletableFuture<PokemonCard> futurePokemonCard = 
@@ -310,9 +310,7 @@ Function<Random, PokemonCard> randomPokemonCard = random -> {
 };
 ```
 
-There is a more convenient and elegant way to combine these four generators into a generator for `PokemonCard` objects. 
-
-If we write a method to combine two random generator functions, the Applicatives library will reward us with a bunch of overloads that combine three or more of those:
+There is a more convenient and elegant way to combine these four generators into a generator for `PokemonCard` objects. If we write a method to combine two random generator functions, the Applicatives library will reward us with a bunch of overloads that combine three or more of those:
 
 ```java
 public class RandomGeneratorFunctions implements RandomGeneratorFunctionsOverloads {
@@ -338,7 +336,7 @@ public class RandomGeneratorFunctions implements RandomGeneratorFunctionsOverloa
 } 
 ```
 
-All that's left for us to do is to reap the benefits:
+See how easy it become to combine random generator functions?
 
 ```java
 Function<Random, Person> randomPerson = 
@@ -351,7 +349,7 @@ Function<Random, Person> randomPerson =
         );
 ```
 
-Note that a class much like the class `RandomGeneratorFunctions` as described above is already conveniently included for you in the `prelude` module. Check out the [implementation](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/main/java/nl/wernerdegroot/applicatives/prelude/Functions.java) and the [tests](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/test/java/nl/wernerdegroot/applicatives/prelude/FunctionsTest.java).
+Note that a class much like the class `RandomGeneratorFunctions` described above is already conveniently included for you in the `prelude` module. Check out the [implementation](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/main/java/nl/wernerdegroot/applicatives/prelude/Functions.java) and the [tests](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/test/java/nl/wernerdegroot/applicatives/prelude/FunctionsTest.java).
 
 ## The rules
 
@@ -373,12 +371,12 @@ public class CanBeAnything<C1, C2, ..., CN> implements GeneratedClass<C1, C2, ..
                  └─────────────────┬────────────────┘   │  └────────────────────────────┘            
     @Override                      ▼                    ▼                                             
     @Covariant(className = "GeneratedClass", liftMethodName = "lift", maxArity = 26)                  
-                                                                          ▲                           
- ┌────────────────────────────┐        ┌────────────────────────────┐     │                           
- │ Method needs exactly three │        │ Name of the method is not  │     │   ┌──────────────────────┐
- │ type parameters (although  │    ┌───┤  important, but overloads  │     └───│ Number of overloads. │
- │  name is not important).   │    │   │  will have the same name.  │         └──────────────────────┘
- └─────────────┬──────────────┘    │   └────────────────────────────┘                                 
+                                                                         ▲                          
+ ┌────────────────────────────┐        ┌────────────────────────────┐    │                         
+ │ Method needs exactly three │        │ Name of the method is not  │    │ ┌──────────────────────┐
+ │ type parameters (although  │    ┌───┤  important, but overloads  │    └─│ Number of overloads. │
+ │  name is not important).   │    │   │  will have the same name.  │      └──────────────────────┘
+ └─────────────┬──────────────┘    │   └────────────────────────────┘                              
                ▼                   ▼                                 ┌───────────────────────────┐    
     public <A, B, C> Foo<C> whateverYouLike(                         │  Typically, the types of  │    
                         ▲                                            │  these are identical. In  │    
@@ -416,11 +414,11 @@ Moreover, any "stack" of these data structures (a `List` of `Optional`s, or a `F
 
 ## Variance
 
-Note that, in the example above, the types of the parameters `left` and `right` are too strict. Applicatives are typically covariant, and you may want to adjust the types of the parameters to reflect this (use `Foo<? extends A>` and `Foo<? extends B>` instead of `Foo<A>` and `Foo<B>`). This is similar to something you'll find in [the definition of `CompletableFuture.thenCombine`](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFuture.html#thenCombine-java.util.concurrent.CompletionStage-java.util.function.BiFunction-) and is [generally recommended](https://en.wikipedia.org/wiki/Robustness_principle):
+Note that, in the diagram above, the types of the parameters `Foo<A> left` and `Foo<B> right` are too strict. Applicatives are typically covariant, and you may want to adjust the types of the parameters to reflect this (use `Foo<? extends A>` and `Foo<? extends B>` instead of `Foo<A>` and `Foo<B>`). This is similar to something you'll find in [the definition of `CompletableFuture.thenCombine`](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFuture.html#thenCombine-java.util.concurrent.CompletionStage-java.util.function.BiFunction-) and is [generally recommended](https://en.wikipedia.org/wiki/Robustness_principle):
 
 > Among programmers, to produce [compatible functions](https://en.wikipedia.org/wiki/Liskov_substitution_principle), the principle is also known in the form [be contravariant in the input type and covariant in the output type](https://en.wikipedia.org/wiki/Covariance_and_contravariance_(computer_science)).
 
-The types of `left` and `right` are allowed to diverge as well. This is considered to be an advanced feature, but could be necessary to prevent the execution time overhead of excessive copying. See [the implementation of the applicative for `List`](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/main/java/nl/wernerdegroot/applicatives/prelude/Lists.java) for inspiration. 
+In certain circumstances, the types of `left` and `right` are allowed to diverge as well. This is considered to be an advanced feature, but could be necessary to prevent the execution time overhead of excessive copying. See [the implementation of the applicative for `List`](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/main/java/nl/wernerdegroot/applicatives/prelude/Lists.java) for inspiration. 
 
 ## Lift
 Lifting is a way to "upgrade" a function that works with regular values like `String`s and `Integer`s (usually very easy to write) to a similar function that works with, for example, `CompletableFuture`s like `CompletableFuture<String>`s and `CompletableFuture<Integer>`s instead (which is usually much more tiresome to write).
@@ -472,9 +470,11 @@ Because both `CompletableFuture` and `List` are applicatives[^1], their combinat
 [^1]: The applicative for lists provides the [cartesian product](https://www.geeksforgeeks.org/cartesian-product-of-sets/) of two lists.
 
 ```java
+// Get two first names:
 CompletableFuture<List<String>> futureFirstNames =
         CompletableFuture.completedFuture(asList("Jack", "Kim"));
 
+// Wait a while and get a last name:
 CompletableFuture<List<String>> futureLastNames =
         CompletableFuture.supplyAsync(() -> {
             TimeUnit.HOURS.sleep(24);
