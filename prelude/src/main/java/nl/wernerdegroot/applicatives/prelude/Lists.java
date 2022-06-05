@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.stream.Collector;
 
-@Covariant.Builder(className = "ListsOverloads")
+@Covariant.Builder
 public class Lists implements ListsOverloads {
 
     private static final Lists INSTANCE = new Lists();

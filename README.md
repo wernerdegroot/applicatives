@@ -172,7 +172,7 @@ import java.util.function.BiFunction;
 public class CompletableFutures implements CompletableFuturesOverloads {
 
     @Override
-    @Covariant(className = "CompletableFuturesOverloads")
+    @Covariant
     public <A, B, C> CompletableFuture<C> combine(
             CompletableFuture<A> left,
             CompletableFuture<B> right,
@@ -266,7 +266,7 @@ public class RandomGeneratorFunctions implements RandomGeneratorFunctionsOverloa
     }
 
     @Override
-    @Covariant(className = "RandomGeneratorFunctionsOverloads")
+    @Covariant
     public <A, B, C> Function<Random, C> combine(
             Function<Random, A> left,
             Function<Random, B> right,
@@ -298,44 +298,44 @@ Function<Random, Person> randomPerson =
 You will need to write a class that looks like the following (for a given, imaginary class `Foo`):
 
 ```
- ┌─────────────────────────────────────┐                                                          
- │ Name of the class is not important. │                                                          
- └──────────────────┬──────────────────┘                                                          
-                    │            ┌─────────────────────────────────────────────┐                  
-                    │            │ Class can have type parameters. These need  │                  
-                    │            │ to provided to the generated class as well. │                  
-                    │            └───────┬────────────────────────────┬────────┘                  
-                    ▼                    ▼                            ▼                           
-public class CanBeAnything<C1, C2, ..., CN> implements GeneratedClass<C1, C2, ..., CN> {          
-                                                                                                  
-                 ┌──────────────────────────────────┐      ┌─────────────────────────────┐        
-                 │ Specify name of generated class. │   ┌──┤ Explained in next section.  │        
-                 └─────────────────┬────────────────┘   │  └─────────────────────────────┘        
-    @Override                      ▼                    ▼                                         
-    @Covariant(className = "GeneratedClass", liftMethodName = "lift", maxArity = 26)              
-                                                                                                  
- ┌────────────────────────────┐        ┌────────────────────────────┐                             
- │ Method needs exactly three │        │ Name of the method is not  │                             
- │ type parameters (although  │    ┌───┤  important, but overloads  │                             
- │  name is not important).   │    │   │  will have the same name.  │                             
- └─────────────┬──────────────┘    │   └────────────────────────────┘                             
-               ▼                   ▼                                 ┌───────────────────────────┐
-    public <A, B, C> Foo<C> whateverYouLike(                         │  Typically, the types of  │
-                        ▲                                            │  these are identical. In  │
-        Foo<A> left,  ◀─┼────────────────────────────────────────────┤ some cases, the types are │
-                        │                                            │  allowed to diverge. See  │
-        Foo<B> right, ◀─┘                                            │   "Type constructors".    │
-                                                                     └───────────────────────────┘
-        BiFunction<? super A, ? super B, ? extends C> combinator) {                               
-                                                          ▲                                       
-                        ┌────────────────────┐            │                                       
-        return ...;  ◀──┤ This is up to you! │            │                                       
-                        └────────────────────┘            │                                       
-    }                                 ┌───────────────────┴───────────────────┐                   
-}                                     │    Combinator function is always a    │                   
-                                      │     BiFunction with contravariant     │                   
-                                      │ parameters and covariant return type. │                   
-                                      └───────────────────────────────────────┘                   
+ ┌─────────────────────────────────────┐                                                              
+ │ Name of the class is not important. │                                                              
+ └──────────────────┬──────────────────┘                                                              
+                    │            ┌─────────────────────────────────────────────┐                      
+                    │            │ Class can have type parameters. These need  │                      
+                    │            │ to provided to the generated class as well. │                      
+                    │            └───────┬────────────────────────────┬────────┘                      
+                    ▼                    ▼                            ▼                               
+public class CanBeAnything<C1, C2, ..., CN> implements GeneratedClass<C1, C2, ..., CN> {              
+                                                                                                      
+                 ┌──────────────────────────────────┐      ┌────────────────────────────┐            
+                 │ Specify name of generated class. │   ┌──┤ Explained in next section. │            
+                 └─────────────────┬────────────────┘   │  └────────────────────────────┘            
+    @Override                      ▼                    ▼                                             
+    @Covariant(className = "GeneratedClass", liftMethodName = "lift", maxArity = 26)                  
+                                                                          ▲                           
+ ┌────────────────────────────┐        ┌────────────────────────────┐     │                           
+ │ Method needs exactly three │        │ Name of the method is not  │     │   ┌──────────────────────┐
+ │ type parameters (although  │    ┌───┤  important, but overloads  │     └───│ Number of overloads. │
+ │  name is not important).   │    │   │  will have the same name.  │         └──────────────────────┘
+ └─────────────┬──────────────┘    │   └────────────────────────────┘                                 
+               ▼                   ▼                                 ┌───────────────────────────┐    
+    public <A, B, C> Foo<C> whateverYouLike(                         │  Typically, the types of  │    
+                        ▲                                            │  these are identical. In  │    
+        Foo<A> left,  ◀─┼────────────────────────────────────────────┤ some cases, the types are │    
+                        │                                            │  allowed to diverge. See  │    
+        Foo<B> right, ◀─┘                                            │   "Type constructors".    │    
+                                                                     └───────────────────────────┘    
+        BiFunction<? super A, ? super B, ? extends C> combinator) {                                   
+                                                          ▲                                           
+                        ┌────────────────────┐            │                                           
+        return ...;  ◀──┤ This is up to you! │            │                                           
+                        └────────────────────┘            │                                           
+    }                                 ┌───────────────────┴───────────────────┐                       
+}                                     │    Combinator function is always a    │                       
+                                      │     BiFunction with contravariant     │                       
+                                      │ parameters and covariant return type. │                       
+                                      └───────────────────────────────────────┘                       
 ```
 
 `Foo` can be any data structure for which you can write a class like above. Such data structures are called ["applicatives"](https://en.wikipedia.org/wiki/Applicative_functor). Common examples from the Java standard library are:

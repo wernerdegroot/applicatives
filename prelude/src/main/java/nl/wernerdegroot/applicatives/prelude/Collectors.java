@@ -19,7 +19,7 @@ public class Collectors<T> implements CollectorsOverloads<T> {
     }
 
     @Override
-    @Covariant(className = "CollectorsOverloads")
+    @Covariant
     public <A, B, C> Collector<T, ?, C> combine(Collector<T, ?, A> left, Collector<T, ?, B> right, BiFunction<? super A, ? super B, ? extends C> fn) {
         return typeSafeCombine(left, right, fn);
     }

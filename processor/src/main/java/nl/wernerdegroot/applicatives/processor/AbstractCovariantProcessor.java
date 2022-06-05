@@ -11,7 +11,6 @@ import nl.wernerdegroot.applicatives.processor.logging.Log;
 import nl.wernerdegroot.applicatives.processor.logging.LoggingBackend;
 import nl.wernerdegroot.applicatives.processor.logging.MessagerLoggingBackend;
 import nl.wernerdegroot.applicatives.processor.logging.NoLoggingBackend;
-import nl.wernerdegroot.applicatives.processor.validation.ConfigValidator;
 import nl.wernerdegroot.applicatives.processor.validation.TemplateClassWithMethodsValidator;
 import nl.wernerdegroot.applicatives.processor.validation.Validated;
 
@@ -32,35 +31,21 @@ import static nl.wernerdegroot.applicatives.processor.conflicts.ConflictFinder.f
 import static nl.wernerdegroot.applicatives.processor.conflicts.Conflicts.*;
 import static nl.wernerdegroot.applicatives.processor.generator.Generator.generator;
 
-public abstract class AbstractCovariantProcessor<T> extends AbstractProcessor {
+public abstract class AbstractCovariantProcessor extends AbstractProcessor {
 
     public abstract Class<?> getAnnotationType();
 
-    public abstract T getAnnotation(Element element);
-
-    public abstract String getClassNameToGenerate(T annotation);
-
-    public abstract String getLiftMethodName(T annotation);
-
-    public abstract int getMaxArity(T annotation);
-
     public abstract void processElement(Element element);
+
+    public String getClassNameToGenerate(String className, ContainingClass containingClass) {
+        return className.replace("*", containingClass.getClassName().raw());
+    }
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         annotations.forEach(annotation -> {
             roundEnv.getElementsAnnotatedWith(annotation).forEach(element -> {
                 try {
-                    T elementAnnotation = getAnnotation(element);
-                    Validated<String, Void> validatedConfig = ConfigValidator.validate(getClassNameToGenerate(elementAnnotation), getLiftMethodName(elementAnnotation), getMaxArity(elementAnnotation));
-
-                    if (!validatedConfig.isValid()) {
-                        Log.of("Configuration of '%s' not valid", getAnnotationType().getCanonicalName())
-                                .withDetails(validatedConfig.getErrorMessages())
-                                .append(asError());
-                        return;
-                    }
-
                     processElement(element);
                 } catch (Throwable t) {
                     Log.of("Error occurred while processing annotation of type '%s': %s", getAnnotationType(), t.getMessage()).append(asError());
@@ -152,6 +137,12 @@ public abstract class AbstractCovariantProcessor<T> extends AbstractProcessor {
                 .withDetail("Return type", method.getReturnType(), TypeGenerator::generateFrom)
                 .withDetail("Parameters", method.getParameters(), ParameterGenerator::generateFrom)
                 .append(asNote());
+    }
+
+    protected void errorConfigNotValid(Validated<String, Void> validatedConfig) {
+        Log.of("Configuration of '%s' not valid", getAnnotationType().getCanonicalName())
+                .withDetails(validatedConfig.getErrorMessages())
+                .append(asError());
     }
 
     protected void noteValidationSuccess(TemplateClassWithMethodsValidator.Result templateClassWithMethods) {

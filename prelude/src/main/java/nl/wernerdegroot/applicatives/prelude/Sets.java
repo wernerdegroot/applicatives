@@ -10,7 +10,7 @@ import java.util.function.BiFunction;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
-@Covariant.Builder(className = "SetsOverloads")
+@Covariant.Builder
 public class Sets implements SetsOverloads {
 
     private static final Sets INSTANCE = new Sets();

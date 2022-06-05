@@ -14,7 +14,7 @@ public class Functions<P> implements FunctionsOverloads<P> {
         return (Functions<P>) INSTANCE;
     }
 
-    @Covariant(className = "FunctionsOverloads")
+    @Covariant
     public <A, B, C> Function<P, C> combine(Function<? super P, ? extends A> left, Function<? super P, ? extends B> right, BiFunction<? super A, ? super B, ? extends C> fn) {
         return p -> {
             A valueFromLeft = left.apply(p);

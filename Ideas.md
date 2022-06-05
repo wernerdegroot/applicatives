@@ -1,4 +1,5 @@
 * Contravariant (selective) functors 
+* Implement a `@Covariant.Instance` for instance-methods (maybe only useful for monads?)
 * Remove Google testing library because it's all pretty easy to do manually (check TypeConstructor tests)
 * Static -> class, abstract instance method -> abstract class
 * Because builder-methods are not for exposing, perhaps pass reference to builder object instead (make this configurable `style = "inheritance"` or `style = "delegation"`).

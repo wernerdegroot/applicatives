@@ -8,6 +8,7 @@ import nl.wernerdegroot.applicatives.processor.domain.Method;
 import nl.wernerdegroot.applicatives.processor.domain.containing.ContainingClass;
 import nl.wernerdegroot.applicatives.processor.generator.ContainingClassGenerator;
 import nl.wernerdegroot.applicatives.processor.logging.Log;
+import nl.wernerdegroot.applicatives.processor.validation.ConfigValidator;
 import nl.wernerdegroot.applicatives.processor.validation.TemplateClassWithMethodsValidator;
 import nl.wernerdegroot.applicatives.processor.validation.Validated;
 import nl.wernerdegroot.applicatives.runtime.Covariant;
@@ -33,7 +34,7 @@ import static nl.wernerdegroot.applicatives.processor.Classes.*;
 @SupportedAnnotationTypes(COVARIANT_BUILDER_CANONICAL_NAME)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @AutoService(Processor.class)
-public class CovariantBuilderProcessor extends AbstractCovariantProcessor<Covariant.Builder> {
+public class CovariantBuilderProcessor extends AbstractCovariantProcessor {
 
     public static final Set<FullyQualifiedName> SUPPORTED_ANNOTATIONS = Stream.of(
             INITIALIZER,
@@ -44,26 +45,6 @@ public class CovariantBuilderProcessor extends AbstractCovariantProcessor<Covari
     @Override
     public Class<?> getAnnotationType() {
         return COVARIANT_BUILDER_CLASS;
-    }
-
-    @Override
-    public Covariant.Builder getAnnotation(Element element) {
-        return element.getAnnotation(Covariant.Builder.class);
-    }
-
-    @Override
-    public String getClassNameToGenerate(Covariant.Builder annotation) {
-        return annotation.className();
-    }
-
-    @Override
-    public String getLiftMethodName(Covariant.Builder annotation) {
-        return annotation.liftMethodName();
-    }
-
-    @Override
-    public int getMaxArity(Covariant.Builder annotation) {
-        return annotation.maxArity();
     }
 
     @Override
@@ -100,6 +81,17 @@ public class CovariantBuilderProcessor extends AbstractCovariantProcessor<Covari
 
         noteClassFound(containingClass, methods);
 
+        String classNameToGenerate = getClassNameToGenerate(covariantBuilderAnnotation.className(), containingClass);
+        String liftMethodName = covariantBuilderAnnotation.liftMethodName();
+        int maxArity = covariantBuilderAnnotation.maxArity();
+
+        Validated<String, Void> validatedConfig = ConfigValidator.validate(classNameToGenerate, liftMethodName, maxArity);
+
+        if (!validatedConfig.isValid()) {
+            errorConfigNotValid(validatedConfig);
+            return;
+        }
+
         Validated<Log, TemplateClassWithMethodsValidator.Result> validatedTemplateClassWithMethods = TemplateClassWithMethodsValidator.validate(containingClass, methods);
         if (!validatedTemplateClassWithMethods.isValid()) {
             errorValidationFailed(containingClass, validatedTemplateClassWithMethods);
@@ -111,9 +103,9 @@ public class CovariantBuilderProcessor extends AbstractCovariantProcessor<Covari
         noteValidationSuccess(templateClassWithMethods);
 
         resolveConflictsAndGenerate(
-                covariantBuilderAnnotation.className(),
-                covariantBuilderAnnotation.liftMethodName(),
-                covariantBuilderAnnotation.maxArity(),
+                classNameToGenerate,
+                liftMethodName,
+                maxArity,
                 containingClass.getPackageName(),
                 templateClassWithMethods
         );
