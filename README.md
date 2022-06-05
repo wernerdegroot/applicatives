@@ -280,16 +280,16 @@ public class RandomGeneratorFunctions implements RandomGeneratorFunctionsOverloa
 } 
 ```
 
-All that's left for us is to reap the benefits:
+All that's left for us to do is to reap the benefits:
 
 ```java
 Function<Random, Person> randomPerson = 
         RandomGeneratorFunctions.instance().combine(
-            randomPersonId,
-            randomFirstName,
-            randomLastName,
-            randomBirthDate,
-            Person::new
+            randomName,
+            randomHp,
+            randomEnergyType,
+            randomMoves,
+            PokemonCard::new
         );
 ```
 
