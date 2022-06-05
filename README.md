@@ -244,6 +244,8 @@ public class CompletableFutures implements CompletableFuturesOverloads {
 }
 ```
 
+Note that the `CompletableFutures` class as described above is already conveniently included for you in the `prelude` module. Check out the [implementation](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/main/java/nl/wernerdegroot/applicatives/prelude/CompletableFutures.java) and the [tests](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/test/java/nl/wernerdegroot/applicatives/prelude/CompletableFuturesTest.java).
+
 ## Another example
 
 In order to test the new Pokemon card application that you and your co-workers are building, it would be helpful to be able to generate a bunch of random `PokemonCard` objects to seed the test environment with. One of your co-workers already did much of the hard work, and she wrote the following functions:
@@ -317,6 +319,8 @@ Function<Random, Person> randomPerson =
             PokemonCard::new
         );
 ```
+
+Note that a class much like the class `RandomGeneratorFunctions` that is described above is already conveniently included for you in the `prelude` module. Check out the [implementation](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/main/java/nl/wernerdegroot/applicatives/prelude/Functions.java) and the [tests](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/test/java/nl/wernerdegroot/applicatives/prelude/FunctionsTest.java).
 
 ## The rules
 
