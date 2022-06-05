@@ -16,7 +16,16 @@ Java code generation for applicative functors, selective functors and more.
 
 Java 8 or higher is required.
 
-Add the following dependencies:
+Add the required dependencies:
+
+* [nl.wernerdegroot.applicatives.processor:1.0.3](https://mvnrepository.com/artifact/nl.wernerdegroot.applicatives/processor/1.0.3)  
+
+    Annotation processor. Only needed during compilation. Hook into `maven-compiler-plugin` or include as dependency with scope `provided`.
+* [nl.wernerdegroot.applicatives.runtime:1.0.3](https://mvnrepository.com/artifact/nl.wernerdegroot.applicatives/runtime/1.0.3)
+
+    Required runtime dependencies (only a handful of classes, and no transitive dependencies).
+
+Example:
 
 ```xml
 <dependency>
@@ -25,12 +34,28 @@ Add the following dependencies:
     <version>1.0.3</version>
 </dependency>
 
-<dependency>
-    <groupId>nl.wernerdegroot.applicatives</groupId>
-    <artifactId>processor</artifactId>
-    <version>1.0.3</version>
-    <scope>provided</scope>
-</dependency>
+...
+
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.8.1</version>
+            <configuration>
+                <source>1.8</source> <!-- Depending on your project -->
+                <target>1.8</target> <!-- Depending on your project -->
+                <annotationProcessorPaths>
+                    <path>
+                        <groupId>nl.wernerdegroot.applicatives</groupId>
+                        <artifactId>processor</artifactId>
+                        <version>1.0.3</version>
+                    </path>
+                </annotationProcessorPaths>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
 ```
 
 You may also want to include `prelude`, for applicative instances for some common classes that are included in Java's standard library: 
