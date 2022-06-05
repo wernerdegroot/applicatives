@@ -9,6 +9,7 @@ Java code generation for applicative functors, selective functors and more.
         + [Combining more `CompletableFuture`s](#combining-more-completablefutures)
     * [Another example](#another-example)
     * [The rules](#the-rules)
+    * [Variance](#variance)
     * [`lift`](#-lift-)
     * [Stacking](#stacking)
 
@@ -85,16 +86,21 @@ public class Person {
         this.lastName = lastName;
     }
 
-    // Getters, hashCode, equals and toString
+    // Getters, `hashCode`, `equals` and `toString`
 }
 ```
 
 Let's pretend it will take some time for the application to come up with a `firstName` and a `lastName`. Perhaps you need to load those from a slow database, or make a network request:
 
 ```java
+// Get a first name:
 String firstName = "Jack";
+
+// Wait a while and get a last name:
 TimeUnit.HOURS.sleep(24);
 String lastName = "Bauer";
+
+// Combine the first name and last name into a `Person`:
 Person person = new Person(firstName, lastName);
 ```
 
@@ -120,7 +126,9 @@ CompletableFuture<Person> futurePerson =
 // Do something useful while we wait for the Person. 
 ```
 
-The method [`thenCombine`](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFuture.html#thenCombine-java.util.concurrent.CompletionStage-java.util.function.BiFunction-) combines the result of two `CompletableFuture`s (by using a `BiFunction` that you provide). However, if you want to combine more than two `CompletableFuture`s you are out of luck.
+The method [`thenCombine`](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFuture.html#thenCombine-java.util.concurrent.CompletionStage-java.util.function.BiFunction-) is a nifty function that combines the result of two `CompletableFuture`s (by using a `BiFunction` that you provide). In this case, the `BiFunction` combines a first name (`String`) and last name (`String`) into a `Person` object.
+
+Useful though `thenCombine` might be, if you want to combine more than two `CompletableFuture`s you are out of luck. Although it is not impossible to do so with the functions that the Java standard library provides, you will have to accept a lot of boilerplate code. The next section describes the problem of combining more than two `CompletableFuture`s, and shows you how to solve it using the Java standard library. The solution should leave you somewhat dissatisfied. The section will continue by showing you how you can use this library to reduce the boilerplate to a minimum.
 
 ### Combining more `CompletableFuture`s
 
@@ -141,11 +149,11 @@ public class PokemonCard {
         this.moves = moves;
     }
 
-    // Getters, hashCode, equals and toString
+    // Getters, `hashCode`, `equals` and `toString`
 }
 ```
 
-Now imagine that each of the attributes of such a `PokemonCard` need to be loaded from some different external system (perhaps your company is using microservices). Instead of having a `String`, `int`, `EnergyType` and `List<Move>` (which can be combined directly into a `PokemonCard`), you are stuck with a `CompletableFuture<String>`, `CompletableFuture<Integer>`, `CompletableFuture<EnergyType>` and `CompletableFuture<List<Move>>`:
+Imagine that each of the attributes of such a `PokemonCard` need to be loaded from some different external system (perhaps your company is using microservices). Instead of having a `String`, `int`, `EnergyType` and `List<Move>` (which can be combined directly into a `PokemonCard`), you are stuck with a `CompletableFuture<String>`, `CompletableFuture<Integer>`, `CompletableFuture<EnergyType>` and `CompletableFuture<List<Move>>`:
 
 ```java
 // Fetch the name of the Pokemon:
@@ -163,9 +171,32 @@ CompletableFuture<List<Move>> futureMoves = ...;
 
 How do you combine those?
 
-Unfortunately, `thenCombine` won't be of much help. It's capable of combining two `CompletableFuture`s, but not any more than that. 
+Unfortunately, `thenCombine` won't be of much help. It's capable of combining two `CompletableFuture`s, but not any more than that. Unfortunately, the authors of the Java standard library did not provide an overload for `thenCombine` that three or more `CompletableFuture`s. 
 
-The best alternative you have is to await all the `CompletableFuture`s and use the `join`-method to extract the results (which requires some care, as it may block the thread if the computation did not complete yet):
+If you are very brave, you can still use `thenCombine` to combine four `CompletableFuture`s, but you'll have to call that method no less than three times: once to combine `futureName` and `futureHp` into a `CompletableFuture` of some intermediate data structure (`NameAndHp`), then again to combine that with `futureEnergyType` into a `CompletableFuture` of yet another intermediate data structure (`NameAndHpAndEnergyType`), and once more to combine that with `futureMoves` into a `CompletableFuture` of a `PokemonCard`:
+
+```java
+CompletableFuture<PokemonCard> futurePokemonCard = 
+        futureName.thenCombine(futureHp, NameAndHp::new)
+            .thenCombine(futureEnergyType, NameAndHpAndEnergyType::new)
+            .thenCombine(futureMoves, (nameAndHpAndEnergyType, moves) -> {
+                
+                // Unpack intermediate data structure:
+                String name = nameAndHpAndEnergyType.getName();
+                int hp = nameAndHpAndEnergyType.getHp();
+                EnergyType energyType = nameAndHpAndEnergyType.getEnergyType();
+                
+                // Create `PokemonCard`:
+                return new PokemonCard(name, hp, energyType, moves);
+        });
+
+// Implementation of `NameAndHp` and `NameAndHpAndEnergyType` 
+// not provided for the sake of brevity.
+```
+
+This is clearly no solution for a person who demands excellence from their programming language!
+
+The best alternative I found is to abandon `thenCombine` completely, and await all the `CompletableFuture`s using `CompletableFuture.allOf`. We can then use the `join`-method to extract the results (which requires some care, as it may block the thread if the computation did not complete yet):
 
 ```java
 CompletableFuture<PokemonCard> futurePokemonCard = 
@@ -320,7 +351,7 @@ Function<Random, Person> randomPerson =
         );
 ```
 
-Note that a class much like the class `RandomGeneratorFunctions` that is described above is already conveniently included for you in the `prelude` module. Check out the [implementation](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/main/java/nl/wernerdegroot/applicatives/prelude/Functions.java) and the [tests](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/test/java/nl/wernerdegroot/applicatives/prelude/FunctionsTest.java).
+Note that a class much like the class `RandomGeneratorFunctions` as described above is already conveniently included for you in the `prelude` module. Check out the [implementation](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/main/java/nl/wernerdegroot/applicatives/prelude/Functions.java) and the [tests](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/test/java/nl/wernerdegroot/applicatives/prelude/FunctionsTest.java).
 
 ## The rules
 
@@ -383,7 +414,7 @@ There are many other data structures like this, such as `Mono`/`Flux` from [Reac
 
 Moreover, any "stack" of these data structures (a `List` of `Optional`s, or a `Function` that returns a `Stream` of `CompletableFuture`s) can automatically be combined this way too! The sections `Lift` and `Stacking` describe how stacking of applicatives works.
 
-## Type constructors
+## Variance
 
 Note that, in the example above, the types of the parameters `left` and `right` are too strict. Applicatives are typically covariant, and you may want to adjust the types of the parameters to reflect this (use `Foo<? extends A>` and `Foo<? extends B>` instead of `Foo<A>` and `Foo<B>`). This is similar to something you'll find in [the definition of `CompletableFuture.thenCombine`](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFuture.html#thenCombine-java.util.concurrent.CompletionStage-java.util.function.BiFunction-) and is [generally recommended](https://en.wikipedia.org/wiki/Robustness_principle):
 
