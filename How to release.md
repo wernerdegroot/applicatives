@@ -26,7 +26,7 @@ The root `pom.xml` contains a tag which includes the tag name (version):
 
 ## Update the version in `README.md`
 
-The section "Prerequisites" mentions the version three times (when describing the dependencies you need).
+The README mentions the version number several times.
 
 ## Upgrade the `nexus-staging-maven-plugin` plugin
 

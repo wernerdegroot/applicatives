@@ -19,11 +19,11 @@ Java 8 or higher is required.
 
 Add the required dependencies:
 
-* [nl.wernerdegroot.applicatives.processor:1.0.3](https://mvnrepository.com/artifact/nl.wernerdegroot.applicatives/processor/1.0.3)  
+* [nl.wernerdegroot.applicatives.processor:1.1.0](https://mvnrepository.com/artifact/nl.wernerdegroot.applicatives/processor/1.1.0)  
 
     Annotation processor. Only needed during compilation. Hook it into `maven-compiler-plugin` or include it as dependency with scope `provided`.
  
-* [nl.wernerdegroot.applicatives.runtime:1.0.3](https://mvnrepository.com/artifact/nl.wernerdegroot.applicatives/runtime/1.0.3)
+* [nl.wernerdegroot.applicatives.runtime:1.1.0](https://mvnrepository.com/artifact/nl.wernerdegroot.applicatives/runtime/1.1.0)
 
     Required runtime dependencies. Only a handful of classes, and no transitive dependencies.
 
@@ -33,7 +33,7 @@ Example:
 <dependency>
     <groupId>nl.wernerdegroot.applicatives</groupId>
     <artifactId>runtime</artifactId>
-    <version>1.0.3</version>
+    <version>1.1.0</version>
 </dependency>
 
 ...
@@ -51,7 +51,7 @@ Example:
                     <path>
                         <groupId>nl.wernerdegroot.applicatives</groupId>
                         <artifactId>processor</artifactId>
-                        <version>1.0.3</version>
+                        <version>1.1.0</version>
                     </path>
                 </annotationProcessorPaths>
             </configuration>
@@ -66,7 +66,7 @@ You may also want to include `prelude`, for applicative instances for some commo
 <dependency>
     <groupId>nl.wernerdegroot.applicatives</groupId>
     <artifactId>prelude</artifactId>
-    <version>1.0.3</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
