@@ -24,7 +24,7 @@ Add the required dependencies:
     Annotation processor. Only needed during compilation. Hook it into `maven-compiler-plugin` or include it as dependency with scope `provided`.
 * [nl.wernerdegroot.applicatives.runtime:1.0.3](https://mvnrepository.com/artifact/nl.wernerdegroot.applicatives/runtime/1.0.3)
 
-    Required runtime dependencies (only a handful of classes, and no transitive dependencies).
+    Required runtime dependencies. Only a handful of classes, and no transitive dependencies.
 
 Example:
 
