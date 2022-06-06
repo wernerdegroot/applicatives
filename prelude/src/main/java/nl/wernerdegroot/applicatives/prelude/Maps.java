@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
 
-@Covariant.Builder(className = "MapsOverloads")
+@Covariant.Builder
 public class Maps<K> implements MapsOverloads<K> {
 
     private static final Maps<?> INSTANCE = new Maps<>();

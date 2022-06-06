@@ -15,7 +15,7 @@ public class Optionals implements OptionalsOverloads {
     }
 
     @Override
-    @Covariant(className = "OptionalsOverloads")
+    @Covariant
     public <A, B, C> Optional<C> combine(Optional<? extends A> left, Optional<? extends B> right, BiFunction<? super A, ? super B, ? extends C> fn) {
         if (left.isPresent() && right.isPresent()) {
             return Optional.of(fn.apply(left.get(), right.get()));

@@ -8,14 +8,14 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.SOURCE)
 public @interface Covariant {
-    String className();
+    String className() default "*Overloads";
     String liftMethodName() default "lift";
     int maxArity() default 26;
 
     @Target(ElementType.TYPE)
     @Retention(RetentionPolicy.SOURCE)
     @interface Builder {
-        String className();
+        String className() default "*Overloads";
         String liftMethodName() default "lift";
         int maxArity() default 26;
     }

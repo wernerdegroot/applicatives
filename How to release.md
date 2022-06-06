@@ -28,6 +28,10 @@ The root `pom.xml` contains a tag which includes the tag name (version):
 
 The section "Prerequisites" mentions the version three times (when describing the dependencies you need).
 
+## Upgrade the `nexus-staging-maven-plugin` plugin
+
+Upgrade the `nexus-staging-maven-plugin` plugin to the latest version.
+
 ## Commit, push and tag
 
 Commit name should be something like `Release v1.0.3`.
@@ -37,6 +41,26 @@ Commit name should be something like `Release v1.0.3`.
 ```
 mvn clean deploy -Pdeploy
 ```
+
+**If you get an error about `ioctl`**
+
+If you get an error saying something like
+
+```
+gpg: signing failed: Inappropriate ioctl for device
+```
+
+first export `GPG_TTY`:
+
+```
+export GPG_TTY=$(tty)
+```
+
+(Source: https://github.com/keybase/keybase-issues/issues/2798)
+
+**If you forgot your password**
+
+Check `settings.xml` and remember that Sonatype requires the passwords to be pretty long.
 
 ## References
 
