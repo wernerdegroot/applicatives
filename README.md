@@ -340,7 +340,7 @@ public class RandomGeneratorFunctions implements RandomGeneratorFunctionsOverloa
 See how easy it becomes to combine random generator functions?
 
 ```java
-Function<Random, Person> randomPerson = 
+Function<Random, PokemonCard> randomPokemonCard = 
         RandomGeneratorFunctions.instance().combine(
             randomName,
             randomHp,
