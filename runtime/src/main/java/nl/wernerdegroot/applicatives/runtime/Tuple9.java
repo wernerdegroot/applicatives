@@ -20,6 +20,8 @@ public interface Tuple9<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eig
 
     Ninth getNinth();
 
+    Tuple8<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth> withoutNinth();
+
     <Tenth> Tuple10<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth> withTenth(Tenth tenth);
 
     default <R> R apply(Function9<? super First, ? super Second, ? super Third, ? super Fourth, ? super Fifth, ? super Sixth, ? super Seventh, ? super Eighth, ? super Ninth, ? extends R> fn) {

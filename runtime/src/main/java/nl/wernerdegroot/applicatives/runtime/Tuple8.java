@@ -18,6 +18,8 @@ public interface Tuple8<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eig
 
     Eighth getEighth();
 
+    Tuple7<First, Second, Third, Fourth, Fifth, Sixth, Seventh> withoutEighth();
+
     <Ninth> Tuple9<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth> withNinth(Ninth ninth);
 
     default <R> R apply(Function8<? super First, ? super Second, ? super Third, ? super Fourth, ? super Fifth, ? super Sixth, ? super Seventh, ? super Eighth, ? extends R> fn) {

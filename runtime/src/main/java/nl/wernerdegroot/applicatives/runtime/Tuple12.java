@@ -26,6 +26,8 @@ public interface Tuple12<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Ei
 
     Twelfth getTwelfth();
 
+    Tuple11<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh> withoutTwelfth();
+
     <Thirteenth> Tuple13<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth> withThirteenth(Thirteenth thirteenth);
 
     default <R> R apply(Function12<? super First, ? super Second, ? super Third, ? super Fourth, ? super Fifth, ? super Sixth, ? super Seventh, ? super Eighth, ? super Ninth, ? super Tenth, ? super Eleventh, ? super Twelfth, ? extends R> fn) {

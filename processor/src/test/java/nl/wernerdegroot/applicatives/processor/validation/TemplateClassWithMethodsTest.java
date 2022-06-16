@@ -28,7 +28,7 @@ public class TemplateClassWithMethodsTest {
         replacements.put(A, B);
         replacements.put(B, A);
 
-        TemplateClassWithMethodsValidator.Result templateClassWithMethods = TemplateClassWithMethodsValidator.Result.of(
+        CovariantValidator.Result templateClassWithMethods = CovariantValidator.Result.of(
                 asList(A.extending(COMPARABLE.with(B)), B.asTypeParameter()),
                 Optional.of(
                         CovariantInitializer.of(
@@ -52,7 +52,7 @@ public class TemplateClassWithMethodsTest {
                 )
         );
 
-        TemplateClassWithMethodsValidator.Result expected = TemplateClassWithMethodsValidator.Result.of(
+        CovariantValidator.Result expected = CovariantValidator.Result.of(
                 asList(B.extending(COMPARABLE.with(A)), A.asTypeParameter()),
                 Optional.of(
                         CovariantInitializer.of(
@@ -76,7 +76,7 @@ public class TemplateClassWithMethodsTest {
                 )
         );
 
-        TemplateClassWithMethodsValidator.Result toVerify = templateClassWithMethods.replaceTypeParameterNames(replacements);
+        CovariantValidator.Result toVerify = templateClassWithMethods.replaceTypeParameterNames(replacements);
 
         assertEquals(expected, toVerify);
     }
@@ -87,7 +87,7 @@ public class TemplateClassWithMethodsTest {
         replacements.put(A, B);
         replacements.put(B, A);
 
-        TemplateClassWithMethodsValidator.Result templateClassWithMethods = TemplateClassWithMethodsValidator.Result.of(
+        CovariantValidator.Result templateClassWithMethods = CovariantValidator.Result.of(
                 emptyList(),
                 Optional.empty(),
                 CovariantAccumulator.of(
@@ -99,7 +99,7 @@ public class TemplateClassWithMethodsTest {
                 Optional.empty()
         );
 
-        TemplateClassWithMethodsValidator.Result expected = TemplateClassWithMethodsValidator.Result.of(
+        CovariantValidator.Result expected = CovariantValidator.Result.of(
                 emptyList(),
                 Optional.empty(),
                 CovariantAccumulator.of(
@@ -111,7 +111,7 @@ public class TemplateClassWithMethodsTest {
                 Optional.empty()
         );
 
-        TemplateClassWithMethodsValidator.Result toVerify = templateClassWithMethods.replaceTypeParameterNames(replacements);
+        CovariantValidator.Result toVerify = templateClassWithMethods.replaceTypeParameterNames(replacements);
 
         assertEquals(expected, toVerify);
     }

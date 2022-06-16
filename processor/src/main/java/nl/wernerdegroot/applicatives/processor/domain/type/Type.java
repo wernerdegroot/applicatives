@@ -40,6 +40,7 @@ public interface Type {
     ConcreteType THREAD = Type.concrete(FullyQualifiedName.of("java.lang.Thread"));
     ConcreteType RUNNABLE = Type.concrete(FullyQualifiedName.of("java.lang.Runnable"));
     TypeBuilder OPTIONAL = new TypeBuilder(FullyQualifiedName.of("java.util.Optional"));
+    TypeBuilder COMPARATOR = new TypeBuilder(FullyQualifiedName.of("java.util.Comparator"));
     TypeBuilder COLLECTION = new TypeBuilder(FullyQualifiedName.of("java.util.Collection"));
     TypeBuilder LIST = new TypeBuilder(FullyQualifiedName.of("java.util.List"));
     TypeBuilder ARRAY_LIST = new TypeBuilder(FullyQualifiedName.of("java.util.ArrayList"));
@@ -49,6 +50,7 @@ public interface Type {
     TypeBuilder BI_FUNCTION = new TypeBuilder(FullyQualifiedName.of("java.util.function.BiFunction"));
     TypeBuilder COMPLETABLE_FUTURE = new TypeBuilder(FullyQualifiedName.of("java.util.concurrent.CompletableFuture"));
     TypeBuilder COMPARABLE = new TypeBuilder(FullyQualifiedName.of("java.lang.Comparable"));
+    TypeBuilder TUPLE2 = new TypeBuilder(FullyQualifiedName.of("nl.wernerdegroot.applicatives.runtime.Tuple2"));
 
     /**
      * Method to provide some form of pattern matching (using the <a href="https://en.wikipedia.org/wiki/Visitor_pattern">visitor pattern</a>).

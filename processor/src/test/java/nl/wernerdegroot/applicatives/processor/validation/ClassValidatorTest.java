@@ -12,7 +12,7 @@ import static java.util.stream.Collectors.toSet;
 import static nl.wernerdegroot.applicatives.processor.domain.Modifier.STATIC;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class TemplateClassValidatorTest {
+public class ClassValidatorTest {
 
     private final TypeParameter A = TypeParameterName.of("A").asTypeParameter();
     private final TypeParameter B = TypeParameterName.of("B").asTypeParameter();
@@ -26,8 +26,8 @@ public class TemplateClassValidatorTest {
                 .containingClass(modifiers(), ClassName.of("Outer"), A, B)
                 .containingClass(modifiers(), ClassName.of("Inner"), C, D);
 
-        Validated<String, TemplateClassValidator.Result> expected = Validated.invalid("Only outer classes and static inner classes are currently supported");
-        Validated<String, TemplateClassValidator.Result> toVerify = TemplateClassValidator.validate(toValidate);
+        Validated<String, ClassValidator.Result> expected = Validated.invalid("Only outer classes and static inner classes are currently supported");
+        Validated<String, ClassValidator.Result> toVerify = ClassValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -39,8 +39,8 @@ public class TemplateClassValidatorTest {
                 .containingClass(modifiers(), ClassName.of("Outer"), A, B)
                 .containingClass(modifiers(STATIC), ClassName.of("Inner"), C, D);
 
-        Validated<String, TemplateClassValidator.Result> expected = Validated.valid(TemplateClassValidator.Result.of(asList(C, D)));
-        Validated<String, TemplateClassValidator.Result> toVerify = TemplateClassValidator.validate(toValidate);
+        Validated<String, ClassValidator.Result> expected = Validated.valid(ClassValidator.Result.of(asList(C, D)));
+        Validated<String, ClassValidator.Result> toVerify = ClassValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }
@@ -51,8 +51,8 @@ public class TemplateClassValidatorTest {
                 .asPackage()
                 .containingClass(modifiers(), ClassName.of("Outer"), A, B);
 
-        Validated<String, TemplateClassValidator.Result> expected = Validated.valid(TemplateClassValidator.Result.of(asList(A, B)));
-        Validated<String, TemplateClassValidator.Result> toVerify = TemplateClassValidator.validate(toValidate);
+        Validated<String, ClassValidator.Result> expected = Validated.valid(ClassValidator.Result.of(asList(A, B)));
+        Validated<String, ClassValidator.Result> toVerify = ClassValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
     }

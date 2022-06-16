@@ -16,6 +16,7 @@ import static java.util.stream.Collectors.toSet;
 import static nl.wernerdegroot.applicatives.processor.domain.Modifier.*;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.*;
 import static nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor.placeholder;
+import static nl.wernerdegroot.applicatives.processor.validation.Variance.COVARIANT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class CovariantAccumulatorValidatorTest {

@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.UnaryOperator;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
@@ -26,7 +25,7 @@ import static nl.wernerdegroot.applicatives.processor.generator.MethodCallGenera
 import static nl.wernerdegroot.applicatives.processor.generator.MethodGenerator.method;
 import static nl.wernerdegroot.applicatives.processor.generator.MethodReferenceGenerator.methodReference;
 
-public class Generator {
+public class CovariantGenerator {
 
     private static final ClassName TUPLE_CLASS_NAME = ClassName.of("Tuples");
     private static final String TUPLE_METHOD_NAME = "tuple";
@@ -55,91 +54,91 @@ public class Generator {
     private String liftMethodName;
     private int maxArity;
 
-    public static Generator generator() {
-        return new Generator();
+    public static CovariantGenerator generator() {
+        return new CovariantGenerator();
     }
 
-    public Generator withPackageName(PackageName packageName) {
+    public CovariantGenerator withPackageName(PackageName packageName) {
         this.packageName = packageName;
         return this;
     }
 
-    public Generator withClassNameToGenerate(String classNameToGenerate) {
+    public CovariantGenerator withClassNameToGenerate(String classNameToGenerate) {
         this.classNameToGenerate = classNameToGenerate;
         return this;
     }
 
-    public Generator withClassTypeParameters(List<TypeParameter> classTypeParameters) {
+    public CovariantGenerator withClassTypeParameters(List<TypeParameter> classTypeParameters) {
         this.classTypeParameters = classTypeParameters;
         return this;
     }
 
-    public Generator withOptionalInitializer(Optional<CovariantInitializer> optionalInitializer) {
+    public CovariantGenerator withOptionalInitializer(Optional<CovariantInitializer> optionalInitializer) {
         this.optionalInitializer = optionalInitializer;
         return this;
     }
 
-    public Generator withAccumulator(CovariantAccumulator accumulator) {
+    public CovariantGenerator withAccumulator(CovariantAccumulator accumulator) {
         this.accumulator = accumulator;
         return this;
     }
 
-    public Generator withOptionalFinalizer(Optional<CovariantFinalizer> optionalFinalizer) {
+    public CovariantGenerator withOptionalFinalizer(Optional<CovariantFinalizer> optionalFinalizer) {
         this.optionalFinalizer = optionalFinalizer;
         return this;
     }
 
-    public Generator withParameterTypeConstructorArguments(List<TypeParameter> inputTypeConstructorArguments) {
+    public CovariantGenerator withParameterTypeConstructorArguments(List<TypeParameter> inputTypeConstructorArguments) {
         this.parameterTypeConstructorArguments = inputTypeConstructorArguments;
         return this;
     }
 
-    public Generator withReturnTypeConstructorArgument(TypeParameter returnTypeConstructorArgument) {
+    public CovariantGenerator withReturnTypeConstructorArgument(TypeParameter returnTypeConstructorArgument) {
         this.returnTypeConstructorArgument = returnTypeConstructorArgument;
         return this;
     }
 
-    public Generator withInputParameterNames(List<String> inputParameterNames) {
+    public CovariantGenerator withInputParameterNames(List<String> inputParameterNames) {
         this.inputParameterNames = inputParameterNames;
         return this;
     }
 
-    public Generator withValueParameterName(String valueParameterName) {
+    public CovariantGenerator withValueParameterName(String valueParameterName) {
         this.valueParameterName = valueParameterName;
         return this;
     }
 
-    public Generator withSelfParameterName(String selfParameterName) {
+    public CovariantGenerator withSelfParameterName(String selfParameterName) {
         this.selfParameterName = selfParameterName;
         return this;
     }
 
-    public Generator withCombinatorParameterName(String combinatorParameterName) {
+    public CovariantGenerator withCombinatorParameterName(String combinatorParameterName) {
         this.combinatorParameterName = combinatorParameterName;
         return this;
     }
 
-    public Generator withMaxTupleSizeParameterName(String maxTupleSizeParameterName) {
+    public CovariantGenerator withMaxTupleSizeParameterName(String maxTupleSizeParameterName) {
         this.maxTupleSizeParameterName = maxTupleSizeParameterName;
         return this;
     }
 
-    public Generator withTupleParameterName(String tupleParameterName) {
+    public CovariantGenerator withTupleParameterName(String tupleParameterName) {
         this.tupleParameterName = tupleParameterName;
         return this;
     }
 
-    public Generator withElementParameterName(String elementParameterName) {
+    public CovariantGenerator withElementParameterName(String elementParameterName) {
         this.elementParameterName = elementParameterName;
         return this;
     }
 
-    public Generator withLiftMethodName(String liftMethodName) {
+    public CovariantGenerator withLiftMethodName(String liftMethodName) {
         this.liftMethodName = liftMethodName;
         return this;
     }
 
-    public Generator withMaxArity(int maxArity) {
+    public CovariantGenerator withMaxArity(int maxArity) {
         this.maxArity = maxArity;
         return this;
     }
@@ -565,7 +564,6 @@ public class Generator {
     private List<String> takeInputParameterNames(int toTake) {
         return inputParameterNames.subList(0, toTake);
     }
-
 
     private FullyQualifiedName fullyQualifiedNameOfFunction(int arity) {
         return arity == 2 ? BI_FUNCTION.getFullyQualifiedName() : fullyQualifiedNameOfArbitraryArityFunction(arity);

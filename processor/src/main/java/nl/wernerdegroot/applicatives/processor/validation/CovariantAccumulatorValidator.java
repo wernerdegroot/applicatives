@@ -18,7 +18,6 @@ import static nl.wernerdegroot.applicatives.processor.generator.TypeGenerator.ge
 public class CovariantAccumulatorValidator {
 
     public static Validated<String, Result> validate(Method method) {
-
         MethodValidation methodValidation = MethodValidation.of(method)
                 .verifyCanImplementAbstractMethod()
                 .verifyParameterCount("exactly 3", numberOfParameters -> numberOfParameters == 3)
@@ -47,9 +46,9 @@ public class CovariantAccumulatorValidator {
         Parameter combinatorParameter = parameters.get(2);
 
         // Check if the third parameter is as expected:
-        Type expectedCombinatorParameter = BI_FUNCTION.with(leftInputTypeConstructorArgument.contravariant(), rightInputTypeConstructorArgument.contravariant(), returnTypeConstructorArgument.covariant());
-        if (!Objects.equals(combinatorParameter.getType(), expectedCombinatorParameter)) {
-            return Validated.invalid("Expected third argument to be a " + generateFrom(expectedCombinatorParameter) + " but was " + generateFrom(combinatorParameter.getType()));
+        Type expectedCombinatorType = BI_FUNCTION.with(leftInputTypeConstructorArgument.asType().contravariant(), rightInputTypeConstructorArgument.asType().contravariant(), returnTypeConstructorArgument.asType().covariant());
+        if (!Objects.equals(combinatorParameter.getType(), expectedCombinatorType)) {
+            return Validated.invalid("Expected third argument to be a " + generateFrom(expectedCombinatorType) + " but was " + generateFrom(combinatorParameter.getType()));
         }
 
         TypeConstructor accumulatedTypeConstructor = returnType.asTypeConstructorWithPlaceholderFor(returnTypeConstructorArgument.getName());

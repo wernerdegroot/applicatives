@@ -26,7 +26,7 @@ public class Optionals implements OptionalsOverloads {
 
     public <T, A, R> Collector<Optional<? extends T>, ?, Optional<R>> collector(Collector<T, A, R> collector) {
         class Box {
-            Optional<A> accumulatedOpt;
+            private Optional<A> accumulatedOpt;
 
             public Box() {
                 this.accumulatedOpt = Optional.of(collector.supplier().get());

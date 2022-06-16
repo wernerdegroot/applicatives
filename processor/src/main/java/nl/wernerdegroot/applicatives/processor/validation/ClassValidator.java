@@ -6,7 +6,7 @@ import nl.wernerdegroot.applicatives.processor.domain.containing.ContainingClass
 import java.util.List;
 import java.util.Objects;
 
-public class TemplateClassValidator {
+public class ClassValidator {
 
     public static Validated<String, Result> validate(ContainingClass containingClass) {
 

@@ -15,10 +15,10 @@ import static java.util.stream.Collectors.joining;
 import static nl.wernerdegroot.applicatives.processor.conflicts.Conflicts.*;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.*;
 import static nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor.placeholder;
-import static nl.wernerdegroot.applicatives.processor.generator.Generator.generator;
+import static nl.wernerdegroot.applicatives.processor.generator.CovariantGenerator.generator;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class GeneratorTest {
+public class CovariantGeneratorTest {
 
     // Very simple:
     @Test
@@ -141,7 +141,7 @@ public class GeneratorTest {
     }
 
     private static String getResourceFileAsString(String fileName) throws IOException {
-        try (InputStream is = GeneratorTest.class.getResourceAsStream(fileName)) {
+        try (InputStream is = CovariantGeneratorTest.class.getResourceAsStream(fileName)) {
             if (is == null) {
                 throw new NullPointerException();
             }

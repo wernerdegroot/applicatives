@@ -1,5 +1,6 @@
 package nl.wernerdegroot.applicatives.processor.domain;
 
+import nl.wernerdegroot.applicatives.processor.domain.type.GenericType;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import nl.wernerdegroot.applicatives.processor.domain.type.TypeArgument;
 
@@ -29,7 +30,7 @@ public class TypeParameter {
         return new TypeParameter(name, asList(upperBounds));
     }
 
-    public Type asType() {
+    public GenericType asType() {
         return getName().asType();
     }
 

@@ -9,7 +9,7 @@ import nl.wernerdegroot.applicatives.processor.domain.containing.ContainingClass
 import nl.wernerdegroot.applicatives.processor.generator.ContainingClassGenerator;
 import nl.wernerdegroot.applicatives.processor.logging.Log;
 import nl.wernerdegroot.applicatives.processor.validation.ConfigValidator;
-import nl.wernerdegroot.applicatives.processor.validation.TemplateClassWithMethodsValidator;
+import nl.wernerdegroot.applicatives.processor.validation.CovariantValidator;
 import nl.wernerdegroot.applicatives.processor.validation.Validated;
 import nl.wernerdegroot.applicatives.runtime.Covariant;
 
@@ -37,9 +37,9 @@ import static nl.wernerdegroot.applicatives.processor.Classes.*;
 public class CovariantBuilderProcessor extends AbstractCovariantProcessor {
 
     public static final Set<FullyQualifiedName> SUPPORTED_ANNOTATIONS = Stream.of(
-            INITIALIZER,
-            ACCUMULATOR,
-            FINALIZER
+            INITIALIZER_FULLY_QUALIFIED_NAME,
+            ACCUMULATOR_FULLY_QUALIFIED_NAME,
+            FINALIZER_FULLY_QUALIFIED_NAME
     ).collect(toSet());
 
     @Override
@@ -92,22 +92,22 @@ public class CovariantBuilderProcessor extends AbstractCovariantProcessor {
             return;
         }
 
-        Validated<Log, TemplateClassWithMethodsValidator.Result> validatedTemplateClassWithMethods = TemplateClassWithMethodsValidator.validate(containingClass, methods);
-        if (!validatedTemplateClassWithMethods.isValid()) {
-            errorValidationFailed(containingClass, validatedTemplateClassWithMethods);
+        Validated<Log, CovariantValidator.Result> validatedCovariant = CovariantValidator.validate(containingClass, methods);
+        if (!validatedCovariant.isValid()) {
+            errorValidationFailed(containingClass, validatedCovariant);
             return;
         }
 
-        TemplateClassWithMethodsValidator.Result templateClassWithMethods = validatedTemplateClassWithMethods.getValue();
+        CovariantValidator.Result covariant = validatedCovariant.getValue();
 
-        noteValidationSuccess(templateClassWithMethods);
+        noteValidationSuccess(covariant);
 
         resolveConflictsAndGenerate(
                 classNameToGenerate,
                 liftMethodName,
                 maxArity,
                 containingClass.getPackageName(),
-                templateClassWithMethods
+                covariant
         );
     }
 
@@ -118,7 +118,7 @@ public class CovariantBuilderProcessor extends AbstractCovariantProcessor {
         });
     }
 
-    private void errorValidationFailed(ContainingClass containingClass, Validated<Log, TemplateClassWithMethodsValidator.Result> validatedTemplateClassWithMethods) {
+    private void errorValidationFailed(ContainingClass containingClass, Validated<Log, CovariantValidator.Result> validatedTemplateClassWithMethods) {
         Log.of("Class '%s' does not meet all criteria for code generation", containingClass.getFullyQualifiedName().raw())
                 .withLogs(validatedTemplateClassWithMethods.getErrorMessages())
                 .append(asError());

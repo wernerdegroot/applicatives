@@ -11,7 +11,7 @@ import nl.wernerdegroot.applicatives.processor.logging.Log;
 import nl.wernerdegroot.applicatives.processor.logging.LoggingBackend;
 import nl.wernerdegroot.applicatives.processor.logging.MessagerLoggingBackend;
 import nl.wernerdegroot.applicatives.processor.logging.NoLoggingBackend;
-import nl.wernerdegroot.applicatives.processor.validation.TemplateClassWithMethodsValidator;
+import nl.wernerdegroot.applicatives.processor.validation.CovariantValidator;
 import nl.wernerdegroot.applicatives.processor.validation.Validated;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -29,7 +29,7 @@ import java.util.Set;
 
 import static nl.wernerdegroot.applicatives.processor.conflicts.ConflictFinder.findClassTypeParameterNameReplacements;
 import static nl.wernerdegroot.applicatives.processor.conflicts.Conflicts.*;
-import static nl.wernerdegroot.applicatives.processor.generator.Generator.generator;
+import static nl.wernerdegroot.applicatives.processor.generator.CovariantGenerator.generator;
 
 public abstract class AbstractCovariantProcessor extends AbstractProcessor {
 
@@ -39,6 +39,10 @@ public abstract class AbstractCovariantProcessor extends AbstractProcessor {
 
     public String getClassNameToGenerate(String className, ContainingClass containingClass) {
         return className.replace("*", containingClass.getClassName().raw());
+    }
+
+    public String getCombineMethodNameToGenerate(String combineMethodName, Method combineMethod) {
+        return combineMethodName.replace("*", combineMethod.getName());
     }
 
     @Override
@@ -60,9 +64,9 @@ public abstract class AbstractCovariantProcessor extends AbstractProcessor {
         return false;
     }
 
-    protected void resolveConflictsAndGenerate(String className, String liftMethodName, int maxArity, PackageName packageName, TemplateClassWithMethodsValidator.Result templateClassWithMethods) {
+    protected void resolveConflictsAndGenerate(String className, String liftMethodName, int maxArity, PackageName packageName, CovariantValidator.Result templateClassWithMethods) {
         Map<TypeParameterName, TypeParameterName> classTypeParameterNameReplacements = findClassTypeParameterNameReplacements(templateClassWithMethods.getClassTypeParameters());
-        TemplateClassWithMethodsValidator.Result conflictFree = templateClassWithMethods.replaceTypeParameterNames(classTypeParameterNameReplacements);
+        CovariantValidator.Result conflictFree = templateClassWithMethods.replaceTypeParameterNames(classTypeParameterNameReplacements);
 
         Log.of("Resolved (potential) conflicts between existing type parameters and new, generated type parameters")
                 .withDetail("Class type parameters", conflictFree.getClassTypeParameters(), TypeParameterGenerator::generateFrom)
@@ -111,7 +115,7 @@ public abstract class AbstractCovariantProcessor extends AbstractProcessor {
         }
     }
 
-    private String typeConstructorToString(TypeConstructor typeConstructor) {
+    protected String typeConstructorToString(TypeConstructor typeConstructor) {
         Type substituteForPlaceholder = FullyQualifiedName.of("*").asType();
         Type typeConstructorAsType = typeConstructor.apply(substituteForPlaceholder);
         return TypeGenerator.generateFrom(typeConstructorAsType);
@@ -145,7 +149,7 @@ public abstract class AbstractCovariantProcessor extends AbstractProcessor {
                 .append(asError());
     }
 
-    protected void noteValidationSuccess(TemplateClassWithMethodsValidator.Result templateClassWithMethods) {
+    protected void noteValidationSuccess(CovariantValidator.Result templateClassWithMethods) {
         Log.of("All criteria for code generation satisfied")
                 .withDetail("Class type parameters", templateClassWithMethods.getClassTypeParameters(), TypeParameterGenerator::generateFrom)
                 .withDetail("Name of initializer method", templateClassWithMethods.getOptionalInitializer().map(CovariantInitializer::getName))

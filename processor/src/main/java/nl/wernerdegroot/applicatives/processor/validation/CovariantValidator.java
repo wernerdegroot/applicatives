@@ -11,7 +11,7 @@ import static java.util.stream.Collectors.toList;
 import static nl.wernerdegroot.applicatives.processor.Classes.*;
 import static nl.wernerdegroot.applicatives.processor.generator.TypeGenerator.generateFrom;
 
-public class TemplateClassWithMethodsValidator {
+public class CovariantValidator {
 
     public static Validated<Log, Result> validate(ContainingClass containingClass, Method method) {
         return Validated.combine(
@@ -58,21 +58,21 @@ public class TemplateClassWithMethodsValidator {
         ).flatMap(Function.identity());
     }
 
-    private static Validated<Log, TemplateClassValidator.Result> validateTemplateClass(ContainingClass containingClass) {
-        return TemplateClassValidator.validate(containingClass)
+    private static Validated<Log, ClassValidator.Result> validateTemplateClass(ContainingClass containingClass) {
+        return ClassValidator.validate(containingClass)
                 .fold(invalidFor("Class '%s'", containingClass.getFullyQualifiedName().raw()), valid());
     }
 
     private static Validated<Log, Optional<CovariantInitializerOrFinalizerValidator.Result>> validateInitializer(List<Method> methods) {
         List<Method> candidates = methods
                 .stream()
-                .filter(method -> method.hasAnnotation(INITIALIZER))
+                .filter(method -> method.hasAnnotation(INITIALIZER_FULLY_QUALIFIED_NAME))
                 .collect(toList());
 
         if (candidates.size() == 0) {
             return Validated.valid(Optional.empty());
         } else if (candidates.size() > 1) {
-            return Validated.invalid(Log.of("More than one method annotated with '%s'", INITIALIZER.raw()));
+            return Validated.invalid(Log.of("More than one method annotated with '%s'", INITIALIZER_FULLY_QUALIFIED_NAME.raw()));
         } else {
             Method initializer = candidates.iterator().next();
             return CovariantInitializerOrFinalizerValidator.validate(initializer)
@@ -89,13 +89,13 @@ public class TemplateClassWithMethodsValidator {
     private static Validated<Log, CovariantAccumulatorValidator.Result> validateAccumulator(List<Method> methods) {
         List<Method> candidates = methods
                 .stream()
-                .filter(method -> method.hasAnnotation(ACCUMULATOR))
+                .filter(method -> method.hasAnnotation(ACCUMULATOR_FULLY_QUALIFIED_NAME))
                 .collect(toList());
 
         if (candidates.size() == 0) {
-            return Validated.invalid(Log.of("No method annotated with '%s'", ACCUMULATOR.raw()));
+            return Validated.invalid(Log.of("No method annotated with '%s'", ACCUMULATOR_FULLY_QUALIFIED_NAME.raw()));
         } else if (candidates.size() > 1) {
-            return Validated.invalid(Log.of("More than one method annotated with '%s'", ACCUMULATOR.raw()));
+            return Validated.invalid(Log.of("More than one method annotated with '%s'", ACCUMULATOR_FULLY_QUALIFIED_NAME.raw()));
         } else {
             Method accumulator = candidates.iterator().next();
             return CovariantAccumulatorValidator.validate(accumulator)
@@ -106,13 +106,13 @@ public class TemplateClassWithMethodsValidator {
     private static Validated<Log, Optional<CovariantInitializerOrFinalizerValidator.Result>> validateFinalizer(List<Method> methods) {
         List<Method> candidates = methods
                 .stream()
-                .filter(method -> method.hasAnnotation(FINALIZER))
+                .filter(method -> method.hasAnnotation(FINALIZER_FULLY_QUALIFIED_NAME))
                 .collect(toList());
 
         if (candidates.size() == 0) {
             return Validated.valid(Optional.empty());
         } else if (candidates.size() > 1) {
-            return Validated.invalid(Log.of("More than one method annotated with '%s'", FINALIZER.raw()));
+            return Validated.invalid(Log.of("More than one method annotated with '%s'", FINALIZER_FULLY_QUALIFIED_NAME.raw()));
         } else {
             Method finalizer = candidates.iterator().next();
             return CovariantInitializerOrFinalizerValidator.validate(candidates.iterator().next())
@@ -133,12 +133,12 @@ public class TemplateClassWithMethodsValidator {
         return CovariantFinalizer.of(finalizer.getName(), finalizer.getToInitializeOrFinalizeTypeConstructor(), finalizer.getInitializedOrFinalizedTypeConstructor());
     }
 
-    private static Result templateClassWithMethods(TemplateClassValidator.Result templateClass, Optional<CovariantInitializerOrFinalizerValidator.Result> optionalInitializer, CovariantAccumulatorValidator.Result accumulator, Optional<CovariantInitializerOrFinalizerValidator.Result> optionalFinalizer) {
+    private static Result templateClassWithMethods(ClassValidator.Result templateClass, Optional<CovariantInitializerOrFinalizerValidator.Result> optionalInitializer, CovariantAccumulatorValidator.Result accumulator, Optional<CovariantInitializerOrFinalizerValidator.Result> optionalFinalizer) {
         return Result.of(
                 templateClass.getTypeParameters(),
-                optionalInitializer.map(TemplateClassWithMethodsValidator::toCovariantInitializer),
-                TemplateClassWithMethodsValidator.toCovariantAccumulator(accumulator),
-                optionalFinalizer.map(TemplateClassWithMethodsValidator::toCovariantFinalizer)
+                optionalInitializer.map(CovariantValidator::toCovariantInitializer),
+                CovariantValidator.toCovariantAccumulator(accumulator),
+                optionalFinalizer.map(CovariantValidator::toCovariantFinalizer)
         );
     }
 
