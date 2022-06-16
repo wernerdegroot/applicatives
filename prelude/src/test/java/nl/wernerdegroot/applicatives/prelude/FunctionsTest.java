@@ -15,16 +15,22 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class FunctionsTest {
 
     @Test
-    public void combineResultsAndLift() {
-        Function<Random, String> randomName = oneOf("Bulbasaur", "Charmander", "Squirtle");
-        Function<Random, Integer> randomHp = oneOf(30, 40, 60);
-        Function<Random, EnergyType> randomEnergyType = oneOf(EnergyType.values());
-        Function<Random, List<EnergyType>> randomMoveCost = listOf(1, 2, EnergyType.values());
-        Function<Random, String> randomMoveName = oneOf("Bubble", "Withdraw", "Ember", "Razor Leaf");
-        Function<Random, Integer> randomMoveDamage = oneOf(10, 20, 30);
-        Function<Random, Move> randomMove = Functions.<Random>resultsInstance().combine(randomMoveCost, randomMoveName, randomMoveDamage, Move::new);
-        Function<Random, List<Move>> randomMoves = listOf(1, 2, randomMove);
-        Function<Random, PokemonCard> randomPokemonCard = Functions.<Random>resultsInstance().lift(PokemonCard::new).apply(randomName, randomHp, randomEnergyType, randomMoves);
+    public void combineAndLiftResults() {
+        Function<Random, PokemonCard> randomPokemonCard = Functions.<Random>resultsInstance().lift(PokemonCard::new).apply(
+                oneOf("Bulbasaur", "Charmander", "Squirtle"),
+                oneOf(30, 40, 60),
+                oneOf(EnergyType.values()),
+                listOf(
+                        1,
+                        2,
+                        Functions.<Random>resultsInstance().combine(
+                                listOf(1, 2, EnergyType.values()),
+                                oneOf("Bubble", "Withdraw", "Ember", "Razor Leaf"),
+                                oneOf(10, 20, 30),
+                                Move::new
+                        )
+                )
+        );
         PokemonCard toVerify = randomPokemonCard.apply(new Random(43));
         PokemonCard expected = PokemonCard.of(
                 "Bulbasaur",
@@ -39,7 +45,7 @@ public class FunctionsTest {
     }
 
     @Test
-    public void combineParameters() {
+    public void combineAndLiftParameters() {
         Functions.Parameters<String> printerInstance = Functions.parametersInstance((left, right) -> left + ", " + right);
 
         Function<PokemonCard, String> pokemonCardPrinter = printerInstance.combine(
@@ -47,7 +53,7 @@ public class FunctionsTest {
                 describe("HP"),
                 describe("Energy type"),
                 Functions.Parameters.many(
-                        printerInstance.combine(
+                        printerInstance.lift(Move::decompose).apply(
                                 Functions.Parameters.many(EnergyType::toString, joining(" + ", "Cost: ", "")),
                                 describe("Name"),
                                 describe("Damage")

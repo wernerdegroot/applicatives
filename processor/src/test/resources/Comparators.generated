@@ -9,7 +9,7 @@ public interface ComparatorsOverloads {
     }
 
     default <P1, P2, R extends nl.wernerdegroot.applicatives.runtime.decompositions.Decomposable2<P1, P2>> java.util.Comparator<R> combine(java.util.Comparator<? super P1> first, java.util.Comparator<? super P2> second) {
-        return this.<P1, P2, R>combine(first, second, R::decomposeTo);
+        return this.<P1, P2, R>combine(first, second, R::decompose);
     }
 
     default <P1, P2, P3, R> java.util.Comparator<R> combine(java.util.Comparator<? super P1> first, java.util.Comparator<? super P2> second, java.util.Comparator<? super P3> third, nl.wernerdegroot.applicatives.runtime.decompositions.Decomposition3<? super R, ? extends P1, ? extends P2, ? extends P3> decomposition) {
@@ -17,7 +17,7 @@ public interface ComparatorsOverloads {
     }
 
     default <P1, P2, P3, R extends nl.wernerdegroot.applicatives.runtime.decompositions.Decomposable3<P1, P2, P3>> java.util.Comparator<R> combine(java.util.Comparator<? super P1> first, java.util.Comparator<? super P2> second, java.util.Comparator<? super P3> third) {
-        return this.<P1, P2, P3, R>combine(first, second, third, R::decomposeTo);
+        return this.<P1, P2, P3, R>combine(first, second, third, R::decompose);
     }
 
     default <P1, P2, P3, P4, R> java.util.Comparator<R> combine(java.util.Comparator<? super P1> first, java.util.Comparator<? super P2> second, java.util.Comparator<? super P3> third, java.util.Comparator<? super P4> fourth, nl.wernerdegroot.applicatives.runtime.decompositions.Decomposition4<? super R, ? extends P1, ? extends P2, ? extends P3, ? extends P4> decomposition) {
@@ -25,7 +25,17 @@ public interface ComparatorsOverloads {
     }
 
     default <P1, P2, P3, P4, R extends nl.wernerdegroot.applicatives.runtime.decompositions.Decomposable4<P1, P2, P3, P4>> java.util.Comparator<R> combine(java.util.Comparator<? super P1> first, java.util.Comparator<? super P2> second, java.util.Comparator<? super P3> third, java.util.Comparator<? super P4> fourth) {
-        return this.<P1, P2, P3, P4, R>combine(first, second, third, fourth, R::decomposeTo);
+        return this.<P1, P2, P3, P4, R>combine(first, second, third, fourth, R::decompose);
+    }
+
+    default <P1, P2, R> java.util.function.BiFunction<java.util.Comparator<? super P1>, java.util.Comparator<? super P2>, java.util.Comparator<R>> lift(nl.wernerdegroot.applicatives.runtime.decompositions.Decomposition2<? super R, ? extends P1, ? extends P2> decomposition) {
+        return (first, second) ->
+                this.combine(first, second, decomposition);
+    }
+
+    default <P1, P2, P3, R> nl.wernerdegroot.applicatives.runtime.Function3<java.util.Comparator<? super P1>, java.util.Comparator<? super P2>, java.util.Comparator<? super P3>, java.util.Comparator<R>> lift(nl.wernerdegroot.applicatives.runtime.decompositions.Decomposition3<? super R, ? extends P1, ? extends P2, ? extends P3> decomposition) {
+        return (first, second, third) ->
+                this.combine(first, second, third, decomposition);
     }
 
     class Tuples {

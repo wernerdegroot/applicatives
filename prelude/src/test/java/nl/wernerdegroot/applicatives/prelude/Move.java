@@ -1,5 +1,6 @@
 package nl.wernerdegroot.applicatives.prelude;
 
+import nl.wernerdegroot.applicatives.runtime.Function25;
 import nl.wernerdegroot.applicatives.runtime.Function3;
 import nl.wernerdegroot.applicatives.runtime.decompositions.Decomposable3;
 

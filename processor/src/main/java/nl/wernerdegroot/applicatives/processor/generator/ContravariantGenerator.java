@@ -14,6 +14,7 @@ import static java.util.stream.Collectors.toList;
 import static nl.wernerdegroot.applicatives.processor.Ordinals.getterForIndex;
 import static nl.wernerdegroot.applicatives.processor.Ordinals.withouterForIndex;
 import static nl.wernerdegroot.applicatives.processor.domain.Modifier.*;
+import static nl.wernerdegroot.applicatives.processor.domain.type.Type.BI_FUNCTION;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.FUNCTION;
 import static nl.wernerdegroot.applicatives.processor.generator.ClassOrInterfaceGenerator.classOrInterface;
 import static nl.wernerdegroot.applicatives.processor.generator.Constants.*;
@@ -27,7 +28,6 @@ public class ContravariantGenerator {
 
     private static final ClassName TUPLE_CLASS_NAME = ClassName.of("Tuples");
     private static final String TUPLE_METHOD_NAME = "tuple";
-    private static final String DECOMPOSE_TO_METHOD_NAME = "decomposeTo";
     private static final String DECOMPOSE_METHOD_NAME = "decompose";
     private static final String OF_METHOD_NAME = "of";
 
@@ -45,6 +45,7 @@ public class ContravariantGenerator {
     private String extractLeftParameterName;
     private String extractRightParameterName;
     private String combineMethodName;
+    private String liftMethodName;
     private int maxArity;
 
     public static ContravariantGenerator generator() {
@@ -121,6 +122,11 @@ public class ContravariantGenerator {
         return this;
     }
 
+    public ContravariantGenerator withLiftMethodName(String liftMethodName) {
+        this.liftMethodName = liftMethodName;
+        return this;
+    }
+
     public ContravariantGenerator withMaxArity(int maxArity) {
         this.maxArity = maxArity;
         return this;
@@ -138,7 +144,7 @@ public class ContravariantGenerator {
 
         // Continue adding the combine- and lift-methods.
         methods.addAll(combineMethods());
-//        methods.addAll(liftMethods());
+        methods.addAll(liftMethods());
 
         lines.append(
                 classOrInterface()
@@ -266,7 +272,7 @@ public class ContravariantGenerator {
                         .withTypeArguments(returnTypeConstructorArgument.asType().invariant())
                         .withMethodName(combineMethodName)
                         .withArguments(takeInputParameterNames(arity))
-                        .withArguments(methodReference().withType(returnTypeConstructorArgument.asType()).withMethodName(DECOMPOSE_TO_METHOD_NAME).generate())
+                        .withArguments(methodReference().withType(returnTypeConstructorArgument.asType()).withMethodName(DECOMPOSE_METHOD_NAME).generate())
                         .generate()
         );
     }
@@ -284,6 +290,46 @@ public class ContravariantGenerator {
                 .withParameterTypes(takeParameterTypes(arity))
                 .andParameterNames(takeInputParameterNames(arity))
                 .withReturnStatement(methodBody);
+    }
+
+    private List<MethodGenerator> liftMethods() {
+        return IntStream.range(2, maxArity)
+                .mapToObj(this::liftMethodWithArity)
+                .collect(toList());
+    }
+
+    private MethodGenerator liftMethodWithArity(int arity) {
+        return liftMethodWithArity(
+                arity,
+                methodCall()
+                        .withObjectPath(THIS)
+                        .withMethodName(combineMethodName)
+                        .withArguments(takeInputParameterNames(arity))
+                        .withArguments(decompositionParameterName)
+                        .generate()
+        );
+    }
+
+    private MethodGenerator liftMethodWithArity(int arity, String lambdaBody) {
+        List<TypeArgument> decompositionTypeArguments = new ArrayList<>();
+        decompositionTypeArguments.add(returnTypeConstructorArgument.asType().contravariant());
+        decompositionTypeArguments.addAll(takeParameterTypeConstructorArgumentsAsTypeArguments(arity, Type::covariant));
+        return method()
+                .withModifiers(DEFAULT)
+                .withTypeParameters(takeParameterTypeConstructorArguments(arity))
+                .withTypeParameters(returnTypeConstructorArgument.getName())
+                .withReturnType(lambdaReturnType(getReturnTypeConstructor(), getOtherParametersTypeConstructor(), getFirstParameterTypeConstructor(), arity))
+                .withName(liftMethodName)
+                .withParameter(
+                        Type.concrete(fullyQualifiedNameOfDecomposition(arity), decompositionTypeArguments),
+                        decompositionParameterName
+                )
+                .withReturnStatement(
+                        lambda()
+                                .withParameterNames(takeInputParameterNames(arity))
+                                .withExpression(lambdaBody)
+                                .multiline()
+                );
     }
 
     private List<MethodGenerator> tupleMethods() {
@@ -373,6 +419,25 @@ public class ContravariantGenerator {
                 .withReturnStatement(methodBody);
     }
 
+    private Type lambdaParameterType(TypeConstructor returnTypeConstructor, TypeConstructor firstParameterTypeConstructor, TypeConstructor otherParametersTypeConstructor, int arity) {
+        return lambdaType(returnTypeConstructor, firstParameterTypeConstructor, otherParametersTypeConstructor, arity, Type::contravariant, Type::covariant);
+    }
+
+    private Type lambdaReturnType(TypeConstructor returnTypeConstructor, TypeConstructor firstParameterTypeConstructor, TypeConstructor otherParametersTypeConstructor, int arity) {
+        return lambdaType(returnTypeConstructor, firstParameterTypeConstructor, otherParametersTypeConstructor, arity, Type::invariant, Type::invariant);
+    }
+
+    private Type lambdaType(TypeConstructor returnTypeConstructor, TypeConstructor firstParameterTypeConstructor, TypeConstructor otherParametersTypeConstructor, int arity, Function<Type, TypeArgument> parameterVariance, Function<Type, TypeArgument> returnTypeVariance) {
+        List<TypeArgument> typeArguments = new ArrayList<>();
+        takeParameterTypes(arity, firstParameterTypeConstructor, otherParametersTypeConstructor)
+                .stream()
+                .map(parameterVariance)
+                .forEachOrdered(typeArguments::add);
+        typeArguments.add(returnTypeVariance.apply(returnTypeConstructorArgument.asType().using(returnTypeConstructor)));
+
+        return Type.concrete(fullyQualifiedNameOfFunction(arity), typeArguments);
+    }
+
     private FullyQualifiedName getFullyQualifiedClassNameToGenerate() {
         return packageName.withClassName(ClassName.of(classNameToGenerate));
     }
@@ -403,6 +468,10 @@ public class ContravariantGenerator {
 
     private List<Type> takeParameterTypes(int toTake) {
         return takeParameterTypes(toTake, getFirstParameterTypeConstructor(), getOtherParametersTypeConstructor());
+    }
+
+    private TypeConstructor getReturnTypeConstructor() {
+        return accumulator.getAccumulatedTypeConstructor();
     }
 
     private TypeConstructor getFirstParameterTypeConstructor() {
@@ -450,6 +519,14 @@ public class ContravariantGenerator {
                 .stream()
                 .map(TypeParameter::asType)
                 .collect(toList());
+    }
+
+    private FullyQualifiedName fullyQualifiedNameOfFunction(int arity) {
+        return arity == 2 ? BI_FUNCTION.getFullyQualifiedName() : fullyQualifiedNameOfArbitraryArityFunction(arity);
+    }
+
+    private FullyQualifiedName fullyQualifiedNameOfArbitraryArityFunction(int arity) {
+        return FullyQualifiedName.of("nl.wernerdegroot.applicatives.runtime.Function" + arity);
     }
 
     private FullyQualifiedName fullyQualifiedNameOfTuple() {

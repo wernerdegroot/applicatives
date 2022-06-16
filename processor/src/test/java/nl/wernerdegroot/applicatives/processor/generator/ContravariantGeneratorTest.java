@@ -44,6 +44,7 @@ public class ContravariantGeneratorTest {
                 .withExtractLeftParameterName(EXTRACT_LEFT_PARAMETER_NAME)
                 .withExtractRightParameterName(EXTRACT_RIGHT_PARAMETER_NAME)
                 .withCombineMethodName("combine")
+                .withLiftMethodName("lift")
                 .withMaxArity(4)
                 .generate();
 

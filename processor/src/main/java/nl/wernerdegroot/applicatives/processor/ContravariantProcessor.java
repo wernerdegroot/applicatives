@@ -132,6 +132,7 @@ public class ContravariantProcessor extends AbstractCovariantProcessor {
                 .withExtractLeftParameterName(EXTRACT_LEFT_PARAMETER_NAME)
                 .withExtractRightParameterName(EXTRACT_RIGHT_PARAMETER_NAME)
                 .withCombineMethodName(combineMethodName)
+                .withLiftMethodName(liftMethodName)
                 .withMaxArity(maxArity)
                 .generate();
 
