@@ -155,7 +155,7 @@ public class CovariantGenerator {
         // method for it and append it to the methods.
         optionalAbstractInitializerMethod().ifPresent(methods::add);
 
-        methods.add(abstractCombineMethodWithArityTwo());
+        methods.add(abstractAccumulatorMethod());
 
         // If the client provided a finalizer method, generate an abstract
         // method for it and append it to the methods.
@@ -225,7 +225,7 @@ public class CovariantGenerator {
         return combineMethods;
     }
 
-    private MethodGenerator abstractCombineMethodWithArityTwo() {
+    private MethodGenerator abstractAccumulatorMethod() {
         int arity = 2;
 
         return method()

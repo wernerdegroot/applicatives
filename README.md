@@ -12,6 +12,8 @@ Java code generation for applicative functors, selective functors and more.
     * [Variance](#variance)
     * [Lift](#Lift)
     * [Stacking](#stacking)
+    * [Contributing](#contributing)
+    * [License](#license)
 
 ## Getting started
 
@@ -516,3 +518,13 @@ In this example, we are lifting `Person::new` twice before we apply:
 ```
 
 If we wanted to, we could even lift the result once more. You can keep stacking applicatives!
+
+## Contributing
+
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+Please make sure to update tests as appropriate.
+
+## License
+
+[MIT](https://github.com/wernerdegroot/applicatives/blob/v1.1.0/LICENSE)

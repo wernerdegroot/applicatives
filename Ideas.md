@@ -1,3 +1,11 @@
+* Add `combinatorMethodName` to covariant things too
+* Explicit type arguments to method call are not `TypeArgument` (for a data type). They can't specify variance. Used in generators.
+* Fix
+  ```
+  default This withType(GenericType type) {
+  return withType(FullyQualifiedName.of(type.getName().raw()));
+  }
+  ```
 * Docs for contravariant: https://www.youtube.com/watch?v=IJ_bVVsQhvc (counter-intuitive = contra-intuitive)
 * Contravariant (selective) functors 
 * Test deconstructor (and other things too) when using a constructor or deconstructor of a generic type like Tuple3.
@@ -28,10 +36,3 @@
     ```
 * Benji Webers decomposition function `<T> T (C source, BiFunction<A, B, T> extractor)` instead of the current Decomposition
 * Alternative, Decidable. Also see https://www.youtube.com/watch?v=IJ_bVVsQhvc and https://en.wikibooks.org/wiki/Haskell/Alternative_and_MonadPlus
-* Explicit type arguments to method call are not `TypeArgument` (for a data type). They can't specify variance. Used in generators.
-* Fix
-        ```
-        default This withType(GenericType type) {
-            return withType(FullyQualifiedName.of(type.getName().raw()));
-        }
-        ```

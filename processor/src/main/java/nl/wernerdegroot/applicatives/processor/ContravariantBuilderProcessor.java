@@ -5,10 +5,12 @@ import nl.wernerdegroot.applicatives.processor.converters.ContainingClassConvert
 import nl.wernerdegroot.applicatives.processor.converters.MethodConverter;
 import nl.wernerdegroot.applicatives.processor.domain.*;
 import nl.wernerdegroot.applicatives.processor.domain.containing.ContainingClass;
+import nl.wernerdegroot.applicatives.processor.generator.ContainingClassGenerator;
 import nl.wernerdegroot.applicatives.processor.generator.TypeParameterGenerator;
 import nl.wernerdegroot.applicatives.processor.logging.Log;
 import nl.wernerdegroot.applicatives.processor.validation.ConfigValidator;
 import nl.wernerdegroot.applicatives.processor.validation.ContravariantValidator;
+import nl.wernerdegroot.applicatives.processor.validation.CovariantValidator;
 import nl.wernerdegroot.applicatives.processor.validation.Validated;
 import nl.wernerdegroot.applicatives.runtime.Contravariant;
 
@@ -21,58 +23,88 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
-
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
+import static javax.lang.model.element.ElementKind.METHOD;
 import static nl.wernerdegroot.applicatives.processor.Classes.*;
 import static nl.wernerdegroot.applicatives.processor.conflicts.ConflictFinder.findClassTypeParameterNameReplacements;
 import static nl.wernerdegroot.applicatives.processor.conflicts.Conflicts.*;
 import static nl.wernerdegroot.applicatives.processor.generator.ContravariantGenerator.generator;
 
 @SupportedOptions({Options.VERBOSE_ARGUMENT})
-@SupportedAnnotationTypes(CONTRAVARIANT_CLASS_NAME)
+@SupportedAnnotationTypes(CONTRAVARIANT_BUILDER_CANONICAL_NAME)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @AutoService(Processor.class)
-public class ContravariantProcessor extends AbstractCovariantProcessor {
+public class ContravariantBuilderProcessor extends AbstractCovariantProcessor {
+
+    public static final Set<FullyQualifiedName> SUPPORTED_ANNOTATIONS = Stream.of(
+            INITIALIZER_FULLY_QUALIFIED_NAME,
+            ACCUMULATOR_FULLY_QUALIFIED_NAME,
+            FINALIZER_FULLY_QUALIFIED_NAME
+    ).collect(toSet());
 
     @Override
     public Class<?> getAnnotationType() {
-        return CONTRAVARIANT_CLASS;
+        return CONTRAVARIANT_BUILDER_CLASS;
     }
 
     @Override
     public void processElement(Element element) {
 
-        if (element.getKind() != ElementKind.METHOD) {
-            throw new IllegalArgumentException("Not a method");
+        if (element.getKind() != ElementKind.CLASS) {
+            throw new IllegalArgumentException("Not a class");
         }
+        TypeElement typeElement = (TypeElement) element;
 
-        Contravariant contravariantAnnotation = element.getAnnotation(Contravariant.class);
+        Contravariant.Builder contravariantBuilderAnnotation = element.getAnnotation(Contravariant.Builder.class);
 
-        noteAnnotationFound(element, contravariantAnnotation);
+        noteAnnotationFound(typeElement, contravariantBuilderAnnotation);
 
         ContainingClass containingClass;
-        Method method;
+        List<Method> methods;
         try {
-            containingClass = ContainingClassConverter.toDomain(element.getEnclosingElement());
-            method = MethodConverter.toDomain(element);
+            containingClass = ContainingClassConverter.toDomain(typeElement);
+            methods = typeElement
+                    .getEnclosedElements()
+                    .stream()
+                    .filter(enclosedElement -> enclosedElement.getKind() == METHOD)
+                    .map(MethodConverter::toDomain)
+                    .filter(method -> method.hasAnnotationOf(SUPPORTED_ANNOTATIONS))
+                    .collect(toList());
+
             noteConversionToDomainSuccess();
         } catch (Throwable e) {
             // If we have issues transforming to `nl.wernerdegroot.applicatives.processor.domain`
             // (which makes it a lot easier to log where the annotation was found) make
             // sure we log the method's raw signature so the client can troubleshoot.
-            Log.of("Failure transforming from objects from 'javax.lang.model' to objects from 'nl.wernerdegroot.applicatives.processor.domain' for method with signature '%s'", element).append(asError());
+            Log.of("Failure transforming from objects from 'javax.lang.model' to objects from 'nl.wernerdegroot.applicatives.processor.domain' for class '%s'", typeElement.getQualifiedName()).append(asError());
             throw e;
         }
 
-        noteMethodFound(containingClass, method);
+        noteClassFound(containingClass, methods);
 
-        String classNameToGenerate = getClassNameToGenerate(contravariantAnnotation.className(), containingClass);
-        String combineMethodName = getCombineMethodNameToGenerate(contravariantAnnotation.combineMethodName(), method.getName());
-        String liftMethodName = contravariantAnnotation.liftMethodName();
-        int maxArity = contravariantAnnotation.maxArity();
+        Validated<Log, ContravariantValidator.Result> validatedContravariant = ContravariantValidator.validate(containingClass, methods);
+        if (!validatedContravariant.isValid()) {
+            errorValidationFailed(containingClass, validatedContravariant);
+            return;
+        }
+
+        ContravariantValidator.Result contravariant = validatedContravariant.getValue();
+
+        noteValidationSuccess(contravariant);
+
+        String classNameToGenerate = getClassNameToGenerate(contravariantBuilderAnnotation.className(), containingClass);
+        String combineMethodName = getCombineMethodNameToGenerate(contravariantBuilderAnnotation.combineMethodName(), contravariant.getAccumulator().getName());
+        String liftMethodName = contravariantBuilderAnnotation.liftMethodName();
+        int maxArity = contravariantBuilderAnnotation.maxArity();
 
         Validated<String, Void> validatedConfig = ConfigValidator.validate(classNameToGenerate, liftMethodName, maxArity);
 
@@ -80,16 +112,6 @@ public class ContravariantProcessor extends AbstractCovariantProcessor {
             errorConfigNotValid(validatedConfig);
             return;
         }
-
-        Validated<Log, ContravariantValidator.Result> validatedContravariant = ContravariantValidator.validate(containingClass, method);
-        if (!validatedContravariant.isValid()) {
-            errorValidationFailed(containingClass, method, validatedContravariant);
-            return;
-        }
-
-        ContravariantValidator.Result contravariant = validatedContravariant.getValue();
-
-        noteValidationSuccess(contravariant);
 
 //        resolveConflictsAndGenerate(
 //                classNameToGenerate,
@@ -104,15 +126,15 @@ public class ContravariantProcessor extends AbstractCovariantProcessor {
 
         Log.of("Resolved (potential) conflicts between existing type parameters and new, generated type parameters")
                 .withDetail("Class type parameters", conflictFree.getClassTypeParameters(), TypeParameterGenerator::generateFrom)
-//                .withDetail("Name of initializer method", conflictFree.getOptionalInitializer().map(CovariantInitializer::getName))
-//                .withDetail("Initialized type constructor", conflictFree.getOptionalInitializer().map(CovariantInitializer::getInitializedTypeConstructor), this::typeConstructorToString)
+                .withDetail("Name of initializer method", conflictFree.getOptionalInitializer().map(CovariantInitializer::getName))
+                .withDetail("Initialized type constructor", conflictFree.getOptionalInitializer().map(CovariantInitializer::getInitializedTypeConstructor), this::typeConstructorToString)
                 .withDetail("Name of accumulator method", conflictFree.getAccumulator().getName())
                 .withDetail("Input type constructor", conflictFree.getAccumulator().getInputTypeConstructor(), this::typeConstructorToString)
                 .withDetail("Partially accumulated type constructor", conflictFree.getAccumulator().getPartiallyAccumulatedTypeConstructor(), this::typeConstructorToString)
                 .withDetail("Accumulated type constructor", conflictFree.getAccumulator().getAccumulatedTypeConstructor(), this::typeConstructorToString)
-//                .withDetail("Name of finalizer method", conflictFree.getOptionalFinalizer().map(CovariantFinalizer::getName))
-//                .withDetail("To finalize type constructor", conflictFree.getOptionalFinalizer().map(CovariantFinalizer::getToFinalizeTypeConstructor), this::typeConstructorToString)
-//                .withDetail("Finalized type constructor", conflictFree.getOptionalFinalizer().map(CovariantFinalizer::getFinalizedTypeConstructor), this::typeConstructorToString)
+                .withDetail("Name of finalizer method", conflictFree.getOptionalFinalizer().map(CovariantFinalizer::getName))
+                .withDetail("To finalize type constructor", conflictFree.getOptionalFinalizer().map(CovariantFinalizer::getToFinalizeTypeConstructor), this::typeConstructorToString)
+                .withDetail("Finalized type constructor", conflictFree.getOptionalFinalizer().map(CovariantFinalizer::getFinalizedTypeConstructor), this::typeConstructorToString)
                 .append(asNote());
 
         String generated = generator()
@@ -151,8 +173,15 @@ public class ContravariantProcessor extends AbstractCovariantProcessor {
         }
     }
 
-    private void errorValidationFailed(ContainingClass containingClass, Method method, Validated<Log, ContravariantValidator.Result> validatedTemplateClassWithMethods) {
-        Log.of("Method '%s' in class '%s' does not meet all criteria for code generation", method.getName(), containingClass.getFullyQualifiedName().raw())
+    private void noteClassFound(ContainingClass containingClass, List<Method> methods) {
+        Log.of("Found class '%s'", ContainingClassGenerator.generateFrom(containingClass)).append(asNote());
+        methods.forEach(method -> {
+            noteMethodFound(containingClass, method);
+        });
+    }
+
+    private void errorValidationFailed(ContainingClass containingClass, Validated<Log, ContravariantValidator.Result> validatedTemplateClassWithMethods) {
+        Log.of("Class '%s' does not meet all criteria for code generation", containingClass.getFullyQualifiedName().raw())
                 .withLogs(validatedTemplateClassWithMethods.getErrorMessages())
                 .append(asError());
     }
@@ -167,17 +196,12 @@ public class ContravariantProcessor extends AbstractCovariantProcessor {
                 .append(asNote());
     }
 
-    private void noteAnnotationFound(Element element, Contravariant contravariantAnnotation) {
-        if (!(element.getEnclosingElement() instanceof TypeElement)) {
-            throw new IllegalArgumentException("Enclosing element is not a class, interface or record");
-        }
-        TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
-
-        Log.of("Found annotation of type '%s' on method '%s' in class '%s'", CONTRAVARIANT_CLASS_NAME, element.getSimpleName(), enclosingElement.getQualifiedName())
-                .withDetail("Class name", contravariantAnnotation.className())
-                .withDetail("Method name for `combine`", contravariantAnnotation.combineMethodName())
-                .withDetail("Method name for `lift`", contravariantAnnotation.liftMethodName())
-                .withDetail("Maximum arity", contravariantAnnotation.maxArity(), i -> Integer.toString(i))
+    private void noteAnnotationFound(TypeElement typeElement, Contravariant.Builder contravariantBuilderAnnotation) {
+        Log.of("Found annotation of type '%s' on class '%s'", CONTRAVARIANT_BUILDER_CANONICAL_NAME, typeElement.getQualifiedName())
+                .withDetail("Class name to generate", contravariantBuilderAnnotation.className())
+                .withDetail("Method name for `combine`", contravariantBuilderAnnotation.combineMethodName())
+                .withDetail("Method name for `lift`", contravariantBuilderAnnotation.liftMethodName())
+                .withDetail("Maximum arity", contravariantBuilderAnnotation.maxArity(), i -> Integer.toString(i))
                 .append(asNote());
     }
 }

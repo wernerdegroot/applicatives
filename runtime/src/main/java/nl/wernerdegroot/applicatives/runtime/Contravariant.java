@@ -12,4 +12,13 @@ public @interface Contravariant {
     String combineMethodName() default "*";
     String liftMethodName() default "lift";
     int maxArity() default 26;
+
+    @Target(ElementType.TYPE)
+    @Retention(RetentionPolicy.SOURCE)
+    @interface Builder {
+        String className() default "*Overloads";
+        String combineMethodName() default "*";
+        String liftMethodName() default "lift";
+        int maxArity() default 26;
+    }
 }

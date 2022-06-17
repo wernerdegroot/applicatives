@@ -31,6 +31,7 @@ public interface Type {
     ConcreteType BOOLEAN = Type.concrete(FullyQualifiedName.of("java.lang.Boolean"));
     ConcreteType NUMBER = Type.concrete(FullyQualifiedName.of("java.lang.Number"));
     ConcreteType STRING = Type.concrete(FullyQualifiedName.of("java.lang.String"));
+    ConcreteType STRING_BUILDER = Type.concrete(FullyQualifiedName.of("java.lang.StringBuilder"));
     ConcreteType CHAR_SEQUENCE = Type.concrete(FullyQualifiedName.of("java.lang.CharSequence"));
     ConcreteType BIG_DECIMAL = Type.concrete(FullyQualifiedName.of("java.math.BigDecimal"));
     ConcreteType OBJECT = Type.concrete(FullyQualifiedName.of("java.lang.Object"));

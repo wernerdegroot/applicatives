@@ -94,7 +94,10 @@ public class ContravariantAccumulatorValidator {
                         name,
                         inputTypeConstructor,
                         partiallyAccumulatedTypeConstructor,
-                        accumulatedTypeConstructor
+                        accumulatedTypeConstructor,
+                        leftParameter.getType(),
+                        rightParameter.getType(),
+                        returnType
                 )
         );
     }
@@ -114,16 +117,22 @@ public class ContravariantAccumulatorValidator {
         private final TypeConstructor inputTypeConstructor;
         private final TypeConstructor partiallyAccumulatedTypeConstructor;
         private final TypeConstructor accumulatedTypeConstructor;
+        private final Type firstParameterType;
+        private final Type secondParameterType;
+        private final Type returnType;
 
-        public Result(String name, TypeConstructor inputTypeConstructor, TypeConstructor partiallyAccumulatedTypeConstructor, TypeConstructor accumulatedTypeConstructor) {
+        public Result(String name, TypeConstructor inputTypeConstructor, TypeConstructor partiallyAccumulatedTypeConstructor, TypeConstructor accumulatedTypeConstructor, Type firstParameterType, Type secondParameterType, Type returnType) {
             this.name = name;
             this.inputTypeConstructor = inputTypeConstructor;
             this.partiallyAccumulatedTypeConstructor = partiallyAccumulatedTypeConstructor;
             this.accumulatedTypeConstructor = accumulatedTypeConstructor;
+            this.firstParameterType = firstParameterType;
+            this.secondParameterType = secondParameterType;
+            this.returnType = returnType;
         }
 
-        public static Result of(String name, TypeConstructor inputTypeConstructor, TypeConstructor partiallyAccumulatedTypeConstructor, TypeConstructor accumulatedTypeConstructor) {
-            return new Result(name, inputTypeConstructor, partiallyAccumulatedTypeConstructor, accumulatedTypeConstructor);
+        public static Result of(String name, TypeConstructor inputTypeConstructor, TypeConstructor partiallyAccumulatedTypeConstructor, TypeConstructor accumulatedTypeConstructor, Type firstParameterType, Type secondParameterType, Type returnType) {
+            return new Result(name, inputTypeConstructor, partiallyAccumulatedTypeConstructor, accumulatedTypeConstructor, firstParameterType, secondParameterType, returnType);
         }
 
         public String getName() {
@@ -142,17 +151,29 @@ public class ContravariantAccumulatorValidator {
             return accumulatedTypeConstructor;
         }
 
+        public Type getFirstParameterType() {
+            return firstParameterType;
+        }
+
+        public Type getSecondParameterType() {
+            return secondParameterType;
+        }
+
+        public Type getReturnType() {
+            return returnType;
+        }
+
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Result result = (Result) o;
-            return Objects.equals(getName(), result.getName()) && Objects.equals(getInputTypeConstructor(), result.getInputTypeConstructor()) && Objects.equals(getPartiallyAccumulatedTypeConstructor(), result.getPartiallyAccumulatedTypeConstructor()) && Objects.equals(getAccumulatedTypeConstructor(), result.getAccumulatedTypeConstructor());
+            return Objects.equals(getName(), result.getName()) && Objects.equals(getInputTypeConstructor(), result.getInputTypeConstructor()) && Objects.equals(getPartiallyAccumulatedTypeConstructor(), result.getPartiallyAccumulatedTypeConstructor()) && Objects.equals(getAccumulatedTypeConstructor(), result.getAccumulatedTypeConstructor()) && Objects.equals(getFirstParameterType(), result.getFirstParameterType()) && Objects.equals(getSecondParameterType(), result.getSecondParameterType()) && Objects.equals(getReturnType(), result.getReturnType());
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(getName(), getInputTypeConstructor(), getPartiallyAccumulatedTypeConstructor(), getAccumulatedTypeConstructor());
+            return Objects.hash(getName(), getInputTypeConstructor(), getPartiallyAccumulatedTypeConstructor(), getAccumulatedTypeConstructor(), getFirstParameterType(), getSecondParameterType(), getReturnType());
         }
 
         @Override
@@ -162,6 +183,9 @@ public class ContravariantAccumulatorValidator {
                     ", inputTypeConstructor=" + inputTypeConstructor +
                     ", partiallyAccumulatedTypeConstructor=" + partiallyAccumulatedTypeConstructor +
                     ", accumulatedTypeConstructor=" + accumulatedTypeConstructor +
+                    ", firstParameterType=" + firstParameterType +
+                    ", secondParameterType=" + secondParameterType +
+                    ", returnType=" + returnType +
                     '}';
         }
     }

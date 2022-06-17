@@ -37,12 +37,12 @@ public abstract class AbstractCovariantProcessor extends AbstractProcessor {
 
     public abstract void processElement(Element element);
 
-    public String getClassNameToGenerate(String className, ContainingClass containingClass) {
-        return className.replace("*", containingClass.getClassName().raw());
+    public String getClassNameToGenerate(String classNameToGenerate, ContainingClass containingClass) {
+        return classNameToGenerate.replace("*", containingClass.getClassName().raw());
     }
 
-    public String getCombineMethodNameToGenerate(String combineMethodName, Method combineMethod) {
-        return combineMethodName.replace("*", combineMethod.getName());
+    public String getCombineMethodNameToGenerate(String combineMethodNameToGenerate, String combineMethodName) {
+        return combineMethodNameToGenerate.replace("*", combineMethodName);
     }
 
     @Override

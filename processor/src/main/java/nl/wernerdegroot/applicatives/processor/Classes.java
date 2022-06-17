@@ -49,4 +49,19 @@ public class Classes {
             throw new RuntimeException(String.format("Can't find annotation class %s", CONTRAVARIANT_CLASS_NAME), e);
         }
     }
+
+    public static final String CONTRAVARIANT_BUILDER_CANONICAL_NAME = "nl.wernerdegroot.applicatives.runtime.Contravariant.Builder";
+    public static final String CONTRAVARIANT_BUILDER_CLASS_NAME = "nl.wernerdegroot.applicatives.runtime.Contravariant$Builder";
+    public static final Class<?> CONTRAVARIANT_BUILDER_CLASS;
+
+    static {
+        try {
+            CONTRAVARIANT_BUILDER_CLASS = Class.forName(CONTRAVARIANT_BUILDER_CLASS_NAME);
+            if (!Objects.equals(CONTRAVARIANT_BUILDER_CANONICAL_NAME, CONTRAVARIANT_BUILDER_CLASS.getCanonicalName())) {
+                throw new RuntimeException(String.format("Can't find annotation class %s", CONTRAVARIANT_BUILDER_CANONICAL_NAME));
+            }
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(String.format("Can't find annotation class %s", CONTRAVARIANT_BUILDER_CLASS_NAME), e);
+        }
+    }
 }

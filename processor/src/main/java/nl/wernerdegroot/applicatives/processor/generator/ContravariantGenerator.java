@@ -7,6 +7,7 @@ import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstr
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
@@ -29,17 +30,19 @@ public class ContravariantGenerator {
     private static final ClassName TUPLE_CLASS_NAME = ClassName.of("Tuples");
     private static final String TUPLE_METHOD_NAME = "tuple";
     private static final String DECOMPOSE_METHOD_NAME = "decompose";
-    private static final String OF_METHOD_NAME = "of";
 
     private PackageName packageName;
     private String classNameToGenerate;
     private List<TypeParameter> classTypeParameters;
+    private Optional<CovariantInitializer> optionalInitializer;
     private ContravariantAccumulator accumulator;
+    private Optional<CovariantFinalizer> optionalFinalizer;
     private List<TypeParameter> parameterTypeConstructorArguments;
     private TypeParameter intermediateTypeConstructorArgument;
     private TypeParameter returnTypeConstructorArgument;
     private List<String> inputParameterNames;
     private String decompositionParameterName;
+    private String valueParameterName;
     private String selfParameterName;
     private String toIntermediateParameterName;
     private String extractLeftParameterName;
@@ -82,8 +85,18 @@ public class ContravariantGenerator {
         return this;
     }
 
+    public ContravariantGenerator withOptionalInitializer(Optional<CovariantInitializer> optionalInitializer) {
+        this.optionalInitializer = optionalInitializer;
+        return this;
+    }
+
     public ContravariantGenerator withAccumulator(ContravariantAccumulator accumulator) {
         this.accumulator = accumulator;
+        return this;
+    }
+
+    public ContravariantGenerator withOptionalFinalizer(Optional<CovariantFinalizer> optionalFinalizer) {
+        this.optionalFinalizer = optionalFinalizer;
         return this;
     }
 
@@ -94,6 +107,11 @@ public class ContravariantGenerator {
 
     public ContravariantGenerator withDecompositionParameterName(String decompositionParameterName) {
         this.decompositionParameterName = decompositionParameterName;
+        return this;
+    }
+
+    public ContravariantGenerator withValueParameterName(String valueParameterName) {
+        this.valueParameterName = valueParameterName;
         return this;
     }
 
@@ -140,7 +158,15 @@ public class ContravariantGenerator {
         // Place to gather methods:
         List<MethodGenerator> methods = new ArrayList<>();
 
-        methods.add(abstractCombineMethodWithArityTwo());
+        // If the client provided an initializer method, generate an abstract
+        // method for it and append it to the methods.
+        optionalAbstractInitializerMethod().ifPresent(methods::add);
+
+        methods.add(abstractAccumulatorMethod());
+
+        // If the client provided a finalizer method, generate an abstract
+        // method for it and append it to the methods.
+        optionalAbstractFinalizerMethod().ifPresent(methods::add);
 
         // Continue adding the combine- and lift-methods.
         methods.addAll(combineMethods());
@@ -167,7 +193,17 @@ public class ContravariantGenerator {
         return String.join(LINE_FEED, lines);
     }
 
-    private MethodGenerator abstractCombineMethodWithArityTwo() {
+    private Optional<MethodGenerator> optionalAbstractInitializerMethod() {
+        return optionalInitializer.map(initializer ->
+                method()
+                        .withTypeParameters(returnTypeConstructorArgument.getName())
+                        .withReturnType(returnTypeConstructorArgument.asType().using(initializer.getInitializedTypeConstructor()))
+                        .withName(initializer.getName())
+                        .withParameter(returnTypeConstructorArgument.asType().using(initializer.getToInitializeTypeConstructor()), valueParameterName)
+        );
+    }
+
+    private MethodGenerator abstractAccumulatorMethod() {
         int arity = 2;
 
         return method()
@@ -192,6 +228,16 @@ public class ContravariantGenerator {
                 );
     }
 
+    private Optional<MethodGenerator> optionalAbstractFinalizerMethod() {
+        return optionalFinalizer.map(finalizer ->
+                method()
+                        .withTypeParameters(returnTypeConstructorArgument.getName())
+                        .withReturnType(returnTypeConstructorArgument.asType().using(finalizer.getFinalizedTypeConstructor()))
+                        .withName(finalizer.getName())
+                        .withParameter(returnTypeConstructorArgument.asType().using(finalizer.getToFinalizeTypeConstructor()), valueParameterName)
+        );
+    }
+
     private List<MethodGenerator> combineMethods() {
         List<MethodGenerator> methods = new ArrayList<>();
         methods.add(this.combineMethodWithArityTwo());
@@ -205,42 +251,58 @@ public class ContravariantGenerator {
 
     private MethodGenerator combineMethodWithArityTwo() {
         int arity = 2;
+        List<String> inputParameterNames = takeInputParameterNames(arity);
+        String firstInputParameterName = inputParameterNames.get(0);
+        String secondInputParameterName = inputParameterNames.get(1);
+        String methodBody = methodCall()
+                .withObjectPath(THIS)
+                .withMethodName(accumulator.getName())
+                .withArguments(
+                        optionalInitializer
+                                .map(initializer -> methodCall().withObjectPath(THIS).withMethodName(initializer.getName()).withArguments(firstInputParameterName).generate())
+                                .orElse(firstInputParameterName),
+                        secondInputParameterName,
+                        methodReference().withObjectPath(decompositionParameterName).withMethodName(DECOMPOSE_METHOD_NAME).generate(),
+                        methodReference().withObjectPath(fullyQualifiedNameOfTupleWithArity(arity)).withMethodName(getterForIndex(0)).generate(),
+                        methodReference().withObjectPath(fullyQualifiedNameOfTupleWithArity(arity)).withMethodName(getterForIndex(1)).generate()
+                )
+                .generate();
+
         return combineMethodWithArity(
                 arity,
-                methodCall()
-                        .withObjectPath(THIS)
-                        .withMethodName(accumulator.getName())
-                        .withArguments(takeInputParameterNames(arity))
-                        .withArguments(
-                                methodReference().withObjectPath(decompositionParameterName).withMethodName(DECOMPOSE_METHOD_NAME).generate(),
-                                methodReference().withObjectPath(fullyQualifiedNameOfTupleWithArity(arity)).withMethodName(getterForIndex(0)).generate(),
-                                methodReference().withObjectPath(fullyQualifiedNameOfTupleWithArity(arity)).withMethodName(getterForIndex(1)).generate()
-                        )
-                        .generate()
+                optionalFinalizer
+                        .map(CovariantFinalizer::getName)
+                        .map(finalizerMethodName -> methodCall().withObjectPath(THIS).withMethodName(finalizerMethodName).withArguments(methodBody).generate())
+                        .orElse(methodBody)
         );
     }
 
     private MethodGenerator combineMethodWithArity(int arity) {
+        String methodBody = methodCall()
+                .withObjectPath(THIS)
+                .withMethodName(accumulator.getName())
+                .withArguments(
+                        methodCall()
+                                .withType(getFullyQualifiedClassNameOfTupleClass())
+                                .withTypeArguments(takeParameterTypeConstructorArgumentsAsTypeArguments(arity - 1))
+                                .withTypeArguments(getClassTypeParametersAsTypeArguments())
+                                .withMethodName(TUPLE_METHOD_NAME)
+                                .withArguments(THIS)
+                                .withArguments(takeInputParameterNames(arity - 1))
+                                .generate(),
+                        inputParameterNames.get(arity - 1),
+                        methodReference().withObjectPath(decompositionParameterName).withMethodName(DECOMPOSE_METHOD_NAME).generate(),
+                        methodReference().withObjectPath(fullyQualifiedNameOfTupleWithArity(arity)).withMethodName(withouterForIndex(arity - 1)).generate(),
+                        methodReference().withObjectPath(fullyQualifiedNameOfTupleWithArity(arity)).withMethodName(getterForIndex(arity - 1)).generate()
+                )
+                .generate();
+
         return combineMethodWithArity(
                 arity,
-                methodCall()
-                        .withObjectPath(THIS)
-                        .withMethodName(accumulator.getName())
-                        .withArguments(
-                                methodCall()
-                                        .withType(getFullyQualifiedClassNameOfTupleClass())
-                                        .withTypeArguments(takeParameterTypeConstructorArgumentsAsTypeArguments(arity - 1))
-                                        .withTypeArguments(getClassTypeParametersAsTypeArguments())
-                                        .withMethodName(TUPLE_METHOD_NAME)
-                                        .withArguments(THIS)
-                                        .withArguments(takeInputParameterNames(arity - 1))
-                                        .generate(),
-                                inputParameterNames.get(arity - 1),
-                                methodReference().withObjectPath(decompositionParameterName).withMethodName(DECOMPOSE_METHOD_NAME).generate(),
-                                methodReference().withObjectPath(fullyQualifiedNameOfTupleWithArity(arity)).withMethodName(withouterForIndex(arity - 1)).generate(),
-                                methodReference().withObjectPath(fullyQualifiedNameOfTupleWithArity(arity)).withMethodName(getterForIndex(arity - 1)).generate()
-                        )
-                        .generate()
+                optionalFinalizer
+                        .map(CovariantFinalizer::getName)
+                        .map(finalizerMethodName -> methodCall().withObjectPath(THIS).withMethodName(finalizerMethodName).withArguments(methodBody).generate())
+                        .orElse(methodBody)
         );
     }
 
@@ -252,7 +314,7 @@ public class ContravariantGenerator {
                 .withModifiers(DEFAULT)
                 .withTypeParameters(takeParameterTypeConstructorArguments(arity))
                 .withTypeParameters(returnTypeConstructorArgument.getName())
-                .withReturnType(returnTypeConstructorArgument.asType().using(accumulator.getAccumulatedTypeConstructor()))
+                .withReturnType(getReturnType())
                 .withName(combineMethodName)
                 .withParameterTypes(takeParameterTypes(arity))
                 .andParameterNames(takeInputParameterNames(arity))
@@ -285,7 +347,7 @@ public class ContravariantGenerator {
                 .withModifiers(DEFAULT)
                 .withTypeParameters(takeParameterTypeConstructorArguments(arity))
                 .withTypeParameters(returnTypeConstructorArgument.getName().extending(Type.concrete(fullyQualifiedNameOfDecomposable(arity), takeParameterTypeConstructorArgumentsAsTypeArguments(arity))))
-                .withReturnType(returnTypeConstructorArgument.asType().using(accumulator.getAccumulatedTypeConstructor()))
+                .withReturnType(getReturnType())
                 .withName(combineMethodName)
                 .withParameterTypes(takeParameterTypes(arity))
                 .andParameterNames(takeInputParameterNames(arity))
@@ -346,6 +408,8 @@ public class ContravariantGenerator {
     }
 
     private MethodGenerator tupleMethodWithArityTwo() {
+        String firstInputParameterName = inputParameterNames.get(0);
+        String secondInputParameterName = inputParameterNames.get(1);
         int arity = 2;
         return tupleMethodWithArity(
                 arity,
@@ -353,8 +417,8 @@ public class ContravariantGenerator {
                         .withObjectPath(selfParameterName)
                         .withMethodName(accumulator.getName())
                         .withArguments(
-                                inputParameterNames.get(0),
-                                inputParameterNames.get(1),
+                                optionalInitializer.map(initializer -> methodCall().withObjectPath(selfParameterName).withMethodName(initializer.getName()).withArguments(firstInputParameterName).generate()).orElse(firstInputParameterName),
+                                secondInputParameterName,
                                 methodCall()
                                         .withType(FUNCTION.getFullyQualifiedName())
                                         .withMethodName("identity")
@@ -419,10 +483,6 @@ public class ContravariantGenerator {
                 .withReturnStatement(methodBody);
     }
 
-    private Type lambdaParameterType(TypeConstructor returnTypeConstructor, TypeConstructor firstParameterTypeConstructor, TypeConstructor otherParametersTypeConstructor, int arity) {
-        return lambdaType(returnTypeConstructor, firstParameterTypeConstructor, otherParametersTypeConstructor, arity, Type::contravariant, Type::covariant);
-    }
-
     private Type lambdaReturnType(TypeConstructor returnTypeConstructor, TypeConstructor firstParameterTypeConstructor, TypeConstructor otherParametersTypeConstructor, int arity) {
         return lambdaType(returnTypeConstructor, firstParameterTypeConstructor, otherParametersTypeConstructor, arity, Type::invariant, Type::invariant);
     }
@@ -445,7 +505,6 @@ public class ContravariantGenerator {
     private FullyQualifiedName getFullyQualifiedClassNameOfTupleClass() {
         return getFullyQualifiedClassNameToGenerate().withClassName(TUPLE_CLASS_NAME);
     }
-
 
     private TypeConstructor getTupleMethodReturnTypeConstructor(int arity) {
         return accumulator.getAccumulatedTypeConstructor();
@@ -471,11 +530,26 @@ public class ContravariantGenerator {
     }
 
     private TypeConstructor getReturnTypeConstructor() {
-        return accumulator.getAccumulatedTypeConstructor();
+        return optionalFinalizer.map(CovariantFinalizer::getFinalizedTypeConstructor).orElse(accumulator.getAccumulatedTypeConstructor());
     }
 
     private TypeConstructor getFirstParameterTypeConstructor() {
-        return accumulator.getPartiallyAccumulatedTypeConstructor();
+        // If the user provided an initializer method, all parameters
+        // use the same type constructor (`inputTypeConstructor`).
+        // If no initializer method is available, the first parameter
+        // uses a different type constructor than the other parameters
+        // (`partiallyAccumulatedTypeConstructor`).
+        return hasInitializer()
+                ? getOtherParametersTypeConstructor()
+                : accumulator.getPartiallyAccumulatedTypeConstructor();
+    }
+
+    private Type getReturnType() {
+        return returnTypeConstructorArgument.asType().using(getReturnTypeConstructor());
+    }
+
+    private boolean hasInitializer() {
+        return optionalInitializer.isPresent();
     }
 
     private TypeConstructor getOtherParametersTypeConstructor() {
