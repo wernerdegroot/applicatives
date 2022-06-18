@@ -34,9 +34,9 @@ public class ContravariantGenerator {
     private PackageName packageName;
     private String classNameToGenerate;
     private List<TypeParameter> classTypeParameters;
-    private Optional<CovariantInitializer> optionalInitializer;
-    private ContravariantAccumulator accumulator;
-    private Optional<CovariantFinalizer> optionalFinalizer;
+    private Optional<Initializer> optionalInitializer;
+    private Accumulator accumulator;
+    private Optional<Finalizer> optionalFinalizer;
     private List<TypeParameter> parameterTypeConstructorArguments;
     private TypeParameter intermediateTypeConstructorArgument;
     private TypeParameter returnTypeConstructorArgument;
@@ -85,17 +85,17 @@ public class ContravariantGenerator {
         return this;
     }
 
-    public ContravariantGenerator withOptionalInitializer(Optional<CovariantInitializer> optionalInitializer) {
+    public ContravariantGenerator withOptionalInitializer(Optional<Initializer> optionalInitializer) {
         this.optionalInitializer = optionalInitializer;
         return this;
     }
 
-    public ContravariantGenerator withAccumulator(ContravariantAccumulator accumulator) {
+    public ContravariantGenerator withAccumulator(Accumulator accumulator) {
         this.accumulator = accumulator;
         return this;
     }
 
-    public ContravariantGenerator withOptionalFinalizer(Optional<CovariantFinalizer> optionalFinalizer) {
+    public ContravariantGenerator withOptionalFinalizer(Optional<Finalizer> optionalFinalizer) {
         this.optionalFinalizer = optionalFinalizer;
         return this;
     }
@@ -271,7 +271,7 @@ public class ContravariantGenerator {
         return combineMethodWithArity(
                 arity,
                 optionalFinalizer
-                        .map(CovariantFinalizer::getName)
+                        .map(Finalizer::getName)
                         .map(finalizerMethodName -> methodCall().withObjectPath(THIS).withMethodName(finalizerMethodName).withArguments(methodBody).generate())
                         .orElse(methodBody)
         );
@@ -300,7 +300,7 @@ public class ContravariantGenerator {
         return combineMethodWithArity(
                 arity,
                 optionalFinalizer
-                        .map(CovariantFinalizer::getName)
+                        .map(Finalizer::getName)
                         .map(finalizerMethodName -> methodCall().withObjectPath(THIS).withMethodName(finalizerMethodName).withArguments(methodBody).generate())
                         .orElse(methodBody)
         );
@@ -530,7 +530,7 @@ public class ContravariantGenerator {
     }
 
     private TypeConstructor getReturnTypeConstructor() {
-        return optionalFinalizer.map(CovariantFinalizer::getFinalizedTypeConstructor).orElse(accumulator.getAccumulatedTypeConstructor());
+        return optionalFinalizer.map(Finalizer::getFinalizedTypeConstructor).orElse(accumulator.getAccumulatedTypeConstructor());
     }
 
     private TypeConstructor getFirstParameterTypeConstructor() {

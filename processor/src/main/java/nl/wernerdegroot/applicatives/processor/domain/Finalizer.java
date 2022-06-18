@@ -5,24 +5,24 @@ import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstr
 import java.util.Map;
 import java.util.Objects;
 
-public final class CovariantFinalizer implements HasReplaceableTypeParameterNames<CovariantFinalizer> {
+public final class Finalizer implements HasReplaceableTypeParameterNames<Finalizer> {
     private final String name;
     private final TypeConstructor toFinalizeTypeConstructor;
     private final TypeConstructor finalizedTypeConstructor;
 
-    public CovariantFinalizer(String name, TypeConstructor toFinalizeTypeConstructor, TypeConstructor finalizedTypeConstructor) {
+    public Finalizer(String name, TypeConstructor toFinalizeTypeConstructor, TypeConstructor finalizedTypeConstructor) {
         this.name = name;
         this.toFinalizeTypeConstructor = toFinalizeTypeConstructor;
         this.finalizedTypeConstructor = finalizedTypeConstructor;
     }
 
-    public static CovariantFinalizer of(String name, TypeConstructor toFinalizeTypeConstructor, TypeConstructor finalizedTypeConstructor) {
-        return new CovariantFinalizer(name, toFinalizeTypeConstructor, finalizedTypeConstructor);
+    public static Finalizer of(String name, TypeConstructor toFinalizeTypeConstructor, TypeConstructor finalizedTypeConstructor) {
+        return new Finalizer(name, toFinalizeTypeConstructor, finalizedTypeConstructor);
     }
 
     @Override
-    public CovariantFinalizer replaceTypeParameterNames(Map<TypeParameterName, TypeParameterName> replacements) {
-        return CovariantFinalizer.of(
+    public Finalizer replaceTypeParameterNames(Map<TypeParameterName, TypeParameterName> replacements) {
+        return Finalizer.of(
                 name,
                 toFinalizeTypeConstructor.replaceTypeParameterNames(replacements),
                 finalizedTypeConstructor.replaceTypeParameterNames(replacements)
@@ -45,7 +45,7 @@ public final class CovariantFinalizer implements HasReplaceableTypeParameterName
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        CovariantFinalizer that = (CovariantFinalizer) o;
+        Finalizer that = (Finalizer) o;
         return Objects.equals(getName(), that.getName()) && Objects.equals(getToFinalizeTypeConstructor(), that.getToFinalizeTypeConstructor()) && Objects.equals(getFinalizedTypeConstructor(), that.getFinalizedTypeConstructor());
     }
 

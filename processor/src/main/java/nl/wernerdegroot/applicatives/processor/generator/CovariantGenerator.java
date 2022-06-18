@@ -37,11 +37,11 @@ public class CovariantGenerator {
     private String classNameToGenerate;
     private List<TypeParameter> classTypeParameters;
 
-    private Optional<CovariantInitializer> optionalInitializer;
+    private Optional<Initializer> optionalInitializer;
 
-    private CovariantAccumulator accumulator;
+    private Accumulator accumulator;
 
-    private Optional<CovariantFinalizer> optionalFinalizer;
+    private Optional<Finalizer> optionalFinalizer;
     private List<TypeParameter> parameterTypeConstructorArguments;
     private TypeParameter returnTypeConstructorArgument;
     private List<String> inputParameterNames;
@@ -73,17 +73,17 @@ public class CovariantGenerator {
         return this;
     }
 
-    public CovariantGenerator withOptionalInitializer(Optional<CovariantInitializer> optionalInitializer) {
+    public CovariantGenerator withOptionalInitializer(Optional<Initializer> optionalInitializer) {
         this.optionalInitializer = optionalInitializer;
         return this;
     }
 
-    public CovariantGenerator withAccumulator(CovariantAccumulator accumulator) {
+    public CovariantGenerator withAccumulator(Accumulator accumulator) {
         this.accumulator = accumulator;
         return this;
     }
 
-    public CovariantGenerator withOptionalFinalizer(Optional<CovariantFinalizer> optionalFinalizer) {
+    public CovariantGenerator withOptionalFinalizer(Optional<Finalizer> optionalFinalizer) {
         this.optionalFinalizer = optionalFinalizer;
         return this;
     }
@@ -265,7 +265,7 @@ public class CovariantGenerator {
         return combineMethodWithArity(
                 arity,
                 optionalFinalizer
-                        .map(CovariantFinalizer::getName)
+                        .map(Finalizer::getName)
                         .map(finalizerMethodName -> methodCall().withObjectPath(THIS).withMethodName(finalizerMethodName).withArguments(methodBody).generate())
                         .orElse(methodBody)
         );
@@ -309,7 +309,7 @@ public class CovariantGenerator {
         return combineMethodWithArity(
                 arity,
                 optionalFinalizer
-                        .map(CovariantFinalizer::getName)
+                        .map(Finalizer::getName)
                         .map(finalizerMethodName -> methodCall().withObjectPath(THIS).withMethodName(finalizerMethodName).withArguments(methodBody).generate())
                         .orElse(methodBody)
         );
@@ -537,7 +537,7 @@ public class CovariantGenerator {
     }
 
     private TypeConstructor getReturnTypeConstructor() {
-        return optionalFinalizer.map(CovariantFinalizer::getFinalizedTypeConstructor).orElse(accumulator.getAccumulatedTypeConstructor());
+        return optionalFinalizer.map(Finalizer::getFinalizedTypeConstructor).orElse(accumulator.getAccumulatedTypeConstructor());
     }
 
     private TypeConstructor getTupleMethodReturnTypeConstructor(int arity) {
@@ -546,7 +546,7 @@ public class CovariantGenerator {
         // input to the accumulator method that the user defined.
         if (arity == 0) {
             return optionalInitializer
-                    .map(CovariantInitializer::getInitializedTypeConstructor)
+                    .map(Initializer::getInitializedTypeConstructor)
                     .orElseThrow(() -> new IllegalStateException("An initializer method is required for a tuple method of arity zero"));
         } else {
             return accumulator.getAccumulatedTypeConstructor();

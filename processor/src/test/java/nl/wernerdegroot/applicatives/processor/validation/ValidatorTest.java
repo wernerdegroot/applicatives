@@ -20,7 +20,7 @@ import static nl.wernerdegroot.applicatives.processor.domain.typeconstructor.Typ
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-public class CovariantValidatorTest {
+public class ValidatorTest {
 
     private final TypeParameterName T = TypeParameterName.of("T");
     private final TypeParameterName U = TypeParameterName.of("U");
@@ -37,11 +37,11 @@ public class CovariantValidatorTest {
                 withAccumulatedTypeConstructor(ARRAY_LIST.with(placeholder().invariant()))
         );
 
-        Validated<Log, CovariantValidator.Result> expected = Validated.valid(
-                CovariantValidator.Result.of(
+        Validated<Log, Validator.Result> expected = Validated.valid(
+                Validator.Result.of(
                         containingClass.getTypeParameters(),
                         Optional.empty(),
-                        CovariantAccumulator.of(
+                        Accumulator.of(
                                 accumulator.getName(),
                                 LIST.with(placeholder().covariant()),
                                 ARRAY_LIST.with(placeholder().covariant()),
@@ -51,54 +51,54 @@ public class CovariantValidatorTest {
                 )
         );
 
-        Validated<Log, CovariantValidator.Result> toVerify = CovariantValidator.validate(containingClass, accumulator);
+        Validated<Log, Validator.Result> toVerify = Validator.validate(containingClass, accumulator, new CovariantParametersAndTypeParametersValidator());
 
         assertEquals(expected, toVerify);
     }
 
     @Test
     public void givenInvalidClassAndValidMethod() {
-        Validated<Log, CovariantValidator.Result> toVerify = CovariantValidator.validate(
+        Validated<Log, Validator.Result> toVerify = Validator.validate(
                 getInvalidContainingClass(),
-                getAccumulator(withAnnotations(COVARIANT_FULLY_QUALIFIED_NAME), withModifiers(PUBLIC), withTypeConstructors(OPTIONAL))
-        );
+                getAccumulator(withAnnotations(COVARIANT_FULLY_QUALIFIED_NAME), withModifiers(PUBLIC), withTypeConstructors(OPTIONAL)),
+                new CovariantParametersAndTypeParametersValidator());
 
         assertFalse(toVerify.isValid());
     }
 
     @Test
     public void givenValidClassAndInvalidMethod() {
-        Validated<Log, CovariantValidator.Result> toVerify = CovariantValidator.validate(
+        Validated<Log, Validator.Result> toVerify = Validator.validate(
                 getValidContainingClass(),
-                getAccumulator(withAnnotations(COVARIANT_FULLY_QUALIFIED_NAME), withModifiers(PRIVATE), withTypeConstructors(OPTIONAL))
-        );
+                getAccumulator(withAnnotations(COVARIANT_FULLY_QUALIFIED_NAME), withModifiers(PRIVATE), withTypeConstructors(OPTIONAL)),
+                new CovariantParametersAndTypeParametersValidator());
 
         assertFalse(toVerify.isValid());
     }
 
     @Test
     public void givenInvalidClassAndInvalidMethod() {
-        Validated<Log, CovariantValidator.Result> toVerify = CovariantValidator.validate(
+        Validated<Log, Validator.Result> toVerify = Validator.validate(
                 getInvalidContainingClass(),
-                getAccumulator(withAnnotations(COVARIANT_FULLY_QUALIFIED_NAME), withModifiers(PRIVATE), withTypeConstructors(OPTIONAL))
-        );
+                getAccumulator(withAnnotations(COVARIANT_FULLY_QUALIFIED_NAME), withModifiers(PRIVATE), withTypeConstructors(OPTIONAL)),
+                new CovariantParametersAndTypeParametersValidator());
 
         assertFalse(toVerify.isValid());
     }
 
     @Test
     public void givenValidClassAndMethodsContainingNoAccumulators() {
-        Validated<Log, CovariantValidator.Result> toVerify = CovariantValidator.validate(
+        Validated<Log, Validator.Result> toVerify = Validator.validate(
                 getValidContainingClass(),
-                asList()
-        );
+                asList(),
+                new CovariantParametersAndTypeParametersValidator());
 
         assertFalse(toVerify.isValid());
     }
 
     @Test
     public void givenValidClassAndMethodsContainingMultipleAccumulators() {
-        Validated<Log, CovariantValidator.Result> toVerify = CovariantValidator.validate(
+        Validated<Log, Validator.Result> toVerify = Validator.validate(
                 getValidContainingClass(),
                 asList(
                         getAccumulator(
@@ -117,15 +117,15 @@ public class CovariantValidatorTest {
                                 withAccumulatedTypeConstructor(ARRAY_LIST.with(placeholder().invariant())),
                                 "secondAccumulator"
                         )
-                )
-        );
+                ),
+                new CovariantParametersAndTypeParametersValidator());
 
         assertFalse(toVerify.isValid());
     }
 
     @Test
     public void givenValidClassAndMethodsContainingMultipleInitializers() {
-        Validated<Log, CovariantValidator.Result> toVerify = CovariantValidator.validate(
+        Validated<Log, Validator.Result> toVerify = Validator.validate(
                 getValidContainingClass(),
                 asList(
                         getInitializer(
@@ -149,8 +149,8 @@ public class CovariantValidatorTest {
                                 withPartiallyAccumulatedTypeConstructor(ARRAY_LIST.with(placeholder().covariant())),
                                 withAccumulatedTypeConstructor(ARRAY_LIST.with(placeholder().invariant()))
                         )
-                )
-        );
+                ),
+                new CovariantParametersAndTypeParametersValidator());
 
         assertFalse(toVerify.isValid());
     }
@@ -174,11 +174,11 @@ public class CovariantValidatorTest {
                 withAccumulatedTypeConstructor(ARRAY_LIST.with(placeholder().invariant()))
         );
 
-        Validated<Log, CovariantValidator.Result> expected = Validated.valid(
-                CovariantValidator.Result.of(
+        Validated<Log, Validator.Result> expected = Validated.valid(
+                Validator.Result.of(
                         containingClass.getTypeParameters(),
-                        Optional.of(CovariantInitializer.of(initializer.getName(), LIST.with(placeholder().covariant()), ARRAY_LIST.with(placeholder().invariant()))),
-                        CovariantAccumulator.of(
+                        Optional.of(Initializer.of(initializer.getName(), LIST.with(placeholder().covariant()), ARRAY_LIST.with(placeholder().invariant()))),
+                        Accumulator.of(
                                 accumulator.getName(),
                                 LIST.with(placeholder().covariant()),
                                 ARRAY_LIST.with(placeholder().covariant()),
@@ -188,79 +188,79 @@ public class CovariantValidatorTest {
                 )
         );
 
-        Validated<Log, CovariantValidator.Result> toVerify = CovariantValidator.validate(containingClass, asList(accumulator, initializer));
+        Validated<Log, Validator.Result> toVerify = Validator.validate(containingClass, asList(accumulator, initializer), new CovariantParametersAndTypeParametersValidator());
 
         assertEquals(expected, toVerify);
     }
 
     @Test
     public void givenValidClassAndMethodsContainingInvalidAccumulatorAndValidInitializer() {
-        Validated<Log, CovariantValidator.Result> toVerify = CovariantValidator.validate(
+        Validated<Log, Validator.Result> toVerify = Validator.validate(
                 getValidContainingClass(),
                 asList(
                         getInitializer(withAnnotations(INITIALIZER_FULLY_QUALIFIED_NAME), withModifiers(PUBLIC), withTypeConstructor(LIST), withTypeConstructor(ARRAY_LIST)),
                         getAccumulator(withAnnotations(ACCUMULATOR_FULLY_QUALIFIED_NAME), withModifiers(PRIVATE), withTypeConstructor(LIST), withTypeConstructor(ARRAY_LIST), withTypeConstructor(ARRAY_LIST))
-                )
-        );
+                ),
+                new CovariantParametersAndTypeParametersValidator());
 
         assertFalse(toVerify.isValid());
     }
 
     @Test
     public void givenValidClassAndMethodsContainingValidAccumulatorAndInvalidInitializer() {
-        Validated<Log, CovariantValidator.Result> toVerify = CovariantValidator.validate(
+        Validated<Log, Validator.Result> toVerify = Validator.validate(
                 getValidContainingClass(),
                 asList(
                         getInitializer(withAnnotations(INITIALIZER_FULLY_QUALIFIED_NAME), withModifiers(PRIVATE), withTypeConstructor(LIST), withTypeConstructor(ARRAY_LIST)),
                         getAccumulator(withAnnotations(ACCUMULATOR_FULLY_QUALIFIED_NAME), withModifiers(PUBLIC), withTypeConstructor(LIST), withTypeConstructor(ARRAY_LIST), withTypeConstructor(ARRAY_LIST))
-                )
-        );
+                ),
+                new CovariantParametersAndTypeParametersValidator());
 
         assertFalse(toVerify.isValid());
     }
 
     @Test
     public void givenInvalidClassAndMethodsContainingValidAccumulatorAndValidInitializer() {
-        Validated<Log, CovariantValidator.Result> toVerify = CovariantValidator.validate(
+        Validated<Log, Validator.Result> toVerify = Validator.validate(
                 getInvalidContainingClass(),
                 asList(
                         getInitializer(withAnnotations(INITIALIZER_FULLY_QUALIFIED_NAME), withModifiers(PUBLIC), withTypeConstructor(LIST), withTypeConstructor(ARRAY_LIST)),
                         getAccumulator(withAnnotations(ACCUMULATOR_FULLY_QUALIFIED_NAME), withModifiers(PUBLIC), withTypeConstructor(LIST), withTypeConstructor(ARRAY_LIST), withTypeConstructor(ARRAY_LIST))
-                )
-        );
+                ),
+                new CovariantParametersAndTypeParametersValidator());
 
         assertFalse(toVerify.isValid());
     }
 
     @Test
     public void givenValidClassAndMethodsContainingValidAccumulatorAndValidInitializerButWithoutSharedInputTypeConstructor() {
-        Validated<Log, CovariantValidator.Result> toVerify = CovariantValidator.validate(
+        Validated<Log, Validator.Result> toVerify = Validator.validate(
                 getValidContainingClass(),
                 asList(
                         getInitializer(withAnnotations(INITIALIZER_FULLY_QUALIFIED_NAME), withModifiers(PUBLIC), withTypeConstructor(ARRAY_LIST), withTypeConstructor(OPTIONAL)),
                         getAccumulator(withAnnotations(ACCUMULATOR_FULLY_QUALIFIED_NAME), withModifiers(PUBLIC), withTypeConstructor(LIST), withTypeConstructor(ARRAY_LIST), withTypeConstructor(ARRAY_LIST))
-                )
-        );
+                ),
+                new CovariantParametersAndTypeParametersValidator());
 
         assertFalse(toVerify.isValid());
     }
 
     @Test
     public void givenValidClassAndMethodsContainingValidAccumulatorAndValidInitializerButWithoutSharedPartiallyAccumulatedTypeConstructor() {
-        Validated<Log, CovariantValidator.Result> toVerify = CovariantValidator.validate(
+        Validated<Log, Validator.Result> toVerify = Validator.validate(
                 getValidContainingClass(),
                 asList(
                         getInitializer(withAnnotations(INITIALIZER_FULLY_QUALIFIED_NAME), withModifiers(PUBLIC), withTypeConstructor(OPTIONAL), withTypeConstructor(ARRAY_LIST)),
                         getAccumulator(withAnnotations(ACCUMULATOR_FULLY_QUALIFIED_NAME), withModifiers(PUBLIC), withTypeConstructor(LIST), withTypeConstructor(ARRAY_LIST), withTypeConstructor(ARRAY_LIST))
-                )
-        );
+                ),
+                new CovariantParametersAndTypeParametersValidator());
 
         assertFalse(toVerify.isValid());
     }
 
     @Test
     public void givenValidClassAndMethodsContainingMultipleFinalizers() {
-        Validated<Log, CovariantValidator.Result> toVerify = CovariantValidator.validate(
+        Validated<Log, Validator.Result> toVerify = Validator.validate(
                 getValidContainingClass(),
                 asList(
                         getAccumulator(
@@ -284,8 +284,8 @@ public class CovariantValidatorTest {
                                 withToFinalizeTypeConstructor(LIST.with(placeholder().invariant())),
                                 "secondFinalizer"
                         )
-                )
-        );
+                ),
+                new CovariantParametersAndTypeParametersValidator());
 
         assertFalse(toVerify.isValid());
     }
@@ -309,80 +309,80 @@ public class CovariantValidatorTest {
                 withFinalizedTypeConstructor(LIST.with(placeholder().invariant()))
         );
 
-        Validated<Log, CovariantValidator.Result> expected = Validated.valid(
-                CovariantValidator.Result.of(
+        Validated<Log, Validator.Result> expected = Validated.valid(
+                Validator.Result.of(
                         containingClass.getTypeParameters(),
                         Optional.empty(),
-                        CovariantAccumulator.of(
+                        Accumulator.of(
                                 accumulator.getName(),
                                 LIST.with(placeholder().covariant()),
                                 ARRAY_LIST.with(placeholder().covariant()),
                                 ARRAY_LIST.with(placeholder().invariant())
                         ),
-                        Optional.of(CovariantFinalizer.of(finalizer.getName(), ARRAY_LIST.with(placeholder().covariant()), LIST.with(placeholder().invariant())))
+                        Optional.of(Finalizer.of(finalizer.getName(), ARRAY_LIST.with(placeholder().covariant()), LIST.with(placeholder().invariant())))
                 )
         );
 
-        Validated<Log, CovariantValidator.Result> toVerify = CovariantValidator.validate(containingClass, asList(accumulator, finalizer));
+        Validated<Log, Validator.Result> toVerify = Validator.validate(containingClass, asList(accumulator, finalizer), new CovariantParametersAndTypeParametersValidator());
 
         assertEquals(expected, toVerify);
     }
 
     @Test
     public void givenValidClassAndMethodsContainingInvalidAccumulatorAndValidFinalizer() {
-        Validated<Log, CovariantValidator.Result> toVerify = CovariantValidator.validate(
+        Validated<Log, Validator.Result> toVerify = Validator.validate(
                 getValidContainingClass(),
                 asList(
                         getAccumulator(withAnnotations(ACCUMULATOR_FULLY_QUALIFIED_NAME), withModifiers(PRIVATE), withTypeConstructor(LIST), withTypeConstructor(ARRAY_LIST), withTypeConstructor(ARRAY_LIST)),
                         getFinalizer(withAnnotations(FINALIZER_FULLY_QUALIFIED_NAME), withModifiers(PUBLIC), withTypeConstructor(ARRAY_LIST), withTypeConstructor(LIST))
-                )
-        );
+                ),
+                new CovariantParametersAndTypeParametersValidator());
 
         assertFalse(toVerify.isValid());
     }
 
     @Test
     public void givenValidClassAndMethodsContainingValidAccumulatorAndInvalidFinalizer() {
-        Validated<Log, CovariantValidator.Result> toVerify = CovariantValidator.validate(
+        Validated<Log, Validator.Result> toVerify = Validator.validate(
                 getValidContainingClass(),
                 asList(
                         getAccumulator(withAnnotations(ACCUMULATOR_FULLY_QUALIFIED_NAME), withModifiers(PUBLIC), withTypeConstructor(LIST), withTypeConstructor(ARRAY_LIST), withTypeConstructor(ARRAY_LIST)),
                         getFinalizer(withAnnotations(FINALIZER_FULLY_QUALIFIED_NAME), withModifiers(PRIVATE), withTypeConstructor(ARRAY_LIST), withTypeConstructor(LIST))
-                )
-        );
+                ),
+                new CovariantParametersAndTypeParametersValidator());
 
         assertFalse(toVerify.isValid());
     }
 
     @Test
     public void givenInvalidClassAndMethodsContainingValidAccumulatorAndValidFinalizer() {
-        Validated<Log, CovariantValidator.Result> toVerify = CovariantValidator.validate(
+        Validated<Log, Validator.Result> toVerify = Validator.validate(
                 getInvalidContainingClass(),
                 asList(
                         getAccumulator(withAnnotations(ACCUMULATOR_FULLY_QUALIFIED_NAME), withModifiers(PUBLIC), withTypeConstructor(LIST), withTypeConstructor(ARRAY_LIST), withTypeConstructor(ARRAY_LIST)),
                         getFinalizer(withAnnotations(FINALIZER_FULLY_QUALIFIED_NAME), withModifiers(PUBLIC), withTypeConstructor(ARRAY_LIST), withTypeConstructor(LIST))
-                )
-        );
+                ),
+                new CovariantParametersAndTypeParametersValidator());
 
         assertFalse(toVerify.isValid());
     }
 
     @Test
     public void givenValidClassAndMethodsContainingValidAccumulatorAndValidFinalizerButWithoutSharedTypeConstructor() {
-        Validated<Log, CovariantValidator.Result> toVerify = CovariantValidator.validate(
+        Validated<Log, Validator.Result> toVerify = Validator.validate(
                 getValidContainingClass(),
                 asList(
                         getAccumulator(withAnnotations(ACCUMULATOR_FULLY_QUALIFIED_NAME), withModifiers(PUBLIC), withTypeConstructor(LIST), withTypeConstructor(ARRAY_LIST), withTypeConstructor(ARRAY_LIST)),
                         getFinalizer(withAnnotations(FINALIZER_FULLY_QUALIFIED_NAME), withModifiers(PUBLIC), withTypeConstructor(OPTIONAL), withTypeConstructor(LIST))
-                )
-        );
+                ),
+                new CovariantParametersAndTypeParametersValidator());
 
         assertFalse(toVerify.isValid());
     }
 
     @Test
     public void resultEquals() {
-        EqualsVerifier.forClass(CovariantValidator.Result.class).verify();
+        EqualsVerifier.forClass(Validator.Result.class).verify();
     }
 
     private ContainingClass getValidContainingClass() {

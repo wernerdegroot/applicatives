@@ -9,7 +9,8 @@ import nl.wernerdegroot.applicatives.processor.domain.containing.ContainingClass
 import nl.wernerdegroot.applicatives.processor.generator.ContainingClassGenerator;
 import nl.wernerdegroot.applicatives.processor.logging.Log;
 import nl.wernerdegroot.applicatives.processor.validation.ConfigValidator;
-import nl.wernerdegroot.applicatives.processor.validation.CovariantValidator;
+import nl.wernerdegroot.applicatives.processor.validation.CovariantParametersAndTypeParametersValidator;
+import nl.wernerdegroot.applicatives.processor.validation.Validator;
 import nl.wernerdegroot.applicatives.processor.validation.Validated;
 import nl.wernerdegroot.applicatives.runtime.Covariant;
 
@@ -85,20 +86,20 @@ public class CovariantBuilderProcessor extends AbstractCovariantProcessor {
         String liftMethodName = covariantBuilderAnnotation.liftMethodName();
         int maxArity = covariantBuilderAnnotation.maxArity();
 
-        Validated<String, Void> validatedConfig = ConfigValidator.validate(classNameToGenerate, liftMethodName, maxArity);
+        Validated<String, Void> validatedConfig = ConfigValidator.validate(classNameToGenerate, "uhhh", liftMethodName, maxArity);
 
         if (!validatedConfig.isValid()) {
             errorConfigNotValid(validatedConfig);
             return;
         }
 
-        Validated<Log, CovariantValidator.Result> validatedCovariant = CovariantValidator.validate(containingClass, methods);
+        Validated<Log, Validator.Result> validatedCovariant = Validator.validate(containingClass, methods, new CovariantParametersAndTypeParametersValidator());
         if (!validatedCovariant.isValid()) {
             errorValidationFailed(containingClass, validatedCovariant);
             return;
         }
 
-        CovariantValidator.Result covariant = validatedCovariant.getValue();
+        Validator.Result covariant = validatedCovariant.getValue();
 
         noteValidationSuccess(covariant);
 
@@ -118,7 +119,7 @@ public class CovariantBuilderProcessor extends AbstractCovariantProcessor {
         });
     }
 
-    private void errorValidationFailed(ContainingClass containingClass, Validated<Log, CovariantValidator.Result> validatedTemplateClassWithMethods) {
+    private void errorValidationFailed(ContainingClass containingClass, Validated<Log, Validator.Result> validatedTemplateClassWithMethods) {
         Log.of("Class '%s' does not meet all criteria for code generation", containingClass.getFullyQualifiedName().raw())
                 .withLogs(validatedTemplateClassWithMethods.getErrorMessages())
                 .append(asError());

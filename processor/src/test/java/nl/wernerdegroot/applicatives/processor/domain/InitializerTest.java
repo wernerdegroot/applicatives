@@ -3,10 +3,10 @@ package nl.wernerdegroot.applicatives.processor.domain;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Test;
 
-public class CovariantFinalizerTest {
+public class InitializerTest {
 
     @Test
     public void equals() {
-        EqualsVerifier.forClass(CovariantFinalizer.class).verify();
+        EqualsVerifier.forClass(Initializer.class).verify();
     }
 }

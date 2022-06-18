@@ -11,26 +11,26 @@ import static java.util.stream.Collectors.toList;
 import static nl.wernerdegroot.applicatives.processor.Classes.*;
 import static nl.wernerdegroot.applicatives.processor.generator.TypeGenerator.generateFrom;
 
-public class CovariantValidator {
+public class Validator {
 
-    public static Validated<Log, Result> validate(ContainingClass containingClass, Method method) {
+    public static Validated<Log, Result> validate(ContainingClass containingClass, Method method, ParametersAndTypeParametersValidator parametersAndTypeParametersValidator) {
         return Validated.combine(
                 validateTemplateClass(containingClass),
-                validateAccumulator(method),
+                validateAccumulator(method, parametersAndTypeParametersValidator),
                 (templateClass, accumulator) -> templateClassWithMethods(templateClass, Optional.empty(), accumulator, Optional.empty())
         );
     }
 
-    public static Validated<Log, Result> validate(ContainingClass containingClass, List<Method> methods) {
+    public static Validated<Log, Result> validate(ContainingClass containingClass, List<Method> methods, ParametersAndTypeParametersValidator parametersAndTypeParametersValidator) {
         return Validated.combine(
                 validateTemplateClass(containingClass),
                 validateInitializer(methods),
-                validateAccumulator(methods),
+                validateAccumulator(methods, parametersAndTypeParametersValidator),
                 validateFinalizer(methods),
                 (templateClass, optionalInitializer, accumulator, optionalFinalizer) -> {
                     Set<Log> messages = new HashSet<>();
                     if (optionalInitializer.isPresent()) {
-                        CovariantInitializerOrFinalizerValidator.Result initializer = optionalInitializer.get();
+                        InitializerOrFinalizerValidator.Result initializer = optionalInitializer.get();
 
                         if (!initializer.getToInitializeOrFinalizeTypeConstructor().canAccept(accumulator.getInputTypeConstructor())) {
                             Log message = Log.of("No shared type constructor between second parameter of '%s' (%s) and parameter of '%s' (%s)", accumulator.getName(), generateFrom(accumulator.getSecondParameterType()), initializer.getName(), generateFrom(initializer.getParameterType()));
@@ -44,7 +44,7 @@ public class CovariantValidator {
                     }
 
                     if (optionalFinalizer.isPresent()) {
-                        CovariantInitializerOrFinalizerValidator.Result finalizer = optionalFinalizer.get();
+                        InitializerOrFinalizerValidator.Result finalizer = optionalFinalizer.get();
                         if (!finalizer.getToInitializeOrFinalizeTypeConstructor().canAccept(accumulator.getAccumulatedTypeConstructor())) {
                             Log message = Log.of("No shared type constructor between return type of '%s' (%s) and parameter of '%s' (%s)", accumulator.getName(), generateFrom(accumulator.getReturnType()), finalizer.getName(), generateFrom(finalizer.getParameterType()));
                             messages.add(message);
@@ -63,7 +63,7 @@ public class CovariantValidator {
                 .fold(invalidFor("Class '%s'", containingClass.getFullyQualifiedName().raw()), valid());
     }
 
-    private static Validated<Log, Optional<CovariantInitializerOrFinalizerValidator.Result>> validateInitializer(List<Method> methods) {
+    private static Validated<Log, Optional<InitializerOrFinalizerValidator.Result>> validateInitializer(List<Method> methods) {
         List<Method> candidates = methods
                 .stream()
                 .filter(method -> method.hasAnnotation(INITIALIZER_FULLY_QUALIFIED_NAME))
@@ -75,18 +75,18 @@ public class CovariantValidator {
             return Validated.invalid(Log.of("More than one method annotated with '%s'", INITIALIZER_FULLY_QUALIFIED_NAME.raw()));
         } else {
             Method initializer = candidates.iterator().next();
-            return CovariantInitializerOrFinalizerValidator.validate(initializer)
+            return InitializerOrFinalizerValidator.validate(initializer)
                     .map(Optional::of)
                     .fold(invalidFor("Method '%s'", initializer.getName()), valid());
         }
     }
 
-    private static Validated<Log, CovariantAccumulatorValidator.Result> validateAccumulator(Method method) {
-        return CovariantAccumulatorValidator.validate(method)
+    private static Validated<Log, AccumulatorValidator.Result> validateAccumulator(Method method, ParametersAndTypeParametersValidator parametersAndTypeParametersValidator) {
+        return AccumulatorValidator.validate(method, parametersAndTypeParametersValidator)
                 .fold(invalidFor("Method '%s'", method.getName()), valid());
     }
 
-    private static Validated<Log, CovariantAccumulatorValidator.Result> validateAccumulator(List<Method> methods) {
+    private static Validated<Log, AccumulatorValidator.Result> validateAccumulator(List<Method> methods, ParametersAndTypeParametersValidator parametersAndTypeParametersValidator) {
         List<Method> candidates = methods
                 .stream()
                 .filter(method -> method.hasAnnotation(ACCUMULATOR_FULLY_QUALIFIED_NAME))
@@ -98,12 +98,12 @@ public class CovariantValidator {
             return Validated.invalid(Log.of("More than one method annotated with '%s'", ACCUMULATOR_FULLY_QUALIFIED_NAME.raw()));
         } else {
             Method accumulator = candidates.iterator().next();
-            return CovariantAccumulatorValidator.validate(accumulator)
+            return AccumulatorValidator.validate(accumulator, parametersAndTypeParametersValidator)
                     .fold(invalidFor("Method '%s'", accumulator.getName()), valid());
         }
     }
 
-    private static Validated<Log, Optional<CovariantInitializerOrFinalizerValidator.Result>> validateFinalizer(List<Method> methods) {
+    private static Validated<Log, Optional<InitializerOrFinalizerValidator.Result>> validateFinalizer(List<Method> methods) {
         List<Method> candidates = methods
                 .stream()
                 .filter(method -> method.hasAnnotation(FINALIZER_FULLY_QUALIFIED_NAME))
@@ -115,48 +115,48 @@ public class CovariantValidator {
             return Validated.invalid(Log.of("More than one method annotated with '%s'", FINALIZER_FULLY_QUALIFIED_NAME.raw()));
         } else {
             Method finalizer = candidates.iterator().next();
-            return CovariantInitializerOrFinalizerValidator.validate(candidates.iterator().next())
+            return InitializerOrFinalizerValidator.validate(candidates.iterator().next())
                     .map(Optional::of)
                     .fold(invalidFor("Method '%s'", finalizer.getName()), valid());
         }
     }
 
-    private static CovariantInitializer toCovariantInitializer(CovariantInitializerOrFinalizerValidator.Result initializer) {
-        return CovariantInitializer.of(initializer.getName(), initializer.getToInitializeOrFinalizeTypeConstructor(), initializer.getInitializedOrFinalizedTypeConstructor());
+    private static Initializer toInitializer(InitializerOrFinalizerValidator.Result initializer) {
+        return Initializer.of(initializer.getName(), initializer.getToInitializeOrFinalizeTypeConstructor(), initializer.getInitializedOrFinalizedTypeConstructor());
     }
 
-    private static CovariantAccumulator toCovariantAccumulator(CovariantAccumulatorValidator.Result accumulator) {
-        return CovariantAccumulator.of(accumulator.getName(), accumulator.getInputTypeConstructor(), accumulator.getPartiallyAccumulatedTypeConstructor(), accumulator.getAccumulatedTypeConstructor());
+    private static Accumulator toAccumulator(AccumulatorValidator.Result accumulator) {
+        return Accumulator.of(accumulator.getName(), accumulator.getInputTypeConstructor(), accumulator.getPartiallyAccumulatedTypeConstructor(), accumulator.getAccumulatedTypeConstructor());
     }
 
-    private static CovariantFinalizer toCovariantFinalizer(CovariantInitializerOrFinalizerValidator.Result finalizer) {
-        return CovariantFinalizer.of(finalizer.getName(), finalizer.getToInitializeOrFinalizeTypeConstructor(), finalizer.getInitializedOrFinalizedTypeConstructor());
+    private static Finalizer toCovariantFinalizer(InitializerOrFinalizerValidator.Result finalizer) {
+        return Finalizer.of(finalizer.getName(), finalizer.getToInitializeOrFinalizeTypeConstructor(), finalizer.getInitializedOrFinalizedTypeConstructor());
     }
 
-    private static Result templateClassWithMethods(ClassValidator.Result templateClass, Optional<CovariantInitializerOrFinalizerValidator.Result> optionalInitializer, CovariantAccumulatorValidator.Result accumulator, Optional<CovariantInitializerOrFinalizerValidator.Result> optionalFinalizer) {
+    private static Result templateClassWithMethods(ClassValidator.Result templateClass, Optional<InitializerOrFinalizerValidator.Result> optionalInitializer, AccumulatorValidator.Result accumulator, Optional<InitializerOrFinalizerValidator.Result> optionalFinalizer) {
         return Result.of(
                 templateClass.getTypeParameters(),
-                optionalInitializer.map(CovariantValidator::toCovariantInitializer),
-                CovariantValidator.toCovariantAccumulator(accumulator),
-                optionalFinalizer.map(CovariantValidator::toCovariantFinalizer)
+                optionalInitializer.map(Validator::toInitializer),
+                Validator.toAccumulator(accumulator),
+                optionalFinalizer.map(Validator::toCovariantFinalizer)
         );
     }
 
     public static final class Result implements HasReplaceableTypeParameterNames<Result> {
 
         private final List<TypeParameter> classTypeParameters;
-        private final Optional<CovariantInitializer> optionalInitializer;
-        private final CovariantAccumulator accumulator;
-        private final Optional<CovariantFinalizer> optionalFinalizer;
+        private final Optional<Initializer> optionalInitializer;
+        private final Accumulator accumulator;
+        private final Optional<Finalizer> optionalFinalizer;
 
-        public Result(List<TypeParameter> classTypeParameters, Optional<CovariantInitializer> optionalInitializer, CovariantAccumulator accumulator, Optional<CovariantFinalizer> optionalFinalizer) {
+        public Result(List<TypeParameter> classTypeParameters, Optional<Initializer> optionalInitializer, Accumulator accumulator, Optional<Finalizer> optionalFinalizer) {
             this.classTypeParameters = classTypeParameters;
             this.optionalInitializer = optionalInitializer;
             this.accumulator = accumulator;
             this.optionalFinalizer = optionalFinalizer;
         }
 
-        public static Result of(List<TypeParameter> classTypeParameters, Optional<CovariantInitializer> optionalInitializer, CovariantAccumulator accumulator, Optional<CovariantFinalizer> optionalFinalizer) {
+        public static Result of(List<TypeParameter> classTypeParameters, Optional<Initializer> optionalInitializer, Accumulator accumulator, Optional<Finalizer> optionalFinalizer) {
             return new Result(classTypeParameters, optionalInitializer, accumulator, optionalFinalizer);
         }
 
@@ -174,15 +174,15 @@ public class CovariantValidator {
             return classTypeParameters;
         }
 
-        public Optional<CovariantInitializer> getOptionalInitializer() {
+        public Optional<Initializer> getOptionalInitializer() {
             return optionalInitializer;
         }
 
-        public CovariantAccumulator getAccumulator() {
+        public Accumulator getAccumulator() {
             return accumulator;
         }
 
-        public Optional<CovariantFinalizer> getOptionalFinalizer() {
+        public Optional<Finalizer> getOptionalFinalizer() {
             return optionalFinalizer;
         }
 

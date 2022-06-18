@@ -3,10 +3,10 @@ package nl.wernerdegroot.applicatives.processor.domain;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Test;
 
-public class CovariantAccumulatorTest {
+public class AccumulatorTest {
 
     @Test
     public void equals() {
-        EqualsVerifier.forClass(CovariantAccumulator.class).verify();
+        EqualsVerifier.forClass(Accumulator.class).verify();
     }
 }

@@ -3,13 +3,14 @@ package nl.wernerdegroot.applicatives.processor;
 import com.google.auto.service.AutoService;
 import nl.wernerdegroot.applicatives.processor.converters.ContainingClassConverter;
 import nl.wernerdegroot.applicatives.processor.converters.MethodConverter;
-import nl.wernerdegroot.applicatives.processor.domain.*;
+import nl.wernerdegroot.applicatives.processor.domain.ClassName;
+import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
+import nl.wernerdegroot.applicatives.processor.domain.Method;
+import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
 import nl.wernerdegroot.applicatives.processor.domain.containing.ContainingClass;
 import nl.wernerdegroot.applicatives.processor.generator.TypeParameterGenerator;
 import nl.wernerdegroot.applicatives.processor.logging.Log;
-import nl.wernerdegroot.applicatives.processor.validation.ConfigValidator;
-import nl.wernerdegroot.applicatives.processor.validation.ContravariantValidator;
-import nl.wernerdegroot.applicatives.processor.validation.Validated;
+import nl.wernerdegroot.applicatives.processor.validation.*;
 import nl.wernerdegroot.applicatives.runtime.Contravariant;
 
 import javax.annotation.processing.Processor;
@@ -21,12 +22,12 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
 
-import static nl.wernerdegroot.applicatives.processor.Classes.*;
+import static nl.wernerdegroot.applicatives.processor.Classes.CONTRAVARIANT_CLASS;
+import static nl.wernerdegroot.applicatives.processor.Classes.CONTRAVARIANT_CLASS_NAME;
 import static nl.wernerdegroot.applicatives.processor.conflicts.ConflictFinder.findClassTypeParameterNameReplacements;
 import static nl.wernerdegroot.applicatives.processor.conflicts.Conflicts.*;
 import static nl.wernerdegroot.applicatives.processor.generator.ContravariantGenerator.generator;
@@ -74,20 +75,20 @@ public class ContravariantProcessor extends AbstractCovariantProcessor {
         String liftMethodName = contravariantAnnotation.liftMethodName();
         int maxArity = contravariantAnnotation.maxArity();
 
-        Validated<String, Void> validatedConfig = ConfigValidator.validate(classNameToGenerate, liftMethodName, maxArity);
+        Validated<String, Void> validatedConfig = ConfigValidator.validate(classNameToGenerate, combineMethodName, liftMethodName, maxArity);
 
         if (!validatedConfig.isValid()) {
             errorConfigNotValid(validatedConfig);
             return;
         }
 
-        Validated<Log, ContravariantValidator.Result> validatedContravariant = ContravariantValidator.validate(containingClass, method);
+        Validated<Log, Validator.Result> validatedContravariant = Validator.validate(containingClass, method, new ContravariantParametersAndTypeParametersValidator());
         if (!validatedContravariant.isValid()) {
             errorValidationFailed(containingClass, method, validatedContravariant);
             return;
         }
 
-        ContravariantValidator.Result contravariant = validatedContravariant.getValue();
+        Validator.Result contravariant = validatedContravariant.getValue();
 
         noteValidationSuccess(contravariant);
 
@@ -100,7 +101,7 @@ public class ContravariantProcessor extends AbstractCovariantProcessor {
 //        );
 
         Map<TypeParameterName, TypeParameterName> classTypeParameterNameReplacements = findClassTypeParameterNameReplacements(contravariant.getClassTypeParameters());
-        ContravariantValidator.Result conflictFree = contravariant.replaceTypeParameterNames(classTypeParameterNameReplacements);
+        Validator.Result conflictFree = contravariant.replaceTypeParameterNames(classTypeParameterNameReplacements);
 
         Log.of("Resolved (potential) conflicts between existing type parameters and new, generated type parameters")
                 .withDetail("Class type parameters", conflictFree.getClassTypeParameters(), TypeParameterGenerator::generateFrom)
@@ -151,20 +152,10 @@ public class ContravariantProcessor extends AbstractCovariantProcessor {
         }
     }
 
-    private void errorValidationFailed(ContainingClass containingClass, Method method, Validated<Log, ContravariantValidator.Result> validatedTemplateClassWithMethods) {
+    private void errorValidationFailed(ContainingClass containingClass, Method method, Validated<Log, Validator.Result> validatedTemplateClassWithMethods) {
         Log.of("Method '%s' in class '%s' does not meet all criteria for code generation", method.getName(), containingClass.getFullyQualifiedName().raw())
                 .withLogs(validatedTemplateClassWithMethods.getErrorMessages())
                 .append(asError());
-    }
-
-    protected void noteValidationSuccess(ContravariantValidator.Result templateClassWithMethods) {
-        Log.of("All criteria for code generation satisfied")
-                .withDetail("Class type parameters", templateClassWithMethods.getClassTypeParameters(), TypeParameterGenerator::generateFrom)
-                .withDetail("Name of accumulator method", templateClassWithMethods.getAccumulator().getName())
-                .withDetail("Input type constructor", templateClassWithMethods.getAccumulator().getInputTypeConstructor(), this::typeConstructorToString)
-                .withDetail("Partially accumulated type constructor", templateClassWithMethods.getAccumulator().getPartiallyAccumulatedTypeConstructor(), this::typeConstructorToString)
-                .withDetail("Accumulated type constructor", templateClassWithMethods.getAccumulator().getAccumulatedTypeConstructor(), this::typeConstructorToString)
-                .append(asNote());
     }
 
     private void noteAnnotationFound(Element element, Contravariant contravariantAnnotation) {

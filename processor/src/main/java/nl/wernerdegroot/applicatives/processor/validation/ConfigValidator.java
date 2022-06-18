@@ -8,10 +8,11 @@ public class ConfigValidator {
 
     private static final Pattern VALID_IDENTIFIER = Pattern.compile("^([a-zA-Z_$][a-zA-Z\\d_$]*)$");
 
-    public static Validated<String, Void> validate(String classNameToGenerate, String liftMethodName, int maxArity) {
+    public static Validated<String, Void> validate(String classNameToGenerate, String combineMethodName, String liftMethodName, int maxArity) {
         Set<String> errorMessages = new HashSet<>();
         errorMessages.addAll(isClassNameToGenerateValid(classNameToGenerate));
-        errorMessages.addAll(isLiftMethodNameToGenerateValid(liftMethodName));
+        errorMessages.addAll(isMethodNameValid(combineMethodName));
+        errorMessages.addAll(isMethodNameValid(liftMethodName));
         errorMessages.addAll(isMaxArityValid(maxArity));
 
         if (errorMessages.isEmpty()) {
@@ -32,12 +33,12 @@ public class ConfigValidator {
         return errorMessages;
     }
 
-    private static Set<String> isLiftMethodNameToGenerateValid(String liftMethodName) {
+    private static Set<String> isMethodNameValid(String methodName) {
         Set<String> errorMessages = new HashSet<>();
 
-        boolean isValid = VALID_IDENTIFIER.matcher(liftMethodName).matches();
+        boolean isValid = VALID_IDENTIFIER.matcher(methodName).matches();
         if (!isValid) {
-            errorMessages.add(String.format("Lift method name '%s' is not valid", liftMethodName));
+            errorMessages.add(String.format("Method name '%s' is not valid", methodName));
         }
 
         return errorMessages;

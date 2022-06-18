@@ -28,23 +28,23 @@ public class TemplateClassWithMethodsTest {
         replacements.put(A, B);
         replacements.put(B, A);
 
-        CovariantValidator.Result templateClassWithMethods = CovariantValidator.Result.of(
+        Validator.Result templateClassWithMethods = Validator.Result.of(
                 asList(A.extending(COMPARABLE.with(B)), B.asTypeParameter()),
                 Optional.of(
-                        CovariantInitializer.of(
+                        Initializer.of(
                                 "initializer",
                                 ARDUOUS.with(A.asTypeConstructor().covariant(), placeholder().invariant(), B.asTypeConstructor().contravariant()),
                                 ERUDITE.with(A.asTypeConstructor().invariant(), placeholder().invariant(), B.asTypeConstructor().invariant())
                         )
                 ),
-                CovariantAccumulator.of(
+                Accumulator.of(
                         "accumulator",
                         PROFUSE.with(A.asTypeConstructor().covariant(), placeholder().invariant(), B.asTypeConstructor().contravariant()),
                         ERUDITE.with(A.asTypeConstructor().covariant(), placeholder().invariant(), B.asTypeConstructor().contravariant()),
                         ERUDITE.with(A.asTypeConstructor().invariant(), placeholder().invariant(), B.asTypeConstructor().invariant())
                 ),
                 Optional.of(
-                        CovariantFinalizer.of(
+                        Finalizer.of(
                                 "finalizer",
                                 ERUDITE.with(A.asTypeConstructor().covariant(), placeholder().invariant(), B.asTypeConstructor().contravariant()),
                                 ARDUOUS.with(A.asTypeConstructor().invariant(), placeholder().invariant(), B.asTypeConstructor().invariant())
@@ -52,23 +52,23 @@ public class TemplateClassWithMethodsTest {
                 )
         );
 
-        CovariantValidator.Result expected = CovariantValidator.Result.of(
+        Validator.Result expected = Validator.Result.of(
                 asList(B.extending(COMPARABLE.with(A)), A.asTypeParameter()),
                 Optional.of(
-                        CovariantInitializer.of(
+                        Initializer.of(
                                 "initializer",
                                 ARDUOUS.with(B.asTypeConstructor().covariant(), placeholder().invariant(), A.asTypeConstructor().contravariant()),
                                 ERUDITE.with(B.asTypeConstructor().invariant(), placeholder().invariant(), A.asTypeConstructor().invariant())
                         )
                 ),
-                CovariantAccumulator.of(
+                Accumulator.of(
                         "accumulator",
                         PROFUSE.with(B.asTypeConstructor().covariant(), placeholder().invariant(), A.asTypeConstructor().contravariant()),
                         ERUDITE.with(B.asTypeConstructor().covariant(), placeholder().invariant(), A.asTypeConstructor().contravariant()),
                         ERUDITE.with(B.asTypeConstructor().invariant(), placeholder().invariant(), A.asTypeConstructor().invariant())
                 ),
                 Optional.of(
-                        CovariantFinalizer.of(
+                        Finalizer.of(
                                 "finalizer",
                                 ERUDITE.with(B.asTypeConstructor().covariant(), placeholder().invariant(), A.asTypeConstructor().contravariant()),
                                 ARDUOUS.with(B.asTypeConstructor().invariant(), placeholder().invariant(), A.asTypeConstructor().invariant())
@@ -76,7 +76,7 @@ public class TemplateClassWithMethodsTest {
                 )
         );
 
-        CovariantValidator.Result toVerify = templateClassWithMethods.replaceTypeParameterNames(replacements);
+        Validator.Result toVerify = templateClassWithMethods.replaceTypeParameterNames(replacements);
 
         assertEquals(expected, toVerify);
     }
@@ -87,10 +87,10 @@ public class TemplateClassWithMethodsTest {
         replacements.put(A, B);
         replacements.put(B, A);
 
-        CovariantValidator.Result templateClassWithMethods = CovariantValidator.Result.of(
+        Validator.Result templateClassWithMethods = Validator.Result.of(
                 emptyList(),
                 Optional.empty(),
-                CovariantAccumulator.of(
+                Accumulator.of(
                         "accumulator",
                         PROFUSE.with(A.asTypeConstructor().covariant(), placeholder().invariant(), B.asTypeConstructor().contravariant()),
                         ERUDITE.with(A.asTypeConstructor().covariant(), placeholder().invariant(), B.asTypeConstructor().contravariant()),
@@ -99,10 +99,10 @@ public class TemplateClassWithMethodsTest {
                 Optional.empty()
         );
 
-        CovariantValidator.Result expected = CovariantValidator.Result.of(
+        Validator.Result expected = Validator.Result.of(
                 emptyList(),
                 Optional.empty(),
-                CovariantAccumulator.of(
+                Accumulator.of(
                         "accumulator",
                         PROFUSE.with(B.asTypeConstructor().covariant(), placeholder().invariant(), A.asTypeConstructor().contravariant()),
                         ERUDITE.with(B.asTypeConstructor().covariant(), placeholder().invariant(), A.asTypeConstructor().contravariant()),
@@ -111,7 +111,7 @@ public class TemplateClassWithMethodsTest {
                 Optional.empty()
         );
 
-        CovariantValidator.Result toVerify = templateClassWithMethods.replaceTypeParameterNames(replacements);
+        Validator.Result toVerify = templateClassWithMethods.replaceTypeParameterNames(replacements);
 
         assertEquals(expected, toVerify);
     }

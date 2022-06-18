@@ -7,7 +7,8 @@
   }
   ```
 * Docs for contravariant: https://www.youtube.com/watch?v=IJ_bVVsQhvc (counter-intuitive = contra-intuitive)
-* Contravariant (selective) functors 
+* Support for static methods
+* Use processor (perhaps older version, to prevent circular dependencies) to generate `Validated` methods.
 * Test deconstructor (and other things too) when using a constructor or deconstructor of a generic type like Tuple3.
 * Implement a `@Covariant.Instance` for instance-methods (maybe only useful for monads?)
 * Remove Google testing library because it's all pretty easy to do manually (check TypeConstructor tests)

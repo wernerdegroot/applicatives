@@ -5,26 +5,26 @@ import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstr
 import java.util.Map;
 import java.util.Objects;
 
-public final class ContravariantAccumulator implements HasReplaceableTypeParameterNames<ContravariantAccumulator> {
+public final class Accumulator implements HasReplaceableTypeParameterNames<Accumulator> {
     private final String name;
     private final TypeConstructor inputTypeConstructor;
     private final TypeConstructor partiallyAccumulatedTypeConstructor;
     private final TypeConstructor accumulatedTypeConstructor;
 
-    public ContravariantAccumulator(String name, TypeConstructor inputTypeConstructor, TypeConstructor partiallyAccumulatedTypeConstructor, TypeConstructor accumulatedTypeConstructor) {
+    public Accumulator(String name, TypeConstructor inputTypeConstructor, TypeConstructor partiallyAccumulatedTypeConstructor, TypeConstructor accumulatedTypeConstructor) {
         this.name = name;
         this.inputTypeConstructor = inputTypeConstructor;
         this.partiallyAccumulatedTypeConstructor = partiallyAccumulatedTypeConstructor;
         this.accumulatedTypeConstructor = accumulatedTypeConstructor;
     }
 
-    public static ContravariantAccumulator of(String name, TypeConstructor inputTypeConstructor, TypeConstructor partiallyAccumulatedTypeConstructor, TypeConstructor accumulatedTypeConstructor) {
-        return new ContravariantAccumulator(name, inputTypeConstructor, partiallyAccumulatedTypeConstructor, accumulatedTypeConstructor);
+    public static Accumulator of(String name, TypeConstructor inputTypeConstructor, TypeConstructor partiallyAccumulatedTypeConstructor, TypeConstructor accumulatedTypeConstructor) {
+        return new Accumulator(name, inputTypeConstructor, partiallyAccumulatedTypeConstructor, accumulatedTypeConstructor);
     }
 
     @Override
-    public ContravariantAccumulator replaceTypeParameterNames(Map<TypeParameterName, TypeParameterName> replacements) {
-        return ContravariantAccumulator.of(
+    public Accumulator replaceTypeParameterNames(Map<TypeParameterName, TypeParameterName> replacements) {
+        return Accumulator.of(
                 name,
                 inputTypeConstructor.replaceTypeParameterNames(replacements),
                 partiallyAccumulatedTypeConstructor.replaceTypeParameterNames(replacements),
@@ -52,7 +52,7 @@ public final class ContravariantAccumulator implements HasReplaceableTypeParamet
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ContravariantAccumulator that = (ContravariantAccumulator) o;
+        Accumulator that = (Accumulator) o;
         return Objects.equals(getName(), that.getName()) && Objects.equals(getInputTypeConstructor(), that.getInputTypeConstructor()) && Objects.equals(getPartiallyAccumulatedTypeConstructor(), that.getPartiallyAccumulatedTypeConstructor()) && Objects.equals(getAccumulatedTypeConstructor(), that.getAccumulatedTypeConstructor());
     }
 
@@ -63,7 +63,7 @@ public final class ContravariantAccumulator implements HasReplaceableTypeParamet
 
     @Override
     public String toString() {
-        return "ContravariantAccumulator{" +
+        return "Accumulator{" +
                 "name='" + name + '\'' +
                 ", inputTypeConstructor=" + inputTypeConstructor +
                 ", partiallyAccumulatedTypeConstructor=" + partiallyAccumulatedTypeConstructor +

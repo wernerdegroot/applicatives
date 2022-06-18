@@ -32,7 +32,7 @@ public class ContravariantGeneratorTest {
                 .withReturnTypeConstructorArgument(RETURN_TYPE_CONSTRUCTOR_ARGUMENT)
                 .withOptionalInitializer(Optional.empty())
                 .withAccumulator(
-                        ContravariantAccumulator.of(
+                        Accumulator.of(
                                 "combine",
                                 COMPARATOR.with(placeholder().contravariant()),
                                 COMPARATOR.with(placeholder().contravariant()),
@@ -69,7 +69,7 @@ public class ContravariantGeneratorTest {
                 .withReturnTypeConstructorArgument(RETURN_TYPE_CONSTRUCTOR_ARGUMENT)
                 .withOptionalInitializer(
                         Optional.of(
-                                CovariantInitializer.of(
+                                Initializer.of(
                                         "initialize",
                                         FUNCTION.with(placeholder().contravariant(), STRING.asTypeConstructor().covariant()),
                                         FUNCTION.with(placeholder().invariant(), STRING_BUILDER.asTypeConstructor().invariant())
@@ -77,7 +77,7 @@ public class ContravariantGeneratorTest {
                         )
                 )
                 .withAccumulator(
-                        ContravariantAccumulator.of(
+                        Accumulator.of(
                                 "combineImpl",
                                 FUNCTION.with(placeholder().contravariant(), STRING.asTypeConstructor().covariant()),
                                 FUNCTION.with(placeholder().contravariant(), STRING_BUILDER.asTypeConstructor().covariant()),
@@ -86,7 +86,7 @@ public class ContravariantGeneratorTest {
                 )
                 .withOptionalFinalizer(
                         Optional.of(
-                                CovariantFinalizer.of(
+                                Finalizer.of(
                                         "finalize",
                                         FUNCTION.with(placeholder().contravariant(), STRING_BUILDER.asTypeConstructor().covariant()),
                                         FUNCTION.with(placeholder().invariant(), STRING.asTypeConstructor().invariant())

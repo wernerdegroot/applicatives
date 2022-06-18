@@ -32,7 +32,7 @@ public class CovariantGeneratorTest {
                 .withReturnTypeConstructorArgument(RETURN_TYPE_CONSTRUCTOR_ARGUMENT)
                 .withOptionalInitializer(Optional.empty())
                 .withAccumulator(
-                        CovariantAccumulator.of(
+                        Accumulator.of(
                                 "compose",
                                 OPTIONAL.with(placeholder().covariant()),
                                 OPTIONAL.with(placeholder().covariant()),
@@ -66,7 +66,7 @@ public class CovariantGeneratorTest {
                 .withReturnTypeConstructorArgument(RETURN_TYPE_CONSTRUCTOR_ARGUMENT)
                 .withOptionalInitializer(
                         Optional.of(
-                                CovariantInitializer.of(
+                                Initializer.of(
                                         "initialize",
                                         LIST.with(placeholder().covariant()),
                                         ARRAY_LIST.with(placeholder().invariant())
@@ -74,7 +74,7 @@ public class CovariantGeneratorTest {
                         )
                 )
                 .withAccumulator(
-                        CovariantAccumulator.of(
+                        Accumulator.of(
                                 "compose",
                                 LIST.with(placeholder().covariant()),
                                 ARRAY_LIST.with(placeholder().covariant()),
@@ -83,7 +83,7 @@ public class CovariantGeneratorTest {
                 )
                 .withOptionalFinalizer(
                         Optional.of(
-                                CovariantFinalizer.of(
+                                Finalizer.of(
                                         "finalize",
                                         ARRAY_LIST.with(placeholder().covariant()),
                                         LIST.with(placeholder().invariant())
@@ -118,7 +118,7 @@ public class CovariantGeneratorTest {
                 .withReturnTypeConstructorArgument(RETURN_TYPE_CONSTRUCTOR_ARGUMENT)
                 .withOptionalInitializer(Optional.empty())
                 .withAccumulator(
-                        CovariantAccumulator.of(
+                        Accumulator.of(
                                 "compose",
                                 FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()),
                                 FUNCTION.with(P.asTypeConstructor().invariant(), placeholder().invariant()),

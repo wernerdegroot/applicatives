@@ -1,7 +1,6 @@
 package nl.wernerdegroot.applicatives.processor.validation;
 
 import nl.wernerdegroot.applicatives.processor.domain.Method;
-import nl.wernerdegroot.applicatives.processor.domain.Parameter;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameter;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor;
@@ -11,104 +10,80 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import static java.util.stream.Collectors.toSet;
-import static nl.wernerdegroot.applicatives.processor.domain.type.Type.BI_FUNCTION;
-import static nl.wernerdegroot.applicatives.processor.domain.type.Type.FUNCTION;
 import static nl.wernerdegroot.applicatives.processor.generator.TypeGenerator.generateFrom;
+import static nl.wernerdegroot.applicatives.processor.validation.Common.*;
 
-public class ContravariantAccumulatorValidator {
+public class AccumulatorValidator {
 
-    public static Validated<String, Result> validate(Method method) {
-        MethodValidation methodValidation = MethodValidation.of(method)
-                .verifyCanImplementAbstractMethod()
-                .verifyParameterCount("exactly 5", numberOfParameters -> numberOfParameters == 5)
-                .verifyTypeParameterCount("exactly 4", numberOfTypeParameters -> numberOfTypeParameters == 4)
-                .verifyTypeParametersAreUnbounded()
-                .verifyHasReturnType();
+    public static Validated<String, Result> validate(Method method, ParametersAndTypeParametersValidator parametersAndTypeParametersValidator) {
+        Set<String> errorMessages = new HashSet<>();
 
-        if (!methodValidation.isValid()) {
-            return Validated.invalid(methodValidation.getErrorMessages());
+        verifyCanImplementAbstractMethod(method, errorMessages);
+        verifyTypeParametersAreUnbounded(method, errorMessages);
+        Type returnType = verifyHasReturnType(method, errorMessages);
+        ParametersAndTypeParametersValidator.Result parametersAndTypeParameters = verifyParametersAndTypeParameters(method, parametersAndTypeParametersValidator, errorMessages);
+
+        if (!errorMessages.isEmpty()) {
+            return Validated.invalid(errorMessages);
         }
 
         // Assign a meaningful name to each of the (three) type parameters:
-        List<TypeParameter> typeParameters = method.getTypeParameters();
-        TypeParameter leftInputTypeConstructorArgument = typeParameters.get(0);
-        TypeParameter rightInputTypeConstructorArgument = typeParameters.get(1);
-        TypeParameter intermediateTypeConstructorArgument = typeParameters.get(2);
-        TypeParameter returnTypeConstructorArgument = typeParameters.get(3);
+        TypeParameter leftInputTypeConstructorArgument = parametersAndTypeParameters.getLeftInputTypeConstructorArgument();
+        TypeParameter rightInputTypeConstructorArgument = parametersAndTypeParameters.getRightInputTypeConstructorArgument();
+        TypeParameter returnTypeConstructorArgument = parametersAndTypeParameters.getReturnTypeConstructorArgument();
 
-        Type returnType = methodValidation.getReturnType();
+        // Assign a meaningful name to the left and right parameters:
+        Type leftParameterType = parametersAndTypeParameters.getLeftParameterType();
+        Type rightParameterType = parametersAndTypeParameters.getRightParameterType();
 
         String name = method.getName();
 
-        // Assign a meaningful name to each of the (three) parameters:
-        List<Parameter> parameters = method.getParameters();
-        Parameter leftParameter = parameters.get(0);
-        Parameter rightParameter = parameters.get(1);
-        Parameter toIntermediateParameter = parameters.get(2);
-        Parameter extractLeftParameter = parameters.get(3);
-        Parameter extractRightParameter = parameters.get(4);
-
-        // Check if the third parameter is as expected:
-        Type expectedToIntermediateType = FUNCTION.with(returnTypeConstructorArgument.asType().contravariant(), intermediateTypeConstructorArgument.asType().covariant());
-        if (!Objects.equals(toIntermediateParameter.getType(), expectedToIntermediateType)) {
-            return Validated.invalid("Expected third argument to be a " + generateFrom(expectedToIntermediateType) + " but was " + generateFrom(toIntermediateParameter.getType()));
-        }
-
-        // Check if the fourth parameter is as expected:
-        Type expectedExtractLeftType = FUNCTION.with(intermediateTypeConstructorArgument.asType().contravariant(), leftInputTypeConstructorArgument.asType().covariant());
-        if (!Objects.equals(extractLeftParameter.getType(), expectedExtractLeftType)) {
-            return Validated.invalid("Expected fourth argument to be a " + generateFrom(expectedExtractLeftType) + " but was " + generateFrom(extractLeftParameter.getType()));
-        }
-
-        // Check if the fourth parameter is as expected:
-        Type expectedExtractRightType = FUNCTION.with(intermediateTypeConstructorArgument.asType().contravariant(), rightInputTypeConstructorArgument.asType().covariant());
-        if (!Objects.equals(extractRightParameter.getType(), expectedExtractRightType)) {
-            return Validated.invalid("Expected fifth argument to be a " + generateFrom(expectedExtractRightType) + " but was " + generateFrom(extractRightParameter.getType()));
-        }
-
         TypeConstructor accumulatedTypeConstructor = returnType.asTypeConstructorWithPlaceholderFor(returnTypeConstructorArgument.getName());
-        TypeConstructor partiallyAccumulatedTypeConstructor = leftParameter.getType().asTypeConstructorWithPlaceholderFor(leftInputTypeConstructorArgument.getName());
-        TypeConstructor inputTypeConstructor = rightParameter.getType().asTypeConstructorWithPlaceholderFor(rightInputTypeConstructorArgument.getName());
+        TypeConstructor partiallyAccumulatedTypeConstructor = leftParameterType.asTypeConstructorWithPlaceholderFor(leftInputTypeConstructorArgument.getName());
+        TypeConstructor inputTypeConstructor = rightParameterType.asTypeConstructorWithPlaceholderFor(rightInputTypeConstructorArgument.getName());
 
         if (!partiallyAccumulatedTypeConstructor.canAccept(accumulatedTypeConstructor)) {
             // Tweak the error message to not confuse people using the simple case where
             // parameter types and result type should be identical:
             if (Objects.equals(partiallyAccumulatedTypeConstructor, inputTypeConstructor)) {
-                return Validated.invalid("No shared type constructor between parameters (" + generateFrom(leftParameter.getType()) + " and " + generateFrom(rightParameter.getType()) + ") and result (" + generateFrom(returnType) + ")");
+                return Validated.invalid("No shared type constructor between parameters (" + generateFrom(leftParameterType) + " and " + generateFrom(rightParameterType) + ") and result (" + generateFrom(returnType) + ")");
             } else {
-                return Validated.invalid("No shared type constructor between first parameter (" + generateFrom(leftParameter.getType()) + ") and result (" + generateFrom(returnType) + ")");
+                return Validated.invalid("No shared type constructor between first parameter (" + generateFrom(leftParameterType) + ") and result (" + generateFrom(returnType) + ")");
             }
         }
 
-        Set<String> errorMessages = new HashSet<>();
-        errorMessages.addAll(checkCrossReferences(typeParameters, rightParameter.getType(), inputTypeConstructor, "type of the second parameter"));
-        errorMessages.addAll(checkCrossReferences(typeParameters, leftParameter.getType(), partiallyAccumulatedTypeConstructor, "type of the first parameter"));
-        errorMessages.addAll(checkCrossReferences(typeParameters, returnType, accumulatedTypeConstructor, "return type"));
+        verifyNoCrossReferences(method.getTypeParameters(), leftParameterType, partiallyAccumulatedTypeConstructor, "type of the first parameter", errorMessages);
+        verifyNoCrossReferences(method.getTypeParameters(), rightParameterType, inputTypeConstructor, "type of the second parameter", errorMessages);
+        verifyNoCrossReferences(method.getTypeParameters(), returnType, accumulatedTypeConstructor, "return type", errorMessages);
+
         if (!errorMessages.isEmpty()) {
             return Validated.invalid(errorMessages);
         }
 
         return Validated.valid(
-                Result.of(
+                AccumulatorValidator.Result.of(
                         name,
                         inputTypeConstructor,
                         partiallyAccumulatedTypeConstructor,
                         accumulatedTypeConstructor,
-                        leftParameter.getType(),
-                        rightParameter.getType(),
+                        leftParameterType,
+                        rightParameterType,
                         returnType
                 )
         );
     }
 
-    private static Set<String> checkCrossReferences(List<TypeParameter> typeParameters, Type type, TypeConstructor typeConstructor, String descriptionOfType) {
-        return typeParameters
+    private static ParametersAndTypeParametersValidator.Result verifyParametersAndTypeParameters(Method method, ParametersAndTypeParametersValidator parametersAndTypeParametersValidator, Set<String> errorMessages) {
+        return parametersAndTypeParametersValidator.validateTypeParametersAndParameters(method.getTypeParameters(), method.getParameters(), errorMessages);
+    }
+
+    private static void verifyNoCrossReferences(List<TypeParameter> typeParameters, Type type, TypeConstructor typeConstructor, String descriptionOfType, Set<String> errorMessages) {
+        typeParameters
                 .stream()
                 .map(TypeParameter::getName)
                 .filter(typeConstructor::referencesTypeParameter)
                 .map(typeParameterName -> String.format("The %s (%s) is not allowed to reference type parameter '%s'", descriptionOfType, generateFrom(type), typeParameterName.raw()))
-                .collect(toSet());
+                .forEach(errorMessages::add);
     }
 
     public static final class Result {

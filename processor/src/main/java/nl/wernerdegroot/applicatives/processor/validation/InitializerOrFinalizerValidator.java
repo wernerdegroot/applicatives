@@ -6,25 +6,28 @@ import nl.wernerdegroot.applicatives.processor.domain.TypeParameter;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor;
 
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
-public class CovariantInitializerOrFinalizerValidator {
+import static nl.wernerdegroot.applicatives.processor.validation.Common.*;
+
+public class InitializerOrFinalizerValidator {
 
     public static Validated<String, Result> validate(Method method) {
-        MethodValidation methodValidation = MethodValidation.of(method)
-                .verifyCanImplementAbstractMethod()
-                .verifyParameterCount("exactly 1", numberOfParameters -> numberOfParameters == 1)
-                .verifyTypeParameterCount("exactly 1", numberOfTypeParameters -> numberOfTypeParameters == 1)
-                .verifyTypeParametersAreUnbounded()
-                .verifyHasReturnType();
+        Set<String> errorMessages = new HashSet<>();
 
-        if (!methodValidation.isValid()) {
-            return Validated.invalid(methodValidation.getErrorMessages());
+        verifyCanImplementAbstractMethod(method, errorMessages);
+        verifyParameterCount(method.getParameters(), 1, errorMessages);
+        verifyTypeParameterCount(method.getTypeParameters(), 1, errorMessages);
+        verifyTypeParametersAreUnbounded(method, errorMessages);
+        Type returnType = verifyHasReturnType(method, errorMessages);
+
+        if (!errorMessages.isEmpty()) {
+            return Validated.invalid(errorMessages);
         }
 
         TypeParameter typeParameter = method.getTypeParameters().get(0);
-
-        Type returnType = methodValidation.getReturnType();
 
         String name = method.getName();
 
@@ -36,7 +39,7 @@ public class CovariantInitializerOrFinalizerValidator {
         // Extract the type constructor from the return type:
         TypeConstructor initializedOrFinalizedTypeConstructor = returnType.asTypeConstructorWithPlaceholderFor(typeParameter.getName());
 
-        return Validated.valid(Result.of(name, parameter.getType(), toInitializeOrFinalizeTypeConstructor,  returnType, initializedOrFinalizedTypeConstructor));
+        return Validated.valid(Result.of(name, parameter.getType(), toInitializeOrFinalizeTypeConstructor, returnType, initializedOrFinalizedTypeConstructor));
     }
 
     public static final class Result {
