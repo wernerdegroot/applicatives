@@ -9,6 +9,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 public @interface Covariant {
     String className() default "*Overloads";
+    String combineMethodName() default "*";
     String liftMethodName() default "lift";
     int maxArity() default 26;
 
@@ -16,6 +17,7 @@ public @interface Covariant {
     @Retention(RetentionPolicy.SOURCE)
     @interface Builder {
         String className() default "*Overloads";
+        String combineMethodName() default "*";
         String liftMethodName() default "lift";
         int maxArity() default 26;
     }

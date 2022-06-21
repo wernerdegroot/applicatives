@@ -1,4 +1,4 @@
-* Add `combinatorMethodName` to covariant things too
+* Add `combinatorMethodName` to covariant things too (now included in annotation but not processed by generator)
 * Explicit type arguments to method call are not `TypeArgument` (for a data type). They can't specify variance. Used in generators.
 * Fix
   ```
