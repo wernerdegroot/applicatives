@@ -9,43 +9,25 @@ import nl.wernerdegroot.applicatives.processor.validation.Validated;
 import nl.wernerdegroot.applicatives.processor.validation.Validator;
 import nl.wernerdegroot.applicatives.runtime.Contravariant;
 
-import javax.annotation.processing.*;
+import javax.annotation.processing.Processor;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedOptions;
+import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
-import java.util.Set;
 
+import static nl.wernerdegroot.applicatives.processor.Classes.CONTRAVARIANT_CLASS;
 import static nl.wernerdegroot.applicatives.processor.Classes.CONTRAVARIANT_CLASS_NAME;
 
 @SupportedOptions({Options.VERBOSE_ARGUMENT})
 @SupportedAnnotationTypes(CONTRAVARIANT_CLASS_NAME)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @AutoService(Processor.class)
-public class ContravariantMethodProcessor extends AbstractProcessor implements ContravariantProcessorTemplate<Contravariant, Element, Method>, MethodProcessorTemplate<Contravariant> {
+public class ContravariantMethodProcessor extends AbstractProcessor<Contravariant, Element, Method> implements ContravariantProcessorTemplate<Contravariant, Element, Method>, MethodProcessorTemplate<Contravariant> {
 
     @Override
-    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        annotations.forEach(annotation -> {
-            roundEnv.getElementsAnnotatedWith(annotation).forEach(element -> {
-                process(element);
-            });
-        });
-        return false;
-    }
-
-    @Override
-    public ProcessingEnvironment getProcessingEnvironment() {
-        return processingEnv;
-    }
-
-    @Override
-    public Class<?> getAnnotationType() {
-        return Contravariant.class;
-    }
-
-    @Override
-    public Contravariant getAnnotation(Element element) {
-        return element.getAnnotation(Contravariant.class);
+    public Class<Contravariant> getAnnotationType() {
+        return CONTRAVARIANT_CLASS;
     }
 
     @Override

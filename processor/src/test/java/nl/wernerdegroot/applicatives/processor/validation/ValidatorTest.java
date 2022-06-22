@@ -30,7 +30,7 @@ public class ValidatorTest {
     public void givenValidClassAndValidMethod() {
         ContainingClass containingClass = getValidContainingClass();
         Method accumulator = getAccumulator(
-                withAnnotations(COVARIANT_FULLY_QUALIFIED_NAME),
+                withAnnotations(FullyQualifiedName.of(COVARIANT_CLASS_NAME)),
                 withModifiers(PUBLIC),
                 withInputTypeConstructor(LIST.with(placeholder().covariant())),
                 withPartiallyAccumulatedTypeConstructor(ARRAY_LIST.with(placeholder().covariant())),
@@ -60,7 +60,7 @@ public class ValidatorTest {
     public void givenInvalidClassAndValidMethod() {
         Validated<Log, Validator.Result> toVerify = Validator.validate(
                 getInvalidContainingClass(),
-                getAccumulator(withAnnotations(COVARIANT_FULLY_QUALIFIED_NAME), withModifiers(PUBLIC), withTypeConstructors(OPTIONAL)),
+                getAccumulator(withAnnotations(FullyQualifiedName.of(COVARIANT_CLASS_NAME)), withModifiers(PUBLIC), withTypeConstructors(OPTIONAL)),
                 new CovariantParametersAndTypeParametersValidator());
 
         assertFalse(toVerify.isValid());
@@ -70,7 +70,7 @@ public class ValidatorTest {
     public void givenValidClassAndInvalidMethod() {
         Validated<Log, Validator.Result> toVerify = Validator.validate(
                 getValidContainingClass(),
-                getAccumulator(withAnnotations(COVARIANT_FULLY_QUALIFIED_NAME), withModifiers(PRIVATE), withTypeConstructors(OPTIONAL)),
+                getAccumulator(withAnnotations(FullyQualifiedName.of(COVARIANT_CLASS_NAME)), withModifiers(PRIVATE), withTypeConstructors(OPTIONAL)),
                 new CovariantParametersAndTypeParametersValidator());
 
         assertFalse(toVerify.isValid());
@@ -80,7 +80,7 @@ public class ValidatorTest {
     public void givenInvalidClassAndInvalidMethod() {
         Validated<Log, Validator.Result> toVerify = Validator.validate(
                 getInvalidContainingClass(),
-                getAccumulator(withAnnotations(COVARIANT_FULLY_QUALIFIED_NAME), withModifiers(PRIVATE), withTypeConstructors(OPTIONAL)),
+                getAccumulator(withAnnotations(FullyQualifiedName.of(COVARIANT_CLASS_NAME)), withModifiers(PRIVATE), withTypeConstructors(OPTIONAL)),
                 new CovariantParametersAndTypeParametersValidator());
 
         assertFalse(toVerify.isValid());

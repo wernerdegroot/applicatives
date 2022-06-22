@@ -11,12 +11,17 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import java.util.Set;
 
-public interface MethodProcessorTemplate<Annotation> extends ProcessorTemplate<Annotation, Element, Method> {
+public interface MethodProcessorTemplate<Annotation extends java.lang.annotation.Annotation> extends ProcessorTemplate<Annotation, Element, Method> {
+
+    @Override
+    default Annotation getAnnotation(Element element) {
+        return element.getAnnotation(getAnnotationType());
+    }
 
     @Override
     default Element getElementToProcess(Element element) {
         if (element.getKind() != ElementKind.METHOD) {
-            // Verify unlikely to happen, since the annotations
+            // Very unlikely to happen, since the annotations
             // should have the right @Target (ElementType.METHOD)
             String message = String.format("Element %s of type %s is not a method", element.getSimpleName(), element.getKind());
             throw new IllegalArgumentException(message);

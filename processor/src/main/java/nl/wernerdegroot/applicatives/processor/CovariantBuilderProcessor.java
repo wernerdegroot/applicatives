@@ -9,11 +9,13 @@ import nl.wernerdegroot.applicatives.processor.validation.Validated;
 import nl.wernerdegroot.applicatives.processor.validation.Validator;
 import nl.wernerdegroot.applicatives.runtime.Covariant;
 
-import javax.annotation.processing.*;
+import javax.annotation.processing.Processor;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedOptions;
+import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 import java.util.List;
-import java.util.Set;
 
 import static nl.wernerdegroot.applicatives.processor.Classes.COVARIANT_BUILDER_CANONICAL_NAME;
 import static nl.wernerdegroot.applicatives.processor.Classes.COVARIANT_BUILDER_CLASS;
@@ -22,31 +24,11 @@ import static nl.wernerdegroot.applicatives.processor.Classes.COVARIANT_BUILDER_
 @SupportedAnnotationTypes(COVARIANT_BUILDER_CANONICAL_NAME)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @AutoService(Processor.class)
-public class CovariantBuilderProcessor extends AbstractProcessor implements CovariantProcessorTemplate<Covariant.Builder, TypeElement, List<Method>>, BuilderProcessorTemplate<Covariant.Builder> {
+public class CovariantBuilderProcessor extends AbstractProcessor<Covariant.Builder, TypeElement, List<Method>> implements CovariantProcessorTemplate<Covariant.Builder, TypeElement, List<Method>>, BuilderProcessorTemplate<Covariant.Builder> {
 
     @Override
-    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        annotations.forEach(annotation -> {
-            roundEnv.getElementsAnnotatedWith(annotation).forEach(element -> {
-                process(element);
-            });
-        });
-        return false;
-    }
-
-    @Override
-    public ProcessingEnvironment getProcessingEnvironment() {
-        return processingEnv;
-    }
-
-    @Override
-    public Class<?> getAnnotationType() {
+    public Class<Covariant.Builder> getAnnotationType() {
         return COVARIANT_BUILDER_CLASS;
-    }
-
-    @Override
-    public Covariant.Builder getAnnotation(TypeElement typeElement) {
-        return typeElement.getAnnotation(Covariant.Builder.class);
     }
 
     @Override

@@ -9,11 +9,13 @@ import nl.wernerdegroot.applicatives.processor.validation.Validated;
 import nl.wernerdegroot.applicatives.processor.validation.Validator;
 import nl.wernerdegroot.applicatives.runtime.Contravariant;
 
-import javax.annotation.processing.*;
+import javax.annotation.processing.Processor;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedOptions;
+import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 import java.util.List;
-import java.util.Set;
 
 import static nl.wernerdegroot.applicatives.processor.Classes.CONTRAVARIANT_BUILDER_CANONICAL_NAME;
 import static nl.wernerdegroot.applicatives.processor.Classes.CONTRAVARIANT_BUILDER_CLASS;
@@ -22,31 +24,11 @@ import static nl.wernerdegroot.applicatives.processor.Classes.CONTRAVARIANT_BUIL
 @SupportedAnnotationTypes(CONTRAVARIANT_BUILDER_CANONICAL_NAME)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @AutoService(Processor.class)
-public class ContravariantBuilderProcessor extends AbstractProcessor implements ContravariantProcessorTemplate<Contravariant.Builder, TypeElement, List<Method>>, BuilderProcessorTemplate<Contravariant.Builder> {
+public class ContravariantBuilderProcessor extends AbstractProcessor<Contravariant.Builder, TypeElement, List<Method>> implements ContravariantProcessorTemplate<Contravariant.Builder, TypeElement, List<Method>>, BuilderProcessorTemplate<Contravariant.Builder> {
 
     @Override
-    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        annotations.forEach(annotation -> {
-            roundEnv.getElementsAnnotatedWith(annotation).forEach(element -> {
-                process(element);
-            });
-        });
-        return false;
-    }
-
-    @Override
-    public ProcessingEnvironment getProcessingEnvironment() {
-        return processingEnv;
-    }
-
-    @Override
-    public Class<?> getAnnotationType() {
+    public Class<Contravariant.Builder> getAnnotationType() {
         return CONTRAVARIANT_BUILDER_CLASS;
-    }
-
-    @Override
-    public Contravariant.Builder getAnnotation(TypeElement typeElement) {
-        return typeElement.getAnnotation(Contravariant.Builder.class);
     }
 
     @Override

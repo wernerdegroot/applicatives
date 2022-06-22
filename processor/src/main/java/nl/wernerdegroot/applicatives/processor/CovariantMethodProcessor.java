@@ -9,43 +9,25 @@ import nl.wernerdegroot.applicatives.processor.validation.Validated;
 import nl.wernerdegroot.applicatives.processor.validation.Validator;
 import nl.wernerdegroot.applicatives.runtime.Covariant;
 
-import javax.annotation.processing.*;
+import javax.annotation.processing.Processor;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedOptions;
+import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
-import java.util.Set;
 
+import static nl.wernerdegroot.applicatives.processor.Classes.COVARIANT_CLASS;
 import static nl.wernerdegroot.applicatives.processor.Classes.COVARIANT_CLASS_NAME;
 
 @SupportedOptions({Options.VERBOSE_ARGUMENT})
 @SupportedAnnotationTypes(COVARIANT_CLASS_NAME)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @AutoService(Processor.class)
-public class CovariantMethodProcessor extends AbstractProcessor implements CovariantProcessorTemplate<Covariant, Element, Method>, MethodProcessorTemplate<Covariant> {
+public class CovariantMethodProcessor extends AbstractProcessor<Covariant, Element, Method> implements CovariantProcessorTemplate<Covariant, Element, Method>, MethodProcessorTemplate<Covariant> {
 
     @Override
-    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        annotations.forEach(annotation -> {
-            roundEnv.getElementsAnnotatedWith(annotation).forEach(element -> {
-                process(element);
-            });
-        });
-        return false;
-    }
-
-    @Override
-    public ProcessingEnvironment getProcessingEnvironment() {
-        return processingEnv;
-    }
-
-    @Override
-    public Class<?> getAnnotationType() {
-        return Covariant.class;
-    }
-
-    @Override
-    public Covariant getAnnotation(Element element) {
-        return element.getAnnotation(Covariant.class);
+    public Class<Covariant> getAnnotationType() {
+        return COVARIANT_CLASS;
     }
 
     @Override

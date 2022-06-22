@@ -83,11 +83,11 @@ public interface ProcessorTemplate<Annotation, ElementToProcess, MethodOrMethods
 
     ProcessingEnvironment getProcessingEnvironment();
 
-    Class<?> getAnnotationType();
-
-    ElementToProcess getElementToProcess(Element element);
+    Class<Annotation> getAnnotationType();
 
     Annotation getAnnotation(ElementToProcess element);
+
+    ElementToProcess getElementToProcess(Element element);
 
     String getClassNameToGenerate(Annotation annotation);
 
