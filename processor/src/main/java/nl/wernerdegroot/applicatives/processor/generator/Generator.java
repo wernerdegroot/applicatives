@@ -12,6 +12,8 @@ import java.util.function.Function;
 
 import static java.util.stream.Collectors.toList;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.BI_FUNCTION;
+import static nl.wernerdegroot.applicatives.processor.generator.MethodCallGenerator.methodCall;
+import static nl.wernerdegroot.applicatives.processor.generator.MethodGenerator.method;
 
 public abstract class Generator<This> {
 
@@ -29,8 +31,8 @@ public abstract class Generator<This> {
     protected List<String> inputParameterNames;
     protected String valueParameterName;
     protected String selfParameterName;
-    protected String combineMethodName;
-    protected String liftMethodName;
+    protected String combineMethodToGenerate;
+    protected String liftMethodToGenerate;
     protected int maxArity;
 
     protected abstract This getThis();
@@ -90,19 +92,39 @@ public abstract class Generator<This> {
         return getThis();
     }
 
-    public This withCombineMethodName(String combineMethodName) {
-        this.combineMethodName = combineMethodName;
+    public This withCombineMethodToGenerate(String combineMethodName) {
+        this.combineMethodToGenerate = combineMethodName;
         return getThis();
     }
 
-    public This withLiftMethodName(String liftMethodName) {
-        this.liftMethodName = liftMethodName;
+    public This withLiftMethodToGenerate(String liftMethodName) {
+        this.liftMethodToGenerate = liftMethodName;
         return getThis();
     }
 
     public This withMaxArity(int maxArity) {
         this.maxArity = maxArity;
         return getThis();
+    }
+
+    protected Optional<MethodGenerator> optionalAbstractInitializerMethod() {
+        return optionalInitializer.map(initializer ->
+                method()
+                        .withTypeParameters(returnTypeConstructorArgument.getName())
+                        .withReturnType(returnTypeConstructorArgument.asType().using(initializer.getInitializedTypeConstructor()))
+                        .withName(initializer.getName())
+                        .withParameter(returnTypeConstructorArgument.asType().using(initializer.getToInitializeTypeConstructor()), valueParameterName)
+        );
+    }
+
+    protected Optional<MethodGenerator> optionalAbstractFinalizerMethod() {
+        return optionalFinalizer.map(finalizer ->
+                method()
+                        .withTypeParameters(returnTypeConstructorArgument.getName())
+                        .withReturnType(returnTypeConstructorArgument.asType().using(finalizer.getFinalizedTypeConstructor()))
+                        .withName(finalizer.getName())
+                        .withParameter(returnTypeConstructorArgument.asType().using(finalizer.getToFinalizeTypeConstructor()), valueParameterName)
+        );
     }
 
     protected boolean hasInitializer() {
@@ -152,6 +174,10 @@ public abstract class Generator<This> {
 
     protected Type getReturnType() {
         return returnTypeConstructorArgument.asType().using(getReturnTypeConstructor());
+    }
+
+    protected Type getAccumulatorReturnType() {
+        return returnTypeConstructorArgument.asType().using(accumulator.getAccumulatedTypeConstructor());
     }
 
     protected TypeConstructor getReturnTypeConstructor() {
@@ -219,6 +245,17 @@ public abstract class Generator<This> {
         typeArguments.add(returnTypeVariance.apply(returnTypeConstructorArgument.asType().using(returnTypeConstructor)));
 
         return Type.concrete(fullyQualifiedNameOfFunction(arity), typeArguments);
+    }
+
+    protected String initializeIfHasInitializer(String objectName, String toInitialize) {
+        return optionalInitializer.map(initializer -> methodCall().withObjectPath(objectName).withMethodName(initializer.getName()).withArguments(toInitialize).generate()).orElse(toInitialize);
+    }
+
+    protected String finalizeIfHasFinalizer(String objectName, String methodBody) {
+        return optionalFinalizer
+                .map(Finalizer::getName)
+                .map(finalizerMethodName -> methodCall().withObjectPath(objectName).withMethodName(finalizerMethodName).withArguments(methodBody).generate())
+                .orElse(methodBody);
     }
 
     protected FullyQualifiedName fullyQualifiedNameOfArbitraryArityFunction(int arity) {

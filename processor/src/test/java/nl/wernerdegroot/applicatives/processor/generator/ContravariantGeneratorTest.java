@@ -47,8 +47,8 @@ public class ContravariantGeneratorTest {
                 .withToIntermediateParameterName(TO_INTERMEDIATE_PARAMETER_NAME)
                 .withExtractLeftParameterName(EXTRACT_LEFT_PARAMETER_NAME)
                 .withExtractRightParameterName(EXTRACT_RIGHT_PARAMETER_NAME)
-                .withCombineMethodName("combine")
-                .withLiftMethodName("lift")
+                .withCombineMethodToGenerate("combine")
+                .withLiftMethodToGenerate("lift")
                 .withMaxArity(4)
                 .generate();
 
@@ -100,8 +100,8 @@ public class ContravariantGeneratorTest {
                 .withToIntermediateParameterName(TO_INTERMEDIATE_PARAMETER_NAME)
                 .withExtractLeftParameterName(EXTRACT_LEFT_PARAMETER_NAME)
                 .withExtractRightParameterName(EXTRACT_RIGHT_PARAMETER_NAME)
-                .withCombineMethodName("combine")
-                .withLiftMethodName("lift")
+                .withCombineMethodToGenerate("combine")
+                .withLiftMethodToGenerate("lift")
                 .withMaxArity(4)
                 .generate();
 

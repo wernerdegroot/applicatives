@@ -22,7 +22,7 @@ public interface CovariantProcessorTemplate<Annotation, ElementToProcess, Method
                 .withInputParameterNames(INPUT_PARAMETER_NAMES)
                 .withValueParameterName(VALUE_PARAMETER_NAME)
                 .withCombinatorParameterName(COMBINATOR_PARAMETER_NAME)
-                .withLiftMethodName(liftMethodNameToGenerate)
+                .withLiftMethodToGenerate(liftMethodNameToGenerate)
                 .withMaxTupleSizeParameterName(MAX_TUPLE_SIZE_PARAMETER_NAME)
                 .withMaxArity(maxArity)
                 .withSelfParameterName(SELF_PARAMETER_NAME)

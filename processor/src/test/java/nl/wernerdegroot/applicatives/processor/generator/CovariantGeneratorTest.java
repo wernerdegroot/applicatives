@@ -47,7 +47,7 @@ public class CovariantGeneratorTest {
                 .withMaxTupleSizeParameterName(MAX_TUPLE_SIZE_PARAMETER_NAME)
                 .withTupleParameterName(TUPLE_PARAMETER_NAME)
                 .withElementParameterName(ELEMENT_PARAMETER_NAME)
-                .withLiftMethodName("lift")
+                .withLiftMethodToGenerate("lift")
                 .withMaxArity(2)
                 .generate();
 
@@ -97,7 +97,7 @@ public class CovariantGeneratorTest {
                 .withMaxTupleSizeParameterName(MAX_TUPLE_SIZE_PARAMETER_NAME)
                 .withTupleParameterName(TUPLE_PARAMETER_NAME)
                 .withElementParameterName(ELEMENT_PARAMETER_NAME)
-                .withLiftMethodName("lift")
+                .withLiftMethodToGenerate("lift")
                 .withMaxArity(3)
                 .generate();
 
@@ -133,7 +133,7 @@ public class CovariantGeneratorTest {
                 .withMaxTupleSizeParameterName(MAX_TUPLE_SIZE_PARAMETER_NAME)
                 .withTupleParameterName(TUPLE_PARAMETER_NAME)
                 .withElementParameterName(ELEMENT_PARAMETER_NAME)
-                .withLiftMethodName("lift")
+                .withLiftMethodToGenerate("lift")
                 .withMaxArity(4)
                 .generate();
 

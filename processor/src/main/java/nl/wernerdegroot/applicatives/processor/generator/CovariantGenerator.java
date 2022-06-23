@@ -1,6 +1,5 @@
 package nl.wernerdegroot.applicatives.processor.generator;
 
-import nl.wernerdegroot.applicatives.processor.domain.Finalizer;
 import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
 import nl.wernerdegroot.applicatives.processor.domain.Initializer;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
@@ -8,7 +7,6 @@ import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstr
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
@@ -29,7 +27,7 @@ public class CovariantGenerator extends Generator<CovariantGenerator> {
 
     private static final FullyQualifiedName FAST_TUPLE = FullyQualifiedName.of("nl.wernerdegroot.applicatives.runtime.FastTuple");
     private static final String FAST_TUPLE_WITH_MAX_SIZE_METHOD_NAME = "withMaxSize";
-    private static final String APPLY_METHOD = "apply";
+    private static final String COMBINATOR_APPLY_METHOD_NAME = "apply";
 
     private String combinatorParameterName;
     private String maxTupleSizeParameterName;
@@ -108,26 +106,6 @@ public class CovariantGenerator extends Generator<CovariantGenerator> {
         return String.join(LINE_FEED, lines);
     }
 
-    private Optional<MethodGenerator> optionalAbstractInitializerMethod() {
-        return optionalInitializer.map(initializer ->
-                method()
-                        .withTypeParameters(returnTypeConstructorArgument.getName())
-                        .withReturnType(returnTypeConstructorArgument.asType().using(initializer.getInitializedTypeConstructor()))
-                        .withName(initializer.getName())
-                        .withParameter(returnTypeConstructorArgument.asType().using(initializer.getToInitializeTypeConstructor()), valueParameterName)
-        );
-    }
-
-    private Optional<MethodGenerator> optionalAbstractFinalizerMethod() {
-        return optionalFinalizer.map(finalizer ->
-                method()
-                        .withTypeParameters(returnTypeConstructorArgument.getName())
-                        .withReturnType(returnTypeConstructorArgument.asType().using(finalizer.getFinalizedTypeConstructor()))
-                        .withName(finalizer.getName())
-                        .withParameter(returnTypeConstructorArgument.asType().using(finalizer.getToFinalizeTypeConstructor()), valueParameterName)
-        );
-    }
-
     private List<MethodGenerator> combineMethods() {
         List<MethodGenerator> combineMethods = new ArrayList<>();
 
@@ -153,7 +131,7 @@ public class CovariantGenerator extends Generator<CovariantGenerator> {
         return method()
                 .withTypeParameters(takeParameterTypeConstructorArguments(arity))
                 .withTypeParameters(returnTypeConstructorArgument.getName())
-                .withReturnType(returnTypeConstructorArgument.asType().using(accumulator.getAccumulatedTypeConstructor()))
+                .withReturnType(getAccumulatorReturnType())
                 .withName(accumulator.getName())
                 .withParameterTypes(takeParameterTypes(arity, accumulator.getPartiallyAccumulatedTypeConstructor(), accumulator.getInputTypeConstructor()))
                 .andParameterNames(takeInputParameterNames(arity))
@@ -186,10 +164,7 @@ public class CovariantGenerator extends Generator<CovariantGenerator> {
 
         return combineMethodWithArity(
                 arity,
-                optionalFinalizer
-                        .map(Finalizer::getName)
-                        .map(finalizerMethodName -> methodCall().withObjectPath(THIS).withMethodName(finalizerMethodName).withArguments(methodBody).generate())
-                        .orElse(methodBody)
+                finalizeIfHasFinalizer(THIS, methodBody)
         );
     }
 
@@ -213,7 +188,7 @@ public class CovariantGenerator extends Generator<CovariantGenerator> {
                                 .withExpression(
                                         methodCall()
                                                 .withObjectPath(combinatorParameterName)
-                                                .withMethodName(APPLY_METHOD)
+                                                .withMethodName(COMBINATOR_APPLY_METHOD_NAME)
                                                 .withArguments(
                                                         IntStream.range(0, arity - 1)
                                                                 .boxed()
@@ -228,13 +203,7 @@ public class CovariantGenerator extends Generator<CovariantGenerator> {
                 )
                 .generate();
 
-        return combineMethodWithArity(
-                arity,
-                optionalFinalizer
-                        .map(Finalizer::getName)
-                        .map(finalizerMethodName -> methodCall().withObjectPath(THIS).withMethodName(finalizerMethodName).withArguments(methodBody).generate())
-                        .orElse(methodBody)
-        );
+        return combineMethodWithArity(arity, finalizeIfHasFinalizer(THIS, methodBody));
     }
 
     private MethodGenerator combineMethodWithArity(int arity, String returnStatement) {
@@ -276,7 +245,7 @@ public class CovariantGenerator extends Generator<CovariantGenerator> {
                 .withTypeParameters(takeParameterTypeConstructorArguments(arity))
                 .withTypeParameters(returnTypeConstructorArgument.getName())
                 .withReturnType(lambdaReturnType(getReturnTypeConstructor(), getOtherParametersTypeConstructor(), getFirstParameterTypeConstructor(), arity))
-                .withName(liftMethodName)
+                .withName(liftMethodToGenerate)
                 .withParameter(lambdaParameterType(TypeConstructor.placeholder(), TypeConstructor.placeholder(), TypeConstructor.placeholder(), arity), combinatorParameterName)
                 .withReturnStatement(
                         lambda()
@@ -310,7 +279,7 @@ public class CovariantGenerator extends Generator<CovariantGenerator> {
                         .withObjectPath(selfParameterName)
                         .withMethodName(accumulator.getName())
                         .withArguments(
-                                optionalInitializer.map(initializer -> methodCall().withObjectPath(selfParameterName).withMethodName(initializer.getName()).withArguments(firstInputParameterName).generate()).orElse(firstInputParameterName),
+                                initializeIfHasInitializer(selfParameterName, firstInputParameterName),
                                 secondInputParameterName,
                                 methodCall()
                                         .withType(FAST_TUPLE)
@@ -356,13 +325,17 @@ public class CovariantGenerator extends Generator<CovariantGenerator> {
                 // we need to make sure that the class type parameters are available as additional method
                 // type parameters:
                 .withTypeParameters(classTypeParameters)
-                .withReturnType(Type.concrete(fullyQualifiedNameOfTupleWithArity(arity), takeParameterTypeConstructorArgumentsAsTypeArguments(arity)).using(getTupleMethodReturnTypeConstructor(arity)))
+                .withReturnType(getTupleMethodReturnType(arity))
                 .withName(TUPLE_METHOD_NAME)
                 .withParameter(getFullyQualifiedClassNameToGenerate().with(getClassTypeParametersAsTypeArguments()), selfParameterName)
                 .withParameterTypes(takeParameterTypes(arity))
                 .andParameterNames(takeInputParameterNames(arity))
                 .withParameter(INT, maxTupleSizeParameterName)
                 .withReturnStatement(methodBody);
+    }
+
+    private Type getTupleMethodReturnType(int arity) {
+        return Type.concrete(fullyQualifiedNameOfTupleWithArity(arity), takeParameterTypeConstructorArgumentsAsTypeArguments(arity)).using(getTupleMethodReturnTypeConstructor(arity));
     }
 
     private TypeConstructor getTupleMethodReturnTypeConstructor(int arity) {

@@ -5,7 +5,6 @@ import nl.wernerdegroot.applicatives.processor.generator.ContravariantGenerator;
 import nl.wernerdegroot.applicatives.processor.validation.Validator;
 
 import static nl.wernerdegroot.applicatives.processor.conflicts.Conflicts.*;
-import static nl.wernerdegroot.applicatives.processor.generator.CovariantGenerator.generator;
 
 public interface ContravariantProcessorTemplate<Annotation, ElementToProcess, MethodOrMethods> extends ProcessorTemplate<Annotation, ElementToProcess, MethodOrMethods> {
 
@@ -28,8 +27,8 @@ public interface ContravariantProcessorTemplate<Annotation, ElementToProcess, Me
                 .withToIntermediateParameterName(TO_INTERMEDIATE_PARAMETER_NAME)
                 .withExtractLeftParameterName(EXTRACT_LEFT_PARAMETER_NAME)
                 .withExtractRightParameterName(EXTRACT_RIGHT_PARAMETER_NAME)
-                .withCombineMethodName(combineMethodNameToGenerate)
-                .withLiftMethodName(liftMethodNameToGenerate)
+                .withCombineMethodToGenerate(combineMethodNameToGenerate)
+                .withLiftMethodToGenerate(liftMethodNameToGenerate)
                 .withMaxArity(maxArity)
                 .generate();
     }
