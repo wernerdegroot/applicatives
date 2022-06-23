@@ -1,43 +1,57 @@
 package nl.wernerdegroot.applicatives.processor;
 
 import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
-import nl.wernerdegroot.applicatives.runtime.Accumulator;
-import nl.wernerdegroot.applicatives.runtime.Covariant;
-import nl.wernerdegroot.applicatives.runtime.Finalizer;
-import nl.wernerdegroot.applicatives.runtime.Initializer;
+import nl.wernerdegroot.applicatives.runtime.*;
 
 import java.util.Objects;
 
 public class Classes {
 
     public static final String COVARIANT_CLASS_NAME = "nl.wernerdegroot.applicatives.runtime.Covariant";
-    public static final Class<?> COVARIANT_CLASS;
-    public static final FullyQualifiedName COVARIANT = FullyQualifiedName.of(Covariant.class.getCanonicalName());
+    public static final Class<Covariant> COVARIANT_CLASS = Covariant.class;
 
     static {
-        try {
-            COVARIANT_CLASS = Class.forName(COVARIANT_CLASS_NAME);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(String.format("Can't find annotation class %s", COVARIANT_CLASS_NAME), e);
+        if (!Objects.equals(COVARIANT_CLASS_NAME, COVARIANT_CLASS.getName())) {
+            throw new RuntimeException(String.format("Can't find annotation class %s", COVARIANT_CLASS_NAME));
         }
     }
 
     public static final String COVARIANT_BUILDER_CANONICAL_NAME = "nl.wernerdegroot.applicatives.runtime.Covariant.Builder";
     public static final String COVARIANT_BUILDER_CLASS_NAME = "nl.wernerdegroot.applicatives.runtime.Covariant$Builder";
-    public static final Class<?> COVARIANT_BUILDER_CLASS;
-
-    public static final FullyQualifiedName INITIALIZER = FullyQualifiedName.of(Initializer.class.getCanonicalName());
-    public static final FullyQualifiedName ACCUMULATOR = FullyQualifiedName.of(Accumulator.class.getCanonicalName());
-    public static final FullyQualifiedName FINALIZER = FullyQualifiedName.of(Finalizer.class.getCanonicalName());
+    public static final Class<Covariant.Builder> COVARIANT_BUILDER_CLASS = Covariant.Builder.class;
 
     static {
-        try {
-            COVARIANT_BUILDER_CLASS = Class.forName(COVARIANT_BUILDER_CLASS_NAME);
-            if (!Objects.equals(COVARIANT_BUILDER_CANONICAL_NAME, COVARIANT_BUILDER_CLASS.getCanonicalName())) {
-                throw new RuntimeException(String.format("Can't find annotation class %s", COVARIANT_BUILDER_CANONICAL_NAME));
-            }
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(String.format("Can't find annotation class %s", COVARIANT_BUILDER_CLASS_NAME), e);
+        if (!Objects.equals(COVARIANT_BUILDER_CLASS_NAME, COVARIANT_BUILDER_CLASS.getName())) {
+            throw new RuntimeException(String.format("Can't find annotation class %s", COVARIANT_BUILDER_CANONICAL_NAME));
+        }
+        if (!Objects.equals(COVARIANT_BUILDER_CANONICAL_NAME, COVARIANT_BUILDER_CLASS.getCanonicalName())) {
+            throw new RuntimeException(String.format("Can't find annotation class %s", COVARIANT_BUILDER_CANONICAL_NAME));
         }
     }
+
+    public static final String CONTRAVARIANT_CLASS_NAME = "nl.wernerdegroot.applicatives.runtime.Contravariant";
+    public static final Class<Contravariant> CONTRAVARIANT_CLASS = Contravariant.class;
+
+    static {
+        if (!Objects.equals(CONTRAVARIANT_CLASS_NAME, CONTRAVARIANT_CLASS.getName())) {
+            throw new RuntimeException(String.format("Can't find annotation class %s", CONTRAVARIANT_CLASS_NAME));
+        }
+    }
+
+    public static final String CONTRAVARIANT_BUILDER_CANONICAL_NAME = "nl.wernerdegroot.applicatives.runtime.Contravariant.Builder";
+    public static final String CONTRAVARIANT_BUILDER_CLASS_NAME = "nl.wernerdegroot.applicatives.runtime.Contravariant$Builder";
+    public static final Class<Contravariant.Builder> CONTRAVARIANT_BUILDER_CLASS = Contravariant.Builder.class;
+
+    static {
+        if (!Objects.equals(CONTRAVARIANT_BUILDER_CLASS_NAME, CONTRAVARIANT_BUILDER_CLASS.getName())) {
+            throw new RuntimeException(String.format("Can't find annotation class %s", CONTRAVARIANT_BUILDER_CLASS_NAME));
+        }
+        if (!Objects.equals(CONTRAVARIANT_BUILDER_CANONICAL_NAME, CONTRAVARIANT_BUILDER_CLASS.getCanonicalName())) {
+            throw new RuntimeException(String.format("Can't find annotation class %s", CONTRAVARIANT_BUILDER_CANONICAL_NAME));
+        }
+    }
+
+    public static final FullyQualifiedName INITIALIZER_FULLY_QUALIFIED_NAME = FullyQualifiedName.of(Initializer.class.getCanonicalName());
+    public static final FullyQualifiedName ACCUMULATOR_FULLY_QUALIFIED_NAME = FullyQualifiedName.of(Accumulator.class.getCanonicalName());
+    public static final FullyQualifiedName FINALIZER_FULLY_QUALIFIED_NAME = FullyQualifiedName.of(Finalizer.class.getCanonicalName());
 }

@@ -31,6 +31,7 @@ public interface Type {
     ConcreteType BOOLEAN = Type.concrete(FullyQualifiedName.of("java.lang.Boolean"));
     ConcreteType NUMBER = Type.concrete(FullyQualifiedName.of("java.lang.Number"));
     ConcreteType STRING = Type.concrete(FullyQualifiedName.of("java.lang.String"));
+    ConcreteType STRING_BUILDER = Type.concrete(FullyQualifiedName.of("java.lang.StringBuilder"));
     ConcreteType CHAR_SEQUENCE = Type.concrete(FullyQualifiedName.of("java.lang.CharSequence"));
     ConcreteType BIG_DECIMAL = Type.concrete(FullyQualifiedName.of("java.math.BigDecimal"));
     ConcreteType OBJECT = Type.concrete(FullyQualifiedName.of("java.lang.Object"));
@@ -40,6 +41,7 @@ public interface Type {
     ConcreteType THREAD = Type.concrete(FullyQualifiedName.of("java.lang.Thread"));
     ConcreteType RUNNABLE = Type.concrete(FullyQualifiedName.of("java.lang.Runnable"));
     TypeBuilder OPTIONAL = new TypeBuilder(FullyQualifiedName.of("java.util.Optional"));
+    TypeBuilder COMPARATOR = new TypeBuilder(FullyQualifiedName.of("java.util.Comparator"));
     TypeBuilder COLLECTION = new TypeBuilder(FullyQualifiedName.of("java.util.Collection"));
     TypeBuilder LIST = new TypeBuilder(FullyQualifiedName.of("java.util.List"));
     TypeBuilder ARRAY_LIST = new TypeBuilder(FullyQualifiedName.of("java.util.ArrayList"));
@@ -49,6 +51,7 @@ public interface Type {
     TypeBuilder BI_FUNCTION = new TypeBuilder(FullyQualifiedName.of("java.util.function.BiFunction"));
     TypeBuilder COMPLETABLE_FUTURE = new TypeBuilder(FullyQualifiedName.of("java.util.concurrent.CompletableFuture"));
     TypeBuilder COMPARABLE = new TypeBuilder(FullyQualifiedName.of("java.lang.Comparable"));
+    TypeBuilder TUPLE2 = new TypeBuilder(FullyQualifiedName.of("nl.wernerdegroot.applicatives.runtime.Tuple2"));
 
     /**
      * Method to provide some form of pattern matching (using the <a href="https://en.wikipedia.org/wiki/Visitor_pattern">visitor pattern</a>).

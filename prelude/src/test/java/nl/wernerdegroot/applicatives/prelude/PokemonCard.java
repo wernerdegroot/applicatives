@@ -1,9 +1,12 @@
 package nl.wernerdegroot.applicatives.prelude;
 
+import nl.wernerdegroot.applicatives.runtime.Function4;
+import nl.wernerdegroot.applicatives.runtime.decompositions.Decomposable4;
+
 import java.util.List;
 import java.util.Objects;
 
-public class PokemonCard {
+public class PokemonCard implements Decomposable4<String, Integer, EnergyType, List<Move>> {
 
     private final String name;
     private final int hp;
@@ -19,6 +22,11 @@ public class PokemonCard {
 
     public static PokemonCard of(String name, int hp, EnergyType energyType, List<Move> moves) {
         return new PokemonCard(name, hp, energyType, moves);
+    }
+
+    @Override
+    public <T> T decomposeTo(Function4<? super String, ? super Integer, ? super EnergyType, ? super List<Move>, ? extends T> fn) {
+        return fn.apply(name, hp, energyType, moves);
     }
 
     public String getName() {

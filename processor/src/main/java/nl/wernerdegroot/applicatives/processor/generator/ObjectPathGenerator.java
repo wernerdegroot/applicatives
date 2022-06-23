@@ -1,9 +1,13 @@
 package nl.wernerdegroot.applicatives.processor.generator;
 
+import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
 import static nl.wernerdegroot.applicatives.processor.generator.Constants.PERIOD;
 
 public class ObjectPathGenerator {
@@ -25,6 +29,10 @@ public class ObjectPathGenerator {
 
         default This withObjectPath(String... components) {
             return withObjectPath(asList(components));
+        }
+
+        default This withObjectPath(FullyQualifiedName... components) {
+            return withObjectPath(Stream.of(components).map(FullyQualifiedName::raw).collect(toList()));
         }
     }
 }

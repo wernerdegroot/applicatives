@@ -2,6 +2,7 @@ package nl.wernerdegroot.applicatives.processor.generator;
 
 import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
 import nl.wernerdegroot.applicatives.processor.domain.type.ConcreteType;
+import nl.wernerdegroot.applicatives.processor.domain.type.GenericType;
 import nl.wernerdegroot.applicatives.processor.generator.ObjectPathGenerator.HasObjectPathGenerator;
 
 import java.util.Optional;
@@ -35,6 +36,10 @@ public class ObjectPathOrTypeGenerator {
 
         default This withType(ConcreteType type) {
             return withType(type.getFullyQualifiedName());
+        }
+
+        default This withType(GenericType type) {
+            return withType(FullyQualifiedName.of(type.getName().raw()));
         }
     }
 }

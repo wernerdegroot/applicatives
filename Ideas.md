@@ -1,4 +1,15 @@
-* Contravariant (selective) functors 
+* Add `combinatorMethodName` to covariant things too (now included in annotation but not processed by generator)
+* Explicit type arguments to method call are not `TypeArgument` (for a data type). They can't specify variance. Used in generators.
+* Fix
+  ```
+  default This withType(GenericType type) {
+  return withType(FullyQualifiedName.of(type.getName().raw()));
+  }
+  ```
+* Docs for contravariant: https://www.youtube.com/watch?v=IJ_bVVsQhvc (counter-intuitive = contra-intuitive)
+* Support for static methods
+* Use processor (perhaps older version, to prevent circular dependencies) to generate `Validated` methods.
+* Test deconstructor (and other things too) when using a constructor or deconstructor of a generic type like Tuple3.
 * Implement a `@Covariant.Instance` for instance-methods (maybe only useful for monads?)
 * Remove Google testing library because it's all pretty easy to do manually (check TypeConstructor tests)
 * Static -> class, abstract instance method -> abstract class
@@ -24,3 +35,5 @@
       .bind(ctx -> somethingElse)
       .returning(ctx -> new Person(ctx.getFirstName(), ctx.getLastName());
     ```
+* Benji Webers decomposition function `<T> T (C source, BiFunction<A, B, T> extractor)` instead of the current Decomposition
+* Alternative, Decidable. Also see https://www.youtube.com/watch?v=IJ_bVVsQhvc and https://en.wikibooks.org/wiki/Haskell/Alternative_and_MonadPlus

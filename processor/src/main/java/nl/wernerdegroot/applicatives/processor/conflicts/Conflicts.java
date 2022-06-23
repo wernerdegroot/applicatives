@@ -45,13 +45,25 @@ public final class Conflicts {
 
     public static final TypeParameterName RETURN_TYPE_CONSTRUCTOR_ARGUMENT_NAME = TypeParameterName.of("R");
 
+    public static final TypeParameterName INTERMEDIATE_TYPE_CONSTRUCTOR_ARGUMENT_NAME = TypeParameterName.of("Intermediate");
+
     public static final TypeParameter RETURN_TYPE_CONSTRUCTOR_ARGUMENT = TypeParameter.of(RETURN_TYPE_CONSTRUCTOR_ARGUMENT_NAME);
 
+    public static final TypeParameter INTERMEDIATE_TYPE_CONSTRUCTOR_ARGUMENT = TypeParameter.of(INTERMEDIATE_TYPE_CONSTRUCTOR_ARGUMENT_NAME);
+
     public static final String VALUE_PARAMETER_NAME = "value";
+
+    public static final String DECOMPOSITION_PARAMETER_NAME = "decomposition";
 
     public static final String SELF_PARAMETER_NAME = "self";
 
     public static final String COMBINATOR_PARAMETER_NAME = "fn";
+
+    public static final String TO_INTERMEDIATE_PARAMETER_NAME = "toIntermediate";
+
+    public static final String EXTRACT_LEFT_PARAMETER_NAME = "extractLeft";
+
+    public static final String EXTRACT_RIGHT_PARAMETER_NAME = "extractRight";
 
     public static final String MAX_TUPLE_SIZE_PARAMETER_NAME = "maxSize";
 

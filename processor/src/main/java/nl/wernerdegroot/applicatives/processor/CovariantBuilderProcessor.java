@@ -1,16 +1,12 @@
 package nl.wernerdegroot.applicatives.processor;
 
 import com.google.auto.service.AutoService;
-import nl.wernerdegroot.applicatives.processor.converters.ContainingClassConverter;
-import nl.wernerdegroot.applicatives.processor.converters.MethodConverter;
-import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
 import nl.wernerdegroot.applicatives.processor.domain.Method;
 import nl.wernerdegroot.applicatives.processor.domain.containing.ContainingClass;
-import nl.wernerdegroot.applicatives.processor.generator.ContainingClassGenerator;
 import nl.wernerdegroot.applicatives.processor.logging.Log;
-import nl.wernerdegroot.applicatives.processor.validation.ConfigValidator;
-import nl.wernerdegroot.applicatives.processor.validation.TemplateClassWithMethodsValidator;
+import nl.wernerdegroot.applicatives.processor.validation.CovariantParametersAndTypeParametersValidator;
 import nl.wernerdegroot.applicatives.processor.validation.Validated;
+import nl.wernerdegroot.applicatives.processor.validation.Validator;
 import nl.wernerdegroot.applicatives.runtime.Covariant;
 
 import javax.annotation.processing.Processor;
@@ -18,117 +14,45 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedOptions;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
-import static javax.lang.model.element.ElementKind.METHOD;
-import static nl.wernerdegroot.applicatives.processor.Classes.*;
+import static nl.wernerdegroot.applicatives.processor.Classes.COVARIANT_BUILDER_CANONICAL_NAME;
+import static nl.wernerdegroot.applicatives.processor.Classes.COVARIANT_BUILDER_CLASS;
 
 @SupportedOptions({Options.VERBOSE_ARGUMENT})
 @SupportedAnnotationTypes(COVARIANT_BUILDER_CANONICAL_NAME)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @AutoService(Processor.class)
-public class CovariantBuilderProcessor extends AbstractCovariantProcessor {
-
-    public static final Set<FullyQualifiedName> SUPPORTED_ANNOTATIONS = Stream.of(
-            INITIALIZER,
-            ACCUMULATOR,
-            FINALIZER
-    ).collect(toSet());
+public class CovariantBuilderProcessor extends AbstractProcessor<Covariant.Builder, TypeElement, List<Method>> implements CovariantProcessorTemplate<Covariant.Builder, TypeElement, List<Method>>, BuilderProcessorTemplate<Covariant.Builder> {
 
     @Override
-    public Class<?> getAnnotationType() {
+    public Class<Covariant.Builder> getAnnotationType() {
         return COVARIANT_BUILDER_CLASS;
     }
 
     @Override
-    public void processElement(Element element) {
-        if (element.getKind() != ElementKind.CLASS) {
-            throw new IllegalArgumentException("Not a class");
-        }
-        TypeElement typeElement = (TypeElement) element;
-
-        Covariant.Builder covariantBuilderAnnotation = element.getAnnotation(Covariant.Builder.class);
-
-        noteAnnotationFound(typeElement, covariantBuilderAnnotation);
-
-        ContainingClass containingClass;
-        List<Method> methods;
-        try {
-            containingClass = ContainingClassConverter.toDomain(typeElement);
-            methods = typeElement
-                    .getEnclosedElements()
-                    .stream()
-                    .filter(enclosedElement -> enclosedElement.getKind() == METHOD)
-                    .map(MethodConverter::toDomain)
-                    .filter(method -> method.hasAnnotationOf(SUPPORTED_ANNOTATIONS))
-                    .collect(toList());
-
-            noteConversionToDomainSuccess();
-        } catch (Throwable e) {
-            // If we have issues transforming to `nl.wernerdegroot.applicatives.processor.domain`
-            // (which makes it a lot easier to log where the annotation was found) make
-            // sure we log the method's raw signature so the client can troubleshoot.
-            Log.of("Failure transforming from objects from 'javax.lang.model' to objects from 'nl.wernerdegroot.applicatives.processor.domain' for class '%s'", typeElement.getQualifiedName()).append(asError());
-            throw e;
-        }
-
-        noteClassFound(containingClass, methods);
-
-        String classNameToGenerate = getClassNameToGenerate(covariantBuilderAnnotation.className(), containingClass);
-        String liftMethodName = covariantBuilderAnnotation.liftMethodName();
-        int maxArity = covariantBuilderAnnotation.maxArity();
-
-        Validated<String, Void> validatedConfig = ConfigValidator.validate(classNameToGenerate, liftMethodName, maxArity);
-
-        if (!validatedConfig.isValid()) {
-            errorConfigNotValid(validatedConfig);
-            return;
-        }
-
-        Validated<Log, TemplateClassWithMethodsValidator.Result> validatedTemplateClassWithMethods = TemplateClassWithMethodsValidator.validate(containingClass, methods);
-        if (!validatedTemplateClassWithMethods.isValid()) {
-            errorValidationFailed(containingClass, validatedTemplateClassWithMethods);
-            return;
-        }
-
-        TemplateClassWithMethodsValidator.Result templateClassWithMethods = validatedTemplateClassWithMethods.getValue();
-
-        noteValidationSuccess(templateClassWithMethods);
-
-        resolveConflictsAndGenerate(
-                classNameToGenerate,
-                liftMethodName,
-                maxArity,
-                containingClass.getPackageName(),
-                templateClassWithMethods
-        );
+    public String getClassNameToGenerate(Covariant.Builder builder) {
+        return builder.className();
     }
 
-    private void noteClassFound(ContainingClass containingClass, List<Method> methods) {
-        Log.of("Found class '%s'", ContainingClassGenerator.generateFrom(containingClass)).append(asNote());
-        methods.forEach(method -> {
-            noteMethodFound(containingClass, method);
-        });
+    @Override
+    public String getCombineMethodNameToGenerate(Covariant.Builder builder) {
+        return builder.combineMethodName();
     }
 
-    private void errorValidationFailed(ContainingClass containingClass, Validated<Log, TemplateClassWithMethodsValidator.Result> validatedTemplateClassWithMethods) {
-        Log.of("Class '%s' does not meet all criteria for code generation", containingClass.getFullyQualifiedName().raw())
-                .withLogs(validatedTemplateClassWithMethods.getErrorMessages())
-                .append(asError());
+    @Override
+    public String getLiftMethodNameToGenerate(Covariant.Builder builder) {
+        return builder.liftMethodName();
     }
 
-    private void noteAnnotationFound(TypeElement typeElement, Covariant.Builder covariantBuilderAnnotation) {
-        Log.of("Found annotation of type '%s' on class '%s'", COVARIANT_BUILDER_CANONICAL_NAME, typeElement.getQualifiedName())
-                .withDetail("Class name to generate", covariantBuilderAnnotation.className())
-                .withDetail("Method name for `lift`", covariantBuilderAnnotation.liftMethodName())
-                .withDetail("Maximum arity", covariantBuilderAnnotation.maxArity(), i -> Integer.toString(i))
-                .append(asNote());
+    @Override
+    public int getMaxArity(Covariant.Builder builder) {
+        return builder.maxArity();
+    }
+
+    @Override
+    public Validated<Log, Validator.Result> validate(ContainingClass containingClass, List<Method> methods) {
+        return Validator.validate(containingClass, methods, new CovariantParametersAndTypeParametersValidator());
     }
 }

@@ -44,4 +44,9 @@ public class Ordinals {
         String ordinal = ORDINALS.get(index);
         return "get" + ordinal.substring(0, 1).toUpperCase() + ordinal.substring(1);
     }
+
+    public static String withouterForIndex(int index) {
+        String ordinal = ORDINALS.get(index);
+        return "without" + ordinal.substring(0, 1).toUpperCase() + ordinal.substring(1);
+    }
 }

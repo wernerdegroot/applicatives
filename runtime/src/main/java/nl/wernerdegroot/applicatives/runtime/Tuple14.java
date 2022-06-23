@@ -30,6 +30,8 @@ public interface Tuple14<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Ei
 
     Fourteenth getFourteenth();
 
+    Tuple13<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth> withoutFourteenth();
+
     <Fifteenth> Tuple15<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth> withFifteenth(Fifteenth fifteenth);
 
     default <R> R apply(Function14<? super First, ? super Second, ? super Third, ? super Fourth, ? super Fifth, ? super Sixth, ? super Seventh, ? super Eighth, ? super Ninth, ? super Tenth, ? super Eleventh, ? super Twelfth, ? super Thirteenth, ? super Fourteenth, ? extends R> fn) {

@@ -16,6 +16,8 @@ public interface Tuple7<First, Second, Third, Fourth, Fifth, Sixth, Seventh> {
 
     Seventh getSeventh();
 
+    Tuple6<First, Second, Third, Fourth, Fifth, Sixth> withoutSeventh();
+
     <Eighth> Tuple8<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth> withEighth(Eighth eighth);
 
     default <R> R apply(Function7<? super First, ? super Second, ? super Third, ? super Fourth, ? super Fifth, ? super Sixth, ? super Seventh, ? extends R> fn) {

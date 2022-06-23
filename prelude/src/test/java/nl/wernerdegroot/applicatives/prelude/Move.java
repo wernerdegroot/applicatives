@@ -1,9 +1,13 @@
 package nl.wernerdegroot.applicatives.prelude;
 
+import nl.wernerdegroot.applicatives.runtime.Function25;
+import nl.wernerdegroot.applicatives.runtime.Function3;
+import nl.wernerdegroot.applicatives.runtime.decompositions.Decomposable3;
+
 import java.util.List;
 import java.util.Objects;
 
-public class Move {
+public class Move implements Decomposable3<List<EnergyType>, String, Integer> {
     private final List<EnergyType> cost;
     private final String name;
     private final int damage;
@@ -16,6 +20,11 @@ public class Move {
 
     public static Move of(List<EnergyType> cost, String name, int damage) {
         return new Move(cost, name, damage);
+    }
+
+    @Override
+    public <T> T decomposeTo(Function3<? super List<EnergyType>, ? super String, ? super Integer, ? extends T> fn) {
+        return fn.apply(cost, name, damage);
     }
 
     public List<EnergyType> getCost() {

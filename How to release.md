@@ -24,6 +24,8 @@ The root `pom.xml` contains a tag which includes the tag name (version):
     </licenses>
 ```
 
+All the way to the bottom, there is a similar link in `README.md`.
+
 ## Update the version in `README.md`
 
 The README mentions the version number several times.

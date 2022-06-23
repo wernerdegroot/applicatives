@@ -62,13 +62,17 @@ public class FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eigh
     // and cheap copying.
     private final Object[] elements;
 
-    FastTuple(Object[] elements) {
+    public FastTuple(Object[] elements) {
         this.elementsInitializedBitmap = (1 << (elements.length + 1)) - 1;
         this.maxSize = elements.length;
         this.elements = elements;
     }
 
-    private FastTuple(int elementsInitializedBitmap, int maxSize) {
+    public static <First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth> FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth> of(Object... elements) {
+        return new FastTuple<>(elements);
+    }
+
+    public FastTuple(int elementsInitializedBitmap, int maxSize) {
         this.elementsInitializedBitmap = elementsInitializedBitmap;
         this.maxSize = maxSize;
         this.elements = new Object[maxSize];
@@ -107,6 +111,11 @@ public class FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eigh
         return (FastTuple<First, Second, T, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth>) mutateOrCopy(2, value);
     }
 
+    @Override
+    public Tuple2<First, Second> withoutThird() {
+        return this;
+    }
+
     public Fourth getFourth() {
         return (Fourth) elements[3];
     }
@@ -114,6 +123,11 @@ public class FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eigh
     @Override
     public <T> FastTuple<First, Second, Third, T, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth> withFourth(T value) {
         return (FastTuple<First, Second, Third, T, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth>) mutateOrCopy(3, value);
+    }
+
+    @Override
+    public Tuple3<First, Second, Third> withoutFourth() {
+        return this;
     }
 
     public Fifth getFifth() {
@@ -125,6 +139,11 @@ public class FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eigh
         return (FastTuple<First, Second, Third, Fourth, T, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth>) mutateOrCopy(4, value);
     }
 
+    @Override
+    public Tuple4<First, Second, Third, Fourth> withoutFifth() {
+        return this;
+    }
+
     public Sixth getSixth() {
         return (Sixth) elements[5];
     }
@@ -132,6 +151,11 @@ public class FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eigh
     @Override
     public <T> FastTuple<First, Second, Third, Fourth, Fifth, T, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth> withSixth(T value) {
         return (FastTuple<First, Second, Third, Fourth, Fifth, T, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth>) mutateOrCopy(5, value);
+    }
+
+    @Override
+    public Tuple5<First, Second, Third, Fourth, Fifth> withoutSixth() {
+        return this;
     }
 
     public Seventh getSeventh() {
@@ -143,6 +167,11 @@ public class FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eigh
         return (FastTuple<First, Second, Third, Fourth, Fifth, Sixth, T, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth>) mutateOrCopy(6, value);
     }
 
+    @Override
+    public Tuple6<First, Second, Third, Fourth, Fifth, Sixth> withoutSeventh() {
+        return this;
+    }
+
     public Eighth getEighth() {
         return (Eighth) elements[7];
     }
@@ -150,6 +179,11 @@ public class FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eigh
     @Override
     public <T> FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, T, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth> withEighth(T value) {
         return (FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, T, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth>) mutateOrCopy(7, value);
+    }
+
+    @Override
+    public Tuple7<First, Second, Third, Fourth, Fifth, Sixth, Seventh> withoutEighth() {
+        return this;
     }
 
     public Ninth getNinth() {
@@ -161,6 +195,11 @@ public class FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eigh
         return (FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, T, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth>) mutateOrCopy(8, value);
     }
 
+    @Override
+    public Tuple8<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth> withoutNinth() {
+        return this;
+    }
+
     public Tenth getTenth() {
         return (Tenth) elements[9];
     }
@@ -168,6 +207,11 @@ public class FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eigh
     @Override
     public <T> FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, T, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth> withTenth(T value) {
         return (FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, T, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth>) mutateOrCopy(9, value);
+    }
+
+    @Override
+    public Tuple9<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth> withoutTenth() {
+        return this;
     }
 
     public Eleventh getEleventh() {
@@ -179,6 +223,11 @@ public class FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eigh
         return (FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, T, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth>) mutateOrCopy(10, value);
     }
 
+    @Override
+    public Tuple10<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth> withoutEleventh() {
+        return this;
+    }
+
     public Twelfth getTwelfth() {
         return (Twelfth) elements[11];
     }
@@ -186,6 +235,11 @@ public class FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eigh
     @Override
     public <T> FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, T, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth> withTwelfth(T value) {
         return (FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, T, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth>) mutateOrCopy(11, value);
+    }
+
+    @Override
+    public Tuple11<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh> withoutTwelfth() {
+        return this;
     }
 
     public Thirteenth getThirteenth() {
@@ -197,6 +251,11 @@ public class FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eigh
         return (FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, T, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth>) mutateOrCopy(12, value);
     }
 
+    @Override
+    public Tuple12<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth> withoutThirteenth() {
+        return this;
+    }
+
     public Fourteenth getFourteenth() {
         return (Fourteenth) elements[13];
     }
@@ -204,6 +263,11 @@ public class FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eigh
     @Override
     public <T> FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, T, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth> withFourteenth(T value) {
         return (FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, T, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth>) mutateOrCopy(13, value);
+    }
+
+    @Override
+    public Tuple13<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth> withoutFourteenth() {
+        return this;
     }
 
     public Fifteenth getFifteenth() {
@@ -215,6 +279,11 @@ public class FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eigh
         return (FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, T, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth>) mutateOrCopy(14, value);
     }
 
+    @Override
+    public Tuple14<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth> withoutFifteenth() {
+        return this;
+    }
+
     public Sixteenth getSixteenth() {
         return (Sixteenth) elements[15];
     }
@@ -222,6 +291,11 @@ public class FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eigh
     @Override
     public <T> FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, T, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth> withSixteenth(T value) {
         return (FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, T, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth>) mutateOrCopy(15, value);
+    }
+
+    @Override
+    public Tuple15<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth> withoutSixteenth() {
+        return this;
     }
 
     public Seventeenth getSeventeenth() {
@@ -233,6 +307,11 @@ public class FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eigh
         return (FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, T, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth>) mutateOrCopy(16, value);
     }
 
+    @Override
+    public Tuple16<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth> withoutSeventeenth() {
+        return this;
+    }
+
     public Eighteenth getEighteenth() {
         return (Eighteenth) elements[17];
     }
@@ -240,6 +319,11 @@ public class FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eigh
     @Override
     public <T> FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, T, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth> withEighteenth(T value) {
         return (FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, T, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth>) mutateOrCopy(17, value);
+    }
+
+    @Override
+    public Tuple17<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth> withoutEighteenth() {
+        return this;
     }
 
     public Nineteenth getNineteenth() {
@@ -251,6 +335,11 @@ public class FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eigh
         return (FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, T, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth>) mutateOrCopy(18, value);
     }
 
+    @Override
+    public Tuple18<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth> withoutNineteenth() {
+        return this;
+    }
+
     public Twentieth getTwentieth() {
         return (Twentieth) elements[19];
     }
@@ -258,6 +347,11 @@ public class FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eigh
     @Override
     public <T> FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, T, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth> withTwentieth(T value) {
         return (FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, T, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth>) mutateOrCopy(19, value);
+    }
+
+    @Override
+    public Tuple19<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth> withoutTwentieth() {
+        return this;
     }
 
     public TwentyFirst getTwentyFirst() {
@@ -269,6 +363,11 @@ public class FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eigh
         return (FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, T, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth>) mutateOrCopy(20, value);
     }
 
+    @Override
+    public Tuple20<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth> withoutTwentyFirst() {
+        return this;
+    }
+
     public TwentySecond getTwentySecond() {
         return (TwentySecond) elements[21];
     }
@@ -276,6 +375,11 @@ public class FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eigh
     @Override
     public <T> FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, T, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth> withTwentySecond(T value) {
         return (FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, T, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth>) mutateOrCopy(21, value);
+    }
+
+    @Override
+    public Tuple21<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst> withoutTwentySecond() {
+        return this;
     }
 
     public TwentyThird getTwentyThird() {
@@ -287,6 +391,11 @@ public class FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eigh
         return (FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, T, TwentyFourth, TwentyFifth, TwentySixth>) mutateOrCopy(22, value);
     }
 
+    @Override
+    public Tuple22<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond> withoutTwentyThird() {
+        return this;
+    }
+
     public TwentyFourth getTwentyFourth() {
         return (TwentyFourth) elements[23];
     }
@@ -294,6 +403,11 @@ public class FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eigh
     @Override
     public <T> FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, T, TwentyFifth, TwentySixth> withTwentyFourth(T value) {
         return (FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, T, TwentyFifth, TwentySixth>) mutateOrCopy(23, value);
+    }
+
+    @Override
+    public Tuple23<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird> withoutTwentyFourth() {
+        return this;
     }
 
     public TwentyFifth getTwentyFifth() {
@@ -305,6 +419,11 @@ public class FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eigh
         return (FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, T, TwentySixth>) mutateOrCopy(24, value);
     }
 
+    @Override
+    public Tuple24<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth> withoutTwentyFifth() {
+        return this;
+    }
+
     public TwentySixth getTwentySixth() {
         return (TwentySixth) elements[25];
     }
@@ -312,6 +431,11 @@ public class FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eigh
     @Override
     public <T> FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, T> withTwentySixth(T value) {
         return (FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, T>) mutateOrCopy(25, value);
+    }
+
+    @Override
+    public Tuple25<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth> withoutTwentySixth() {
+        return this;
     }
 
     private FastTuple<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth, Fourteenth, Fifteenth, Sixteenth, Seventeenth, Eighteenth, Nineteenth, Twentieth, TwentyFirst, TwentySecond, TwentyThird, TwentyFourth, TwentyFifth, TwentySixth> mutateOrCopy(int index, Object value) {
