@@ -12,7 +12,10 @@ Java code generation for applicative functors, selective functors and more.
     * [Variance](#variance)
     * [Lift](#Lift)
     * [Stacking](#stacking)
+    * [Contravariant](#contravariant)
+    * [Decomposition](#decomposition)
     * [Contributing](#contributing)
+    * [More contravariant data type](#more-contravariant-data-types)
     * [License](#license)
 
 ## Getting started
@@ -225,9 +228,6 @@ Instead of having to write all this boilerplate code, wouldn't it be nice if the
 All that it requires of you is to provide a way to combine two `CompletableFuture`s. We write:
 
 ```java
-import java.util.concurrent.CompletableFuture;
-import java.util.function.BiFunction;
-
 public class CompletableFutures implements CompletableFuturesOverloads {
 
     @Override
@@ -411,7 +411,7 @@ public class CanBeAnything<C1, C2, ..., CN> implements GeneratedClass<C1, C2, ..
 * `java.util.Stream`
 * `java.util.stream.Collector`
 
-There are many other data structures like this, such as `Mono`/`Flux` from [Reactor](https://projectreactor.io/), [parser combinators](https://en.wikipedia.org/wiki/Parser_combinator), validators, predicates, etc.
+There are many other data structures like this, such as `Mono`/`Flux` from [Reactor](https://projectreactor.io/), [parser combinators](https://en.wikipedia.org/wiki/Parser_combinator), etc.
 
 Moreover, any "stack" of these data structures (a `List` of `Optional`s, or a `Function` that returns a `Stream` of `CompletableFuture`s) can automatically be combined this way too! The sections [Lift](#lift) and [Stacking](#stacking) describe how stacking of applicatives works.
 
@@ -518,6 +518,187 @@ In this example, we are lifting `Person::new` twice before we apply:
 ```
 
 If we wanted to, we could even lift the result once more. You can keep stacking applicatives!
+
+## Contravariant
+
+After using `@Covariant` a couple of times, you are likely wondering if there is a `@Contravariant` you could use as well. It turns out there is.
+
+A note of caution is in order. Although it is very useful, composing contravariant data types is a bit weird. The rules for such data types are a bit counter-intuitive -- or should I say "contra-intuitive"? -- as the following example shows.
+
+Let's start by composing two `Predicate`s by hand. If we have a `Predicate` for a `Person`'s first name and another `Predicate` for a `Person`'s last name, we can combine those into a `Predicate` for a `Person`:
+
+```java
+Predicate<String> isJack = Predicate.isEqual("Jack");
+Predicate<String> isBauer = Predicate.isEqual("Bauer");
+
+Predicate<Person> isJackBauer = person -> {
+  return isJack.test(person.getFirstName()) && isBauer.test(person.getLastName());
+};
+```
+
+When combining two covariant data types, like combining a `CompletableFuture<String>` and another `CompletableFuture<String>` into a `CompletableFuture<Person>`, we had to provide a way to combine a first name (type `String`) and last name (also type `String`) into a `Person`. We used a `Person`'s constructor for that.
+
+When combining two contravariant data types, like combining a `Predicate<String>` and another `Predicate<String>` into a `Predicate<Person>`, we had to provide a way to split a `Person` into a first name (type `String`) and a last name (also type `String`) into a `Person`. This is exactly the opposite of what we provide a covariant data types! 
+
+```
+                   == Covariance ==                                            == Contravariance ==                  
+                                                                                                                     
+                                                                                                                     
+┌──────────────────────┐       ┌──────────────────────┐                       ┌──────────────────────┐               
+│ First name (String)  │       │  Last name (String)  │                       │        Person        │               
+└──────────────────────┘       └──────────────────────┘                       └──────────────────────┘               
+            │                              │                                              │                          
+            └───────────────┬──────────────┘                              ┌───────────────┴──────────────┐           
+                            ▼                                             ▼                              ▼           
+                ┌──────────────────────┐                      ┌──────────────────────┐       ┌──────────────────────┐
+                │        Person        │                      │ First name (String)  │       │  Last name (String)  │
+                └──────────────────────┘                      └──────────────────────┘       └──────────────────────┘
+```
+
+This library can generate a whole bunch of overloads to combine two or more `Predicate`s if we add the following class to our project:
+
+```java
+public class Predicates implements PredicatesOverloads {
+    
+  private static final Predicates INSTANCE = new Predicates();
+  
+  public static Predicates instance() {
+      return predicates;
+  }
+
+  @Override
+  @Contravariant
+  public <A, B, Intermediate, C> Predicate<C> combine(
+          Predicate<A> left,
+          Predicate<B> right,
+          Function<? super C, ? super Intermediate> toIntermediate,
+          Function<? super Intermediate, ? extends A> extractLeft,
+          Function<? super Intermediate, ? extends B> extractRight) {
+
+      return (C toCheck) -> {
+          Intermediate intermediate = toIntermediate.apply(toCheck);
+          return left.test(extractLeft.apply(intermediate)) && right.test(extractRight.apply(intermediate));
+      };
+  }
+}
+```
+
+The signature of `combine` is a bit more complicated than in the covariant case, but if you take a minute to study this example I'm sure you can figure it out. The method `combine` will accept a `Predicate<A>` and a `Predicate<B>`. It is also provided with a way to transform a value of type `C` to some intermediate data structure of type `Intermediate`, and a way to extract both an `A` and a `B` from such an `Intermediate`. The following diagram illustrates the role of each of these functions. With these five ingredients, it's a piece of cake to return a `Predicate<C>`.
+
+```
+                    == Contravariance ==                    
+                                                            
+                   ┌─────────────────────┐                  
+                   │          C          │                  
+                   └─────────────────────┘                  
+                              │                             
+                              │  toIntermediate             
+                              ▼                             
+                   ┌─────────────────────┐                  
+                   │    Intermediate     │                  
+                   └─────────────────────┘                  
+                              │                             
+ extractRight  ┌──────────────┴──────────────┐  extractLeft 
+               │                             │              
+               ▼                             ▼              
+    ┌─────────────────────┐       ┌─────────────────────┐   
+    │          A          │       │          B          │   
+    └─────────────────────┘       └─────────────────────┘   
+```
+
+Although implementing such a method is a bit hairy, using the generated overloads is pretty straightforward:
+
+```java
+// Verify name:
+Predicate<String> isValidName = ...
+        
+// Check if sufficiently powerful:
+Predicate<Integer> isValidHp = ...
+        
+// Ensure that Pokemon is of the right type:
+Predicate<EnergyType> isValidEnergyType = ...
+        
+// Validate moves:
+Predicate<List<Move>> areValidMoves = ...
+
+// Combine:
+Predicate<PokemonCard> isValidPokemon = 
+        Predicates.instance().combine(
+                isValidName,
+                isValidHp,
+                isValidEnergyType,
+                areValidMoves
+        );
+```
+
+Wait a minute! How does `combine` know how to break apart a `PokemonCard`?! That will be discussed in the next section.
+
+## Decomposition
+
+As noted before, we need to decompose an object into its constituent parts. For a `Person`, that would be two `String`s. A `PokemonCard` decomposes into a `String`, `Integer`, `EnergyType` and a `List<Move>`. In order to do so, `PokemonCard` implements the `Decomposable4<String, Integer, EnergyType, List<Move>>` interface:
+
+```java
+public class PokemonCard implements Decomposable4<String, Integer, EnergyType, List<Move>> {
+
+    private final String name;
+    private final int hp;
+    private final EnergyType energyType;
+    private final List<Move> moves;
+
+    public PokemonCard(String name, int hp, EnergyType energyType, List<Move> moves) {
+        this.name = name;
+        this.hp = hp;
+        this.energyType = energyType;
+        this.moves = moves;
+    }
+
+    @Override
+    public <T> T decomposeTo(Function4<? super String, ? super Integer, ? super EnergyType, ? super List<Move>, ? extends T> fn) {
+        return fn.apply(name, hp, energyType, moves);
+    }
+
+    // Getters, `hashCode`, `equals` and `toString`
+}
+```
+
+It's a neat trick that I learned over at [Benji Weber's blog](https://benjiweber.co.uk/blog/2020/09/19/fun-with-java-records/). It's a neat way to decompose objects into basically any other object with similar attributes.
+
+If your class implements such an interface, the `combine` method is able to take advantage of it by splitting it up into its constituent parts.
+
+If you are unable (or unwilling) to modify your classes to implement an additional interface like this, you can always opt for a stand-alone decomposition:
+
+```java
+// Break a PokemonCard apart into a Tuple of String, Integer, EnergyType and List<Move>:
+Decomposition4<PokemonCard, String, Integer, EnergyType, List<Move>> decomposition = 
+        pokemonCard -> Tuple.of(
+                pokemonCard.getName(), 
+                pokemonCard.getHp(), 
+                pokemonCard.getEnergyType,
+                pokemonCard.getMoves()
+        );
+
+Predicate<PokemonCard> isValidPokemon = 
+        Predicates.instance().combine(
+                isValidName,
+                isValidHp,
+                isValidEnergyType,
+                areValidMoves,
+                decomposition
+        );
+```
+
+## More contravariant data types
+
+You can use `@Contravariant` for any data structure for which you can write a class like above. Such data structures are called ["divisible"](https://www.youtube.com/watch?v=IJ_bVVsQhvc). Common examples from the Java standard library are:
+
+* `java.util.Predicate`
+* `java.util.concurrent.Comparator`
+* `java.util.function.Function`
+* `java.util.function.BiFunction`
+
+Many of these are included in the `prelude` module.
+
+Other examples of contravariant data types that can be combined include [Hamcrest's matchers](http://hamcrest.org/JavaHamcrest/tutorial), validators, etc.
 
 ## Contributing
 
