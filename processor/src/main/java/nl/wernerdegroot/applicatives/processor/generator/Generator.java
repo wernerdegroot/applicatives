@@ -14,7 +14,6 @@ import java.util.stream.IntStream;
 import static java.util.stream.Collectors.toList;
 import static nl.wernerdegroot.applicatives.processor.domain.Modifier.*;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.BI_FUNCTION;
-import static nl.wernerdegroot.applicatives.processor.domain.type.Type.FUNCTION;
 import static nl.wernerdegroot.applicatives.processor.generator.Constants.THIS;
 import static nl.wernerdegroot.applicatives.processor.generator.LambdaGenerator.lambda;
 import static nl.wernerdegroot.applicatives.processor.generator.MethodCallGenerator.methodCall;
@@ -148,6 +147,67 @@ public abstract class Generator<This> {
         );
     }
 
+    protected abstract List<Parameter> getAdditionalParametersForCombineMethod(int arity);
+
+    protected abstract List<String> getAdditionalArgumentsToPassOnToAccumulatorMethodForCombineMethod(int arity);
+
+    protected abstract List<String> getAdditionalArgumentsToPassOnToAccumulatorMethodForCombineMethodWithArityTwo();
+
+    protected abstract List<String> getAdditionalArgumentsToPassToTupleMethodForCombineMethod(int arity);
+
+    protected MethodGenerator combineMethodWithArityTwo() {
+        int arity = 2;
+        List<String> inputParameterNames = takeInputParameterNames(arity);
+        String firstInputParameterName = inputParameterNames.get(0);
+        String secondInputParameterName = inputParameterNames.get(1);
+        String methodBody = methodCall()
+                .withObjectPath(THIS)
+                .withMethodName(accumulator.getName())
+                .withArguments(
+                        initializeIfHasInitializer(THIS, firstInputParameterName),
+                        secondInputParameterName
+                )
+                .withArguments(getAdditionalArgumentsToPassOnToAccumulatorMethodForCombineMethodWithArityTwo())
+                .generate();
+
+        return combineMethodWithArity(arity, finalizeIfHasFinalizer(THIS, methodBody));
+    }
+
+    protected MethodGenerator combineMethodWithArity(int arity) {
+        String methodBody = methodCall()
+                .withObjectPath(THIS)
+                .withMethodName(accumulator.getName())
+                .withArguments(
+                        methodCall()
+                                .withType(getFullyQualifiedClassNameOfTupleClass())
+                                .withTypeArguments(takeParameterTypeConstructorArgumentsAsTypeArguments(arity - 1))
+                                .withTypeArguments(getClassTypeParametersAsTypeArguments())
+                                .withMethodName(TUPLE_METHOD_NAME)
+                                .withArguments(THIS)
+                                .withArguments(takeInputParameterNames(arity - 1))
+                                .withArguments(getAdditionalArgumentsToPassToTupleMethodForCombineMethod(arity))
+                                .generate(),
+                        inputParameterNames.get(arity - 1)
+                )
+                .withArguments(getAdditionalArgumentsToPassOnToAccumulatorMethodForCombineMethod(arity))
+                .generate();
+
+        return combineMethodWithArity(arity, finalizeIfHasFinalizer(THIS, methodBody));
+    }
+
+    protected MethodGenerator combineMethodWithArity(int arity, String methodBody) {
+        return method()
+                .withModifiers(DEFAULT)
+                .withTypeParameters(takeParameterTypeConstructorArguments(arity))
+                .withTypeParameters(returnTypeConstructorArgument.getName())
+                .withReturnType(getReturnType())
+                .withName(combineMethodToGenerate)
+                .withParameterTypes(takeParameterTypes(arity))
+                .andParameterNames(takeInputParameterNames(arity))
+                .withParameters(getAdditionalParametersForCombineMethod(arity))
+                .withReturnStatement(methodBody);
+    }
+
     protected abstract List<Parameter> getAdditionalLiftMethodParametersToPassOnToCombineMethod(int arity);
 
     protected List<MethodGenerator> liftMethods() {
@@ -194,9 +254,9 @@ public abstract class Generator<This> {
 
     protected abstract List<Parameter> getAdditionalTupleMethodParametersToPassOnToTupleMethod(int arity);
 
-    protected abstract List<TypeArgument> getTypeArgumentsToPassOnToAccumulatorMethod(int arity);
+    protected abstract List<TypeArgument> getTypeArgumentsToPassOnToAccumulatorMethodForTupleMethod(int arity);
 
-    protected abstract List<String> getAdditionalArgumentsToPassOnToAccumulatorMethod(int arity);
+    protected abstract List<String> getAdditionalArgumentsToPassOnToAccumulatorMethodForTupleMethod(int arity);
 
     protected abstract List<String> getAdditionalArgumentsToPassOnToAccumulatorMethodForTupleMethodWithArityTwo();
 
@@ -244,7 +304,7 @@ public abstract class Generator<This> {
                 arity,
                 methodCall()
                         .withObjectPath(selfParameterName)
-                        .withTypeArguments(getTypeArgumentsToPassOnToAccumulatorMethod(arity))
+                        .withTypeArguments(getTypeArgumentsToPassOnToAccumulatorMethodForTupleMethod(arity))
                         .withMethodName(accumulator.getName())
                         .withArguments(
                                 methodCall()
@@ -258,7 +318,7 @@ public abstract class Generator<This> {
                                         .generate(),
                                 inputParameterNames.get(arity - 1)
                         )
-                        .withArguments(getAdditionalArgumentsToPassOnToAccumulatorMethod(arity))
+                        .withArguments(getAdditionalArgumentsToPassOnToAccumulatorMethodForTupleMethod(arity))
                         .generate()
         );
     }

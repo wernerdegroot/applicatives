@@ -16,7 +16,6 @@ import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static nl.wernerdegroot.applicatives.processor.Ordinals.getterForIndex;
 import static nl.wernerdegroot.applicatives.processor.Ordinals.witherForIndex;
-import static nl.wernerdegroot.applicatives.processor.domain.Modifier.DEFAULT;
 import static nl.wernerdegroot.applicatives.processor.domain.Modifier.PUBLIC;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.BI_FUNCTION;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.INT;
@@ -25,7 +24,6 @@ import static nl.wernerdegroot.applicatives.processor.generator.Constants.*;
 import static nl.wernerdegroot.applicatives.processor.generator.LambdaGenerator.lambda;
 import static nl.wernerdegroot.applicatives.processor.generator.Lines.lines;
 import static nl.wernerdegroot.applicatives.processor.generator.MethodCallGenerator.methodCall;
-import static nl.wernerdegroot.applicatives.processor.generator.MethodGenerator.method;
 import static nl.wernerdegroot.applicatives.processor.generator.MethodReferenceGenerator.methodReference;
 import static nl.wernerdegroot.applicatives.processor.generator.ParametersGenerator.parameters;
 
@@ -153,78 +151,43 @@ public class CovariantGenerator extends Generator<CovariantGenerator> {
                 .unwrap();
     }
 
-    private MethodGenerator combineMethodWithArityTwo() {
-        int arity = 2;
-        List<String> inputParameterNames = takeInputParameterNames(arity);
-        String firstInputParameterName = inputParameterNames.get(0);
-        String secondInputParameterName = inputParameterNames.get(1);
-        String methodBody = methodCall()
-                .withObjectPath(THIS)
-                .withMethodName(accumulator.getName())
-                .withArguments(
-                        optionalInitializer
-                                .map(initializer -> methodCall().withObjectPath(THIS).withMethodName(initializer.getName()).withArguments(firstInputParameterName).generate())
-                                .orElse(firstInputParameterName),
-                        secondInputParameterName,
-                        combinatorParameterName
-                )
-                .generate();
-
-        return combineMethodWithArity(
-                arity,
-                finalizeIfHasFinalizer(THIS, methodBody)
+    @Override
+    protected List<String> getAdditionalArgumentsToPassOnToAccumulatorMethodForCombineMethod(int arity) {
+        return singletonList(
+                lambda()
+                        .withParameterNames(tupleParameterName, elementParameterName)
+                        .withExpression(
+                                methodCall()
+                                        .withObjectPath(combinatorParameterName)
+                                        .withMethodName(COMBINATOR_APPLY_METHOD_NAME)
+                                        .withArguments(
+                                                IntStream.range(0, arity - 1)
+                                                        .boxed()
+                                                        .map(elementIndex -> methodCall().withObjectPath(tupleParameterName).withMethodName(getterForIndex(elementIndex)).generate())
+                                                        .collect(toList())
+                                        )
+                                        .withArguments(elementParameterName)
+                                        .generate()
+                        )
+                        .generate()
         );
     }
 
-    private MethodGenerator combineMethodWithArity(int arity) {
-        String methodBody = methodCall()
-                .withObjectPath(THIS)
-                .withMethodName(accumulator.getName())
-                .withArguments(
-                        methodCall()
-                                .withType(getFullyQualifiedClassNameOfTupleClass())
-                                .withTypeArguments(takeParameterTypeConstructorArgumentsAsTypeArguments(arity - 1))
-                                .withTypeArguments(getClassTypeParametersAsTypeArguments())
-                                .withMethodName(TUPLE_METHOD_NAME)
-                                .withArguments(THIS)
-                                .withArguments(takeInputParameterNames(arity - 1))
-                                .withArguments(Integer.toString(arity))
-                                .generate(),
-                        inputParameterNames.get(arity - 1),
-                        lambda()
-                                .withParameterNames(tupleParameterName, elementParameterName)
-                                .withExpression(
-                                        methodCall()
-                                                .withObjectPath(combinatorParameterName)
-                                                .withMethodName(COMBINATOR_APPLY_METHOD_NAME)
-                                                .withArguments(
-                                                        IntStream.range(0, arity - 1)
-                                                                .boxed()
-                                                                .map(elementIndex -> methodCall().withObjectPath(tupleParameterName).withMethodName(getterForIndex(elementIndex)).generate())
-                                                                .collect(toList())
-                                                )
-                                                .withArguments(elementParameterName)
-                                                .generate()
-
-                                )
-                                .generate()
-                )
-                .generate();
-
-        return combineMethodWithArity(arity, finalizeIfHasFinalizer(THIS, methodBody));
+    @Override
+    protected List<String> getAdditionalArgumentsToPassOnToAccumulatorMethodForCombineMethodWithArityTwo() {
+        return singletonList(combinatorParameterName);
     }
 
-    private MethodGenerator combineMethodWithArity(int arity, String returnStatement) {
-        return method()
-                .withModifiers(DEFAULT)
-                .withTypeParameters(takeParameterTypeConstructorArguments(arity))
-                .withTypeParameters(returnTypeConstructorArgument.getName())
-                .withReturnType(getReturnType())
-                .withName(accumulator.getName())
-                .withParameterTypes(takeParameterTypes(arity))
-                .andParameterNames(takeInputParameterNames(arity))
+    @Override
+    protected List<String> getAdditionalArgumentsToPassToTupleMethodForCombineMethod(int arity) {
+        return singletonList(Integer.toString(arity));
+    }
+
+    @Override
+    protected List<Parameter> getAdditionalParametersForCombineMethod(int arity) {
+        return parameters()
                 .withParameter(lambdaParameterType(TypeConstructor.placeholder(), TypeConstructor.placeholder(), TypeConstructor.placeholder(), arity), combinatorParameterName)
-                .withReturnStatement(returnStatement);
+                .unwrap();
     }
 
     @Override
@@ -242,7 +205,7 @@ public class CovariantGenerator extends Generator<CovariantGenerator> {
     }
 
     @Override
-    protected List<TypeArgument> getTypeArgumentsToPassOnToAccumulatorMethod(int arity) {
+    protected List<TypeArgument> getTypeArgumentsToPassOnToAccumulatorMethodForTupleMethod(int arity) {
         return asList(
                 getCovariantTupleTypeOfArity(arity - 1).invariant(),
                 parameterTypeConstructorArguments.get(arity - 1).asType().invariant(),
@@ -251,7 +214,7 @@ public class CovariantGenerator extends Generator<CovariantGenerator> {
     }
 
     @Override
-    protected List<String> getAdditionalArgumentsToPassOnToAccumulatorMethod(int arity) {
+    protected List<String> getAdditionalArgumentsToPassOnToAccumulatorMethodForTupleMethod(int arity) {
         return singletonList(
                 methodReference()
                         .withType(fullyQualifiedNameOfTupleWithArity(arity - 1))
