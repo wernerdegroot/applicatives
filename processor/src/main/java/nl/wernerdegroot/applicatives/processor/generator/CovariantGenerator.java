@@ -269,6 +269,9 @@ public class CovariantGenerator extends Generator<CovariantGenerator> {
                 arity,
                 methodCall()
                         .withObjectPath(selfParameterName)
+                        .withTypeArguments(getCovariantTupleTypeOfArity(arity - 1).invariant())
+                        .withTypeArguments(parameterTypeConstructorArguments.get(arity - 1).asType().invariant())
+                        .withTypeArguments(getCovariantTupleTypeOfArity(arity).invariant())
                         .withMethodName(accumulator.getName())
                         .withArguments(
                                 methodCall()
@@ -307,8 +310,12 @@ public class CovariantGenerator extends Generator<CovariantGenerator> {
                 .withReturnStatement(methodBody);
     }
 
+    private Type getCovariantTupleTypeOfArity(int arity) {
+        return Type.concrete(fullyQualifiedNameOfTupleWithArity(arity), takeParameterTypeConstructorArgumentsAsTypeArguments(arity, Type::covariant));
+    }
+
     private Type getTupleMethodReturnType(int arity) {
-        return Type.concrete(fullyQualifiedNameOfTupleWithArity(arity), takeParameterTypeConstructorArgumentsAsTypeArguments(arity)).using(getTupleMethodReturnTypeConstructor(arity));
+        return Type.concrete(fullyQualifiedNameOfTupleWithArity(arity), takeParameterTypeConstructorArgumentsAsTypeArguments(arity, Type::covariant)).using(getTupleMethodReturnTypeConstructor(arity));
     }
 
     private TypeConstructor getTupleMethodReturnTypeConstructor(int arity) {
