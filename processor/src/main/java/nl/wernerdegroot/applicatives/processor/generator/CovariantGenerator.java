@@ -9,6 +9,7 @@ import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstr
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 import static java.util.Arrays.asList;
@@ -110,31 +111,67 @@ public class CovariantGenerator extends Generator<CovariantGenerator> {
         return String.join(LINE_FEED, lines);
     }
 
-    private List<MethodGenerator> combineMethods() {
-        List<MethodGenerator> combineMethods = new ArrayList<>();
-
-        // If we have an initializer method, we need to generate an addition `combine`-method with
-        // arity two. Both `combine`-method have different parameters. The abstract method
-        // may use a different type constructor for its first parameter and its second parameter
-        // (`partiallyAccumulatedTypeConstructor` and `inputTypeConstructor` respectively). The
-        // concrete method's parameters all use the same type constructor (`inputTypeConstructor`).
-        if (hasInitializer()) {
-            combineMethods.add(combineMethodWithArityTwo());
-        }
-
-        IntStream.rangeClosed(3, maxArity).forEach(arity -> {
-            combineMethods.add(combineMethodWithArity(arity));
-        });
-
-        return combineMethods;
-    }
-
     @Override
     protected List<TypeParameter> getAccumulatorTypeParameters() {
         List<TypeParameter> typeParameters = new ArrayList<>();
         typeParameters.addAll(takeParameterTypeConstructorArguments(2));
         typeParameters.add(returnTypeConstructorArgument);
         return typeParameters;
+    }
+
+    @Override
+    protected CombineMethod getCombineMethod() {
+        return new CombineMethod() {
+
+            @Override
+            public boolean shouldGenerateArityTwo() {
+                return hasInitializer();
+            }
+
+            @Override
+            public List<String> getAdditionalArgumentsToPassOnToAccumulatorMethod(int arity) {
+                return singletonList(
+                        lambda()
+                                .withParameterNames(tupleParameterName, elementParameterName)
+                                .withExpression(
+                                        methodCall()
+                                                .withObjectPath(combinatorParameterName)
+                                                .withMethodName(COMBINATOR_APPLY_METHOD_NAME)
+                                                .withArguments(
+                                                        IntStream.range(0, arity - 1)
+                                                                .boxed()
+                                                                .map(elementIndex -> methodCall().withObjectPath(tupleParameterName).withMethodName(getterForIndex(elementIndex)).generate())
+                                                                .collect(toList())
+                                                )
+                                                .withArguments(elementParameterName)
+                                                .generate()
+                                )
+                                .generate()
+                );
+            }
+
+            @Override
+            public List<String> getAdditionalArgumentsToPassOnToAccumulatorMethodForArityTwo() {
+                return singletonList(combinatorParameterName);
+            }
+
+            @Override
+            public List<String> getAdditionalArgumentsToPassToTupleMethod(int arity) {
+                return singletonList(Integer.toString(arity));
+            }
+
+            @Override
+            public List<Parameter> getAdditionalParameters(int arity) {
+                return parameters()
+                        .withParameter(lambdaParameterType(TypeConstructor.placeholder(), TypeConstructor.placeholder(), TypeConstructor.placeholder(), arity), combinatorParameterName)
+                        .unwrap();
+            }
+        };
+    }
+
+    @Override
+    protected Optional<Generator<CovariantGenerator>.SimplifiedCombineMethod> getSimplifiedCombineMethod() {
+        return Optional.empty();
     }
 
     @Override

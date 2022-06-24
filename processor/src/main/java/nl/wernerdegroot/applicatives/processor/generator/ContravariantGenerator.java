@@ -9,10 +9,12 @@ import nl.wernerdegroot.applicatives.processor.domain.type.TypeArgument;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static nl.wernerdegroot.applicatives.processor.Ordinals.getterForIndex;
 import static nl.wernerdegroot.applicatives.processor.Ordinals.withouterForIndex;
 import static nl.wernerdegroot.applicatives.processor.domain.Modifier.DEFAULT;
@@ -143,17 +145,6 @@ public class ContravariantGenerator extends Generator<ContravariantGenerator> {
                 .unwrap();
     }
 
-    private List<MethodGenerator> combineMethods() {
-        List<MethodGenerator> methods = new ArrayList<>();
-        methods.add(this.combineMethodWithArityTwo());
-        methods.add(this.combineMethodForDecomposableWithArity(2));
-        IntStream.rangeClosed(3, maxArity).forEachOrdered(arity -> {
-            methods.add(combineMethodWithArity(arity));
-            methods.add(combineMethodForDecomposableWithArity(arity));
-        });
-        return methods;
-    }
-
     @Override
     protected List<String> getAdditionalArgumentsToPassOnToAccumulatorMethodForCombineMethod(int arity) {
         return asList(
@@ -189,6 +180,79 @@ public class ContravariantGenerator extends Generator<ContravariantGenerator> {
                         decompositionParameterName
                 )
                 .unwrap();
+    }
+
+    @Override
+    protected CombineMethod getCombineMethod() {
+        return new CombineMethod() {
+
+            @Override
+            public boolean shouldGenerateArityTwo() {
+                return true;
+            }
+
+            @Override
+            public List<String> getAdditionalArgumentsToPassOnToAccumulatorMethod(int arity) {
+                return asList(
+                        methodReference().withObjectPath(decompositionParameterName).withMethodName(DECOMPOSITION_DECOMPOSE_METHOD_NAME).generate(),
+                        methodReference().withObjectPath(fullyQualifiedNameOfTupleWithArity(arity)).withMethodName(withouterForIndex(arity - 1)).generate(),
+                        methodReference().withObjectPath(fullyQualifiedNameOfTupleWithArity(arity)).withMethodName(getterForIndex(arity - 1)).generate()
+                );
+            }
+
+            @Override
+            public List<String> getAdditionalArgumentsToPassOnToAccumulatorMethodForArityTwo() {
+                return asList(
+                        methodReference().withObjectPath(decompositionParameterName).withMethodName(DECOMPOSITION_DECOMPOSE_METHOD_NAME).generate(),
+                        methodReference().withObjectPath(fullyQualifiedNameOfTupleWithArity(2)).withMethodName(getterForIndex(0)).generate(),
+                        methodReference().withObjectPath(fullyQualifiedNameOfTupleWithArity(2)).withMethodName(getterForIndex(1)).generate()
+                );
+            }
+
+            @Override
+            public List<String> getAdditionalArgumentsToPassToTupleMethod(int arity) {
+                return emptyList();
+            }
+
+            @Override
+            public List<Parameter> getAdditionalParameters(int arity) {
+                List<TypeArgument> decompositionTypeArguments = new ArrayList<>();
+                decompositionTypeArguments.add(returnTypeConstructorArgument.asType().contravariant());
+                decompositionTypeArguments.addAll(takeParameterTypeConstructorArgumentsAsTypeArguments(arity, Type::covariant));
+
+                return parameters()
+                        .withParameter(
+                                Type.concrete(fullyQualifiedNameOfDecomposition(arity), decompositionTypeArguments),
+                                decompositionParameterName
+                        )
+                        .unwrap();
+            }
+        };
+    }
+
+    @Override
+    protected Optional<SimplifiedCombineMethod> getSimplifiedCombineMethod() {
+        return Optional.of(
+                new SimplifiedCombineMethod() {
+                    @Override
+                    public List<TypeParameter> getTypeParameters(int arity) {
+                        List<TypeParameter> typeParameters = new ArrayList<>();
+                        typeParameters.addAll(takeParameterTypeConstructorArguments(arity));
+                        typeParameters.add(returnTypeConstructorArgument.getName().extending(Type.concrete(fullyQualifiedNameOfDecomposable(arity), takeParameterTypeConstructorArgumentsAsTypeArguments(arity))));
+                        return typeParameters;
+                    }
+
+                    @Override
+                    public List<Parameter> getAdditionalParameters() {
+                        return emptyList();
+                    }
+
+                    @Override
+                    public List<String> getAdditionalArgumentsToPassToCombineMethod() {
+                        return singletonList(methodReference().withType(returnTypeConstructorArgument.asType()).withMethodName(DECOMPOSITION_DECOMPOSE_METHOD_NAME).generate());
+                    }
+                }
+        );
     }
 
     private MethodGenerator combineMethodForDecomposableWithArity(int arity) {
