@@ -1,19 +1,23 @@
 package nl.wernerdegroot.applicatives.processor.generator;
 
 import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
-import nl.wernerdegroot.applicatives.processor.domain.Initializer;
 import nl.wernerdegroot.applicatives.processor.domain.Parameter;
+import nl.wernerdegroot.applicatives.processor.domain.TypeParameter;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
+import nl.wernerdegroot.applicatives.processor.domain.type.TypeArgument;
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static nl.wernerdegroot.applicatives.processor.Ordinals.getterForIndex;
 import static nl.wernerdegroot.applicatives.processor.Ordinals.witherForIndex;
-import static nl.wernerdegroot.applicatives.processor.domain.Modifier.*;
+import static nl.wernerdegroot.applicatives.processor.domain.Modifier.DEFAULT;
+import static nl.wernerdegroot.applicatives.processor.domain.Modifier.PUBLIC;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.BI_FUNCTION;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.INT;
 import static nl.wernerdegroot.applicatives.processor.generator.ClassOrInterfaceGenerator.classOrInterface;
@@ -127,16 +131,17 @@ public class CovariantGenerator extends Generator<CovariantGenerator> {
         return combineMethods;
     }
 
-    private MethodGenerator abstractAccumulatorMethod() {
-        int arity = 2;
+    @Override
+    protected List<TypeParameter> getAccumulatorTypeParameters() {
+        List<TypeParameter> typeParameters = new ArrayList<>();
+        typeParameters.addAll(takeParameterTypeConstructorArguments(2));
+        typeParameters.add(returnTypeConstructorArgument);
+        return typeParameters;
+    }
 
-        return method()
-                .withTypeParameters(takeParameterTypeConstructorArguments(arity))
-                .withTypeParameters(returnTypeConstructorArgument.getName())
-                .withReturnType(getAccumulatorReturnType())
-                .withName(accumulator.getName())
-                .withParameterTypes(takeParameterTypes(arity, accumulator.getPartiallyAccumulatedTypeConstructor(), accumulator.getInputTypeConstructor()))
-                .andParameterNames(takeInputParameterNames(arity))
+    @Override
+    protected List<Parameter> getAdditionalAccumulatorParameters() {
+        return parameters()
                 .withParameter(
                         BI_FUNCTION.with(
                                 parameterTypeConstructorArguments.get(0).contravariant(),
@@ -144,7 +149,8 @@ public class CovariantGenerator extends Generator<CovariantGenerator> {
                                 returnTypeConstructorArgument.covariant()
                         ),
                         combinatorParameterName
-                );
+                )
+                .unwrap();
     }
 
     private MethodGenerator combineMethodWithArityTwo() {
@@ -228,106 +234,44 @@ public class CovariantGenerator extends Generator<CovariantGenerator> {
                 .unwrap();
     }
 
-    private List<MethodGenerator> tupleMethods() {
-        List<MethodGenerator> tupleMethods = new ArrayList<>();
-
-        if (maxArity >= 3) {
-            tupleMethods.add(tupleMethodWithArityTwo());
-        }
-
-        IntStream.range(3, maxArity)
-                .forEachOrdered(arity -> {
-                    tupleMethods.add(tupleMethodWithArity(arity));
-                });
-
-        return tupleMethods;
-    }
-
-    private MethodGenerator tupleMethodWithArityTwo() {
-        String firstInputParameterName = inputParameterNames.get(0);
-        String secondInputParameterName = inputParameterNames.get(1);
-        return tupleMethodWithArity(
-                2,
-                methodCall()
-                        .withObjectPath(selfParameterName)
-                        .withMethodName(accumulator.getName())
-                        .withArguments(
-                                initializeIfHasInitializer(selfParameterName, firstInputParameterName),
-                                secondInputParameterName,
-                                methodCall()
-                                        .withType(FAST_TUPLE)
-                                        .withMethodName(FAST_TUPLE_WITH_MAX_SIZE_METHOD_NAME)
-                                        .withArguments(maxTupleSizeParameterName)
-                                        .generate()
-                        )
-                        .generate()
-        );
-    }
-
-    private MethodGenerator tupleMethodWithArity(int arity) {
-        return tupleMethodWithArity(
-                arity,
-                methodCall()
-                        .withObjectPath(selfParameterName)
-                        .withTypeArguments(getCovariantTupleTypeOfArity(arity - 1).invariant())
-                        .withTypeArguments(parameterTypeConstructorArguments.get(arity - 1).asType().invariant())
-                        .withTypeArguments(getCovariantTupleTypeOfArity(arity).invariant())
-                        .withMethodName(accumulator.getName())
-                        .withArguments(
-                                methodCall()
-                                        .withType(getFullyQualifiedClassNameOfTupleClass())
-                                        .withTypeArguments(takeParameterTypeConstructorArgumentsAsTypeArguments(arity - 1))
-                                        .withTypeArguments(getClassTypeParametersAsTypeArguments())
-                                        .withMethodName(TUPLE_METHOD_NAME)
-                                        .withArguments(selfParameterName)
-                                        .withArguments(takeInputParameterNames(arity - 1))
-                                        .withArguments(maxTupleSizeParameterName)
-                                        .generate(),
-                                inputParameterNames.get(arity - 1),
-                                methodReference()
-                                        .withType(fullyQualifiedNameOfTupleWithArity(arity - 1))
-                                        .withMethodName(witherForIndex(arity - 1))
-                                        .generate()
-                        )
-                        .generate()
-        );
-    }
-
-    private MethodGenerator tupleMethodWithArity(int arity, String methodBody) {
-        return method()
-                .withModifiers(PUBLIC, STATIC)
-                .withTypeParameters(takeParameterTypeConstructorArguments(arity))
-                // Since these are all static methods, that don't have access to any class type parameters
-                // we need to make sure that the class type parameters are available as additional method
-                // type parameters:
-                .withTypeParameters(classTypeParameters)
-                .withReturnType(getTupleMethodReturnType(arity))
-                .withName(TUPLE_METHOD_NAME)
-                .withParameter(getFullyQualifiedClassNameToGenerate().with(getClassTypeParametersAsTypeArguments()), selfParameterName)
-                .withParameterTypes(takeParameterTypes(arity))
-                .andParameterNames(takeInputParameterNames(arity))
+    @Override
+    protected List<Parameter> getAdditionalTupleMethodParametersToPassOnToTupleMethod(int arity) {
+        return parameters()
                 .withParameter(INT, maxTupleSizeParameterName)
-                .withReturnStatement(methodBody);
+                .unwrap();
+    }
+
+    @Override
+    protected List<TypeArgument> getTypeArgumentsToPassOnToAccumulatorMethod(int arity) {
+        return asList(
+                getCovariantTupleTypeOfArity(arity - 1).invariant(),
+                parameterTypeConstructorArguments.get(arity - 1).asType().invariant(),
+                getCovariantTupleTypeOfArity(arity).invariant()
+        );
+    }
+
+    @Override
+    protected List<String> getAdditionalArgumentsToPassOnToAccumulatorMethod(int arity) {
+        return singletonList(
+                methodReference()
+                        .withType(fullyQualifiedNameOfTupleWithArity(arity - 1))
+                        .withMethodName(witherForIndex(arity - 1))
+                        .generate()
+        );
+    }
+
+    @Override
+    protected List<String> getAdditionalArgumentsToPassOnToAccumulatorMethodForTupleMethodWithArityTwo() {
+        return singletonList(
+                methodCall()
+                        .withType(FAST_TUPLE)
+                        .withMethodName(FAST_TUPLE_WITH_MAX_SIZE_METHOD_NAME)
+                        .withArguments(maxTupleSizeParameterName)
+                        .generate()
+        );
     }
 
     private Type getCovariantTupleTypeOfArity(int arity) {
         return Type.concrete(fullyQualifiedNameOfTupleWithArity(arity), takeParameterTypeConstructorArgumentsAsTypeArguments(arity, Type::covariant));
-    }
-
-    private Type getTupleMethodReturnType(int arity) {
-        return Type.concrete(fullyQualifiedNameOfTupleWithArity(arity), takeParameterTypeConstructorArgumentsAsTypeArguments(arity, Type::covariant)).using(getTupleMethodReturnTypeConstructor(arity));
-    }
-
-    private TypeConstructor getTupleMethodReturnTypeConstructor(int arity) {
-        // If the arity is equal to zero, we are dealing with a special case. We use the initializer method
-        // to wrap an empty tuple using the `initializedTypeConstructor`. We can pass that as the
-        // input to the accumulator method that the user defined.
-        if (arity == 0) {
-            return optionalInitializer
-                    .map(Initializer::getInitializedTypeConstructor)
-                    .orElseThrow(() -> new IllegalStateException("An initializer method is required for a tuple method of arity zero"));
-        } else {
-            return accumulator.getAccumulatedTypeConstructor();
-        }
     }
 }

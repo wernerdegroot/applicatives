@@ -6,15 +6,17 @@ import nl.wernerdegroot.applicatives.processor.domain.Parameter;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameter;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import nl.wernerdegroot.applicatives.processor.domain.type.TypeArgument;
-import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static nl.wernerdegroot.applicatives.processor.Ordinals.getterForIndex;
 import static nl.wernerdegroot.applicatives.processor.Ordinals.withouterForIndex;
-import static nl.wernerdegroot.applicatives.processor.domain.Modifier.*;
+import static nl.wernerdegroot.applicatives.processor.domain.Modifier.DEFAULT;
+import static nl.wernerdegroot.applicatives.processor.domain.Modifier.PUBLIC;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.FUNCTION;
 import static nl.wernerdegroot.applicatives.processor.generator.ClassOrInterfaceGenerator.classOrInterface;
 import static nl.wernerdegroot.applicatives.processor.generator.Constants.*;
@@ -114,17 +116,18 @@ public class ContravariantGenerator extends Generator<ContravariantGenerator> {
         return String.join(LINE_FEED, lines);
     }
 
-    private MethodGenerator abstractAccumulatorMethod() {
-        int arity = 2;
+    @Override
+    protected List<TypeParameter> getAccumulatorTypeParameters() {
+        List<TypeParameter> typeParameters = new ArrayList<>();
+        typeParameters.addAll(takeParameterTypeConstructorArguments(2));
+        typeParameters.add(intermediateTypeConstructorArgument);
+        typeParameters.add(returnTypeConstructorArgument);
+        return typeParameters;
+    }
 
-        return method()
-                .withTypeParameters(takeParameterTypeConstructorArguments(arity))
-                .withTypeParameters(intermediateTypeConstructorArgument.getName())
-                .withTypeParameters(returnTypeConstructorArgument.getName())
-                .withReturnType(getAccumulatorReturnType())
-                .withName(accumulator.getName())
-                .withParameterTypes(takeParameterTypes(arity, accumulator.getPartiallyAccumulatedTypeConstructor(), accumulator.getInputTypeConstructor()))
-                .andParameterNames(takeInputParameterNames(arity))
+    @Override
+    protected List<Parameter> getAdditionalAccumulatorParameters() {
+        return parameters()
                 .withParameter(
                         FUNCTION.with(returnTypeConstructorArgument.contravariant(), intermediateTypeConstructorArgument.covariant()),
                         toIntermediateParameterName
@@ -136,7 +139,8 @@ public class ContravariantGenerator extends Generator<ContravariantGenerator> {
                 .withParameter(
                         FUNCTION.with(intermediateTypeConstructorArgument.contravariant(), parameterTypeConstructorArguments.get(1).covariant()),
                         extractRightParameterName
-                );
+                )
+                .unwrap();
     }
 
     private List<MethodGenerator> combineMethods() {
@@ -252,101 +256,50 @@ public class ContravariantGenerator extends Generator<ContravariantGenerator> {
                 .unwrap();
     }
 
-    private List<MethodGenerator> tupleMethods() {
-        List<MethodGenerator> tupleMethods = new ArrayList<>();
-
-        tupleMethods.add(tupleMethodWithArityTwo());
-
-        IntStream.range(3, maxArity)
-                .forEachOrdered(arity -> {
-                    tupleMethods.add(tupleMethodWithArity(arity));
-                });
-
-        return tupleMethods;
+    @Override
+    protected List<Parameter> getAdditionalTupleMethodParametersToPassOnToTupleMethod(int arity) {
+        return emptyList();
     }
 
-    private MethodGenerator tupleMethodWithArityTwo() {
-        String firstInputParameterName = inputParameterNames.get(0);
-        String secondInputParameterName = inputParameterNames.get(1);
-        int arity = 2;
-        return tupleMethodWithArity(
-                arity,
+    @Override
+    protected List<TypeArgument> getTypeArgumentsToPassOnToAccumulatorMethod(int arity) {
+        return emptyList();
+    }
+
+    @Override
+    protected List<String> getAdditionalArgumentsToPassOnToAccumulatorMethod(int arity) {
+        return asList(
                 methodCall()
-                        .withObjectPath(selfParameterName)
-                        .withMethodName(accumulator.getName())
-                        .withArguments(
-                                initializeIfHasInitializer(selfParameterName, firstInputParameterName),
-                                secondInputParameterName,
-                                methodCall()
-                                        .withType(FUNCTION.getFullyQualifiedName())
-                                        .withMethodName(FUNCTION_IDENTITY_METHOD_NAME)
-                                        .generate(),
-                                methodReference()
-                                        .withType(fullyQualifiedNameOfTupleWithArity(arity))
-                                        .withMethodName(getterForIndex(0))
-                                        .generate(),
-                                methodReference()
-                                        .withType(fullyQualifiedNameOfTupleWithArity(arity))
-                                        .withMethodName(getterForIndex(1))
-                                        .generate()
-                        )
+                        .withType(FUNCTION.getFullyQualifiedName())
+                        .withMethodName("identity")
+                        .generate(),
+                methodReference()
+                        .withType(fullyQualifiedNameOfTupleWithArity(arity))
+                        .withMethodName(withouterForIndex(arity - 1))
+                        .generate(),
+                methodReference()
+                        .withType(fullyQualifiedNameOfTupleWithArity(arity))
+                        .withMethodName(getterForIndex(arity - 1))
                         .generate()
         );
     }
 
-    private MethodGenerator tupleMethodWithArity(int arity) {
-        return tupleMethodWithArity(
-                arity,
+    @Override
+    protected List<String> getAdditionalArgumentsToPassOnToAccumulatorMethodForTupleMethodWithArityTwo() {
+        return asList(
                 methodCall()
-                        .withObjectPath(selfParameterName)
-                        .withMethodName(accumulator.getName())
-                        .withArguments(
-                                methodCall()
-                                        .withType(getFullyQualifiedClassNameOfTupleClass())
-                                        .withMethodName(TUPLE_METHOD_NAME)
-                                        .withArguments(selfParameterName)
-                                        .withArguments(takeInputParameterNames(arity - 1))
-                                        .generate(),
-                                inputParameterNames.get(arity - 1),
-                                methodCall()
-                                        .withType(FUNCTION.getFullyQualifiedName())
-                                        .withMethodName("identity")
-                                        .generate(),
-                                methodReference()
-                                        .withType(fullyQualifiedNameOfTupleWithArity(arity))
-                                        .withMethodName(withouterForIndex(arity - 1))
-                                        .generate(),
-                                methodReference()
-                                        .withType(fullyQualifiedNameOfTupleWithArity(arity))
-                                        .withMethodName(getterForIndex(arity - 1))
-                                        .generate()
-                        )
+                        .withType(FUNCTION.getFullyQualifiedName())
+                        .withMethodName(FUNCTION_IDENTITY_METHOD_NAME)
+                        .generate(),
+                methodReference()
+                        .withType(fullyQualifiedNameOfTupleWithArity(2))
+                        .withMethodName(getterForIndex(0))
+                        .generate(),
+                methodReference()
+                        .withType(fullyQualifiedNameOfTupleWithArity(2))
+                        .withMethodName(getterForIndex(1))
                         .generate()
         );
-    }
-
-    private MethodGenerator tupleMethodWithArity(int arity, String methodBody) {
-        return method()
-                .withModifiers(PUBLIC, STATIC)
-                .withTypeParameters(takeParameterTypeConstructorArguments(arity))
-                // Since these are all static methods, that don't have access to any class type parameters
-                // we need to make sure that the class type parameters are available as additional method
-                // type parameters:
-                .withTypeParameters(classTypeParameters)
-                .withReturnType(getTupleMethodReturnType(arity))
-                .withName(TUPLE_METHOD_NAME)
-                .withParameter(getFullyQualifiedClassNameToGenerate().with(getClassTypeParametersAsTypeArguments()), selfParameterName)
-                .withParameterTypes(takeParameterTypes(arity))
-                .andParameterNames(takeInputParameterNames(arity))
-                .withReturnStatement(methodBody);
-    }
-
-    private Type getTupleMethodReturnType(int arity) {
-        return Type.concrete(fullyQualifiedNameOfTupleWithArity(arity), takeParameterTypeConstructorArgumentsAsTypeArguments(arity, Type::covariant)).using(getTupleMethodReturnTypeConstructor());
-    }
-
-    private TypeConstructor getTupleMethodReturnTypeConstructor() {
-        return accumulator.getAccumulatedTypeConstructor();
     }
 
     private FullyQualifiedName fullyQualifiedNameOfDecomposable(int arity) {
