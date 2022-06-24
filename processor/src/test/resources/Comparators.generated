@@ -38,6 +38,11 @@ public interface ComparatorsOverloads {
                 this.combine(first, second, third, decomposition);
     }
 
+    default <P1, P2, P3, P4, R> nl.wernerdegroot.applicatives.runtime.Function4<java.util.Comparator<? super P1>, java.util.Comparator<? super P2>, java.util.Comparator<? super P3>, java.util.Comparator<? super P4>, java.util.Comparator<R>> lift(nl.wernerdegroot.applicatives.runtime.decompositions.Decomposition4<? super R, ? extends P1, ? extends P2, ? extends P3, ? extends P4> decomposition) {
+        return (first, second, third, fourth) ->
+                this.combine(first, second, third, fourth, decomposition);
+    }
+
     class Tuples {
 
         public static <P1, P2> java.util.Comparator<nl.wernerdegroot.applicatives.runtime.Tuple2<? extends P1, ? extends P2>> tuple(nl.wernerdegroot.applicatives.ComparatorsOverloads self, java.util.Comparator<? super P1> first, java.util.Comparator<? super P2> second) {
@@ -45,7 +50,7 @@ public interface ComparatorsOverloads {
         }
 
         public static <P1, P2, P3> java.util.Comparator<nl.wernerdegroot.applicatives.runtime.Tuple3<? extends P1, ? extends P2, ? extends P3>> tuple(nl.wernerdegroot.applicatives.ComparatorsOverloads self, java.util.Comparator<? super P1> first, java.util.Comparator<? super P2> second, java.util.Comparator<? super P3> third) {
-            return self.combine(nl.wernerdegroot.applicatives.ComparatorsOverloads.Tuples.tuple(self, first, second), third, java.util.function.Function.identity(), nl.wernerdegroot.applicatives.runtime.Tuple3::withoutThird, nl.wernerdegroot.applicatives.runtime.Tuple3::getThird);
+            return self.combine(nl.wernerdegroot.applicatives.ComparatorsOverloads.Tuples.<P1, P2>tuple(self, first, second), third, java.util.function.Function.identity(), nl.wernerdegroot.applicatives.runtime.Tuple3::withoutThird, nl.wernerdegroot.applicatives.runtime.Tuple3::getThird);
         }
 
     }

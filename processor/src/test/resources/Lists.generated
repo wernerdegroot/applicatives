@@ -28,7 +28,7 @@ public interface ListsMixin {
 
     class Tuples {
 
-        public static <P1, P2> java.util.ArrayList<nl.wernerdegroot.applicatives.runtime.Tuple2<P1, P2>> tuple(nl.wernerdegroot.applicatives.ListsMixin self, java.util.List<? extends P1> first, java.util.List<? extends P2> second, int maxSize) {
+        public static <P1, P2> java.util.ArrayList<nl.wernerdegroot.applicatives.runtime.Tuple2<? extends P1, ? extends P2>> tuple(nl.wernerdegroot.applicatives.ListsMixin self, java.util.List<? extends P1> first, java.util.List<? extends P2> second, int maxSize) {
             return self.compose(self.initialize(first), second, nl.wernerdegroot.applicatives.runtime.FastTuple.withMaxSize(maxSize));
         }
 

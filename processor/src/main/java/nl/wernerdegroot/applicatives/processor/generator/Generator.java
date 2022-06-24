@@ -9,9 +9,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
+import static nl.wernerdegroot.applicatives.processor.domain.Modifier.*;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.BI_FUNCTION;
+import static nl.wernerdegroot.applicatives.processor.generator.ClassOrInterfaceGenerator.classOrInterface;
+import static nl.wernerdegroot.applicatives.processor.generator.Constants.*;
+import static nl.wernerdegroot.applicatives.processor.generator.LambdaGenerator.lambda;
+import static nl.wernerdegroot.applicatives.processor.generator.Lines.lines;
 import static nl.wernerdegroot.applicatives.processor.generator.MethodCallGenerator.methodCall;
 import static nl.wernerdegroot.applicatives.processor.generator.MethodGenerator.method;
 
@@ -107,6 +113,49 @@ public abstract class Generator<This> {
         return getThis();
     }
 
+    public String generate() {
+        Lines lines = lines();
+        lines.append(PACKAGE + SPACE + packageName.raw() + SEMICOLON);
+        lines.append(EMPTY_LINE);
+
+        // Place to gather methods:
+        List<MethodGenerator> methods = new ArrayList<>();
+
+        // If the client provided an initializer method, generate an abstract
+        // method for it and append it to the methods.
+        optionalAbstractInitializerMethod().ifPresent(methods::add);
+
+        methods.add(abstractAccumulatorMethod());
+
+        // If the client provided a finalizer method, generate an abstract
+        // method for it and append it to the methods.
+        optionalAbstractFinalizerMethod().ifPresent(methods::add);
+
+        // Continue adding the combine- and lift-methods.
+        methods.addAll(combineMethods());
+        methods.addAll(liftMethods());
+
+        lines.append(
+                classOrInterface()
+                        .asInterface()
+                        .withModifiers(PUBLIC)
+                        .withName(classNameToGenerate)
+                        .withTypeParameters(classTypeParameters)
+                        .withBody(methods.stream().collect(Lines.collecting(MethodGenerator::lines)))
+                        .withBody(EMPTY_LINE)
+                        .withBody(
+                                classOrInterface()
+                                        .asClass()
+                                        .withName(TUPLE_CLASS_NAME.raw())
+                                        .withBody(tupleMethods().stream().collect(Lines.collecting(MethodGenerator::lines)))
+                                        .lines()
+                        )
+                        .lines()
+        );
+
+        return String.join(LINE_FEED, lines);
+    }
+
     protected Optional<MethodGenerator> optionalAbstractInitializerMethod() {
         return optionalInitializer.map(initializer ->
                 method()
@@ -115,6 +164,22 @@ public abstract class Generator<This> {
                         .withName(initializer.getName())
                         .withParameter(returnTypeConstructorArgument.asType().using(initializer.getToInitializeTypeConstructor()), valueParameterName)
         );
+    }
+
+    protected abstract List<TypeParameter> getAccumulatorTypeParameters();
+
+    protected abstract List<Parameter> getAdditionalAccumulatorParameters();
+
+    protected MethodGenerator abstractAccumulatorMethod() {
+        int arity = 2;
+
+        return method()
+                .withTypeParameters(getAccumulatorTypeParameters())
+                .withReturnType(getAccumulatorReturnType())
+                .withName(accumulator.getName())
+                .withParameterTypes(takeParameterTypes(arity, accumulator.getPartiallyAccumulatedTypeConstructor(), accumulator.getInputTypeConstructor()))
+                .andParameterNames(takeInputParameterNames(arity))
+                .withParameters(getAdditionalAccumulatorParameters());
     }
 
     protected Optional<MethodGenerator> optionalAbstractFinalizerMethod() {
@@ -126,6 +191,299 @@ public abstract class Generator<This> {
                         .withParameter(returnTypeConstructorArgument.asType().using(finalizer.getToFinalizeTypeConstructor()), valueParameterName)
         );
     }
+
+    protected List<MethodGenerator> combineMethods() {
+        List<MethodGenerator> methods = new ArrayList<>();
+        CombineMethod combineMethod = getCombineMethod();
+        Optional<SimplifiedCombineMethod> optionalSimplifiedCombineMethod = getSimplifiedCombineMethod();
+        if (combineMethod.shouldGenerateArityTwo()) {
+            methods.add(combineMethod.withArityTwo());
+        }
+        optionalSimplifiedCombineMethod.ifPresent(simplifiedCombineMethod -> {
+            methods.add(simplifiedCombineMethod.withArity(2));
+        });
+        IntStream.rangeClosed(3, maxArity).forEachOrdered(arity -> {
+            methods.add(combineMethod.combineMethodWithArity(arity));
+            optionalSimplifiedCombineMethod.ifPresent(simplifiedCombineMethod -> {
+                methods.add(simplifiedCombineMethod.withArity(arity));
+            });
+        });
+        return methods;
+    }
+
+    abstract class CombineMethod {
+
+        public abstract boolean shouldGenerateArityTwo();
+
+        public abstract List<Parameter> getAdditionalParameters(int arity);
+
+        public abstract List<String> getAdditionalArgumentsToPassOnToAccumulatorMethod(int arity);
+
+        public abstract List<String> getAdditionalArgumentsToPassOnToAccumulatorMethodForArityTwo();
+
+        public abstract List<String> getAdditionalArgumentsToPassToTupleMethod(int arity);
+
+        protected MethodGenerator withArityTwo() {
+            int arity = 2;
+            List<String> inputParameterNames = takeInputParameterNames(arity);
+            String firstInputParameterName = inputParameterNames.get(0);
+            String secondInputParameterName = inputParameterNames.get(1);
+            String methodBody = methodCall()
+                    .withObjectPath(THIS)
+                    .withMethodName(accumulator.getName())
+                    .withArguments(
+                            initializeIfHasInitializer(THIS, firstInputParameterName),
+                            secondInputParameterName
+                    )
+                    .withArguments(getAdditionalArgumentsToPassOnToAccumulatorMethodForArityTwo())
+                    .generate();
+
+            return combineMethodWithArity(arity, finalizeIfHasFinalizer(THIS, methodBody));
+        }
+
+        protected MethodGenerator combineMethodWithArity(int arity) {
+            String methodBody = methodCall()
+                    .withObjectPath(THIS)
+                    .withMethodName(accumulator.getName())
+                    .withArguments(
+                            methodCall()
+                                    .withType(getFullyQualifiedClassNameOfTupleClass())
+                                    .withTypeArguments(takeParameterTypeConstructorArgumentsAsTypeArguments(arity - 1))
+                                    .withTypeArguments(getClassTypeParametersAsTypeArguments())
+                                    .withMethodName(TUPLE_METHOD_NAME)
+                                    .withArguments(THIS)
+                                    .withArguments(takeInputParameterNames(arity - 1))
+                                    .withArguments(getAdditionalArgumentsToPassToTupleMethod(arity))
+                                    .generate(),
+                            inputParameterNames.get(arity - 1)
+                    )
+                    .withArguments(getAdditionalArgumentsToPassOnToAccumulatorMethod(arity))
+                    .generate();
+
+            return combineMethodWithArity(arity, finalizeIfHasFinalizer(THIS, methodBody));
+        }
+
+        protected MethodGenerator combineMethodWithArity(int arity, String methodBody) {
+            return method()
+                    .withModifiers(DEFAULT)
+                    .withTypeParameters(takeParameterTypeConstructorArguments(arity))
+                    .withTypeParameters(returnTypeConstructorArgument.getName())
+                    .withReturnType(getReturnType())
+                    .withName(combineMethodToGenerate)
+                    .withParameterTypes(takeParameterTypes(arity))
+                    .andParameterNames(takeInputParameterNames(arity))
+                    .withParameters(getAdditionalParameters(arity))
+                    .withReturnStatement(methodBody);
+        }
+    }
+
+    protected abstract CombineMethod getCombineMethod();
+
+    abstract class SimplifiedCombineMethod {
+        public abstract List<TypeParameter> getTypeParameters(int arity);
+
+        public abstract List<Parameter> getAdditionalParameters();
+
+        public abstract List<String> getAdditionalArgumentsToPassToCombineMethod();
+
+        public MethodGenerator withArity(int arity) {
+            return withArity(
+                    arity,
+                    methodCall()
+                            .withObjectPath(THIS)
+                            .withTypeArguments(takeParameterTypeConstructorArgumentsAsTypeArguments(arity))
+                            .withTypeArguments(returnTypeConstructorArgument.asType().invariant())
+                            .withMethodName(combineMethodToGenerate)
+                            .withArguments(takeInputParameterNames(arity))
+                            .withArguments(getAdditionalArgumentsToPassToCombineMethod())
+                            .generate()
+            );
+        }
+
+        public MethodGenerator withArity(int arity, String methodBody) {
+            List<TypeArgument> decompositionTypeArguments = new ArrayList<>();
+            decompositionTypeArguments.add(returnTypeConstructorArgument.asType().contravariant());
+            decompositionTypeArguments.addAll(takeParameterTypeConstructorArgumentsAsTypeArguments(arity, Type::covariant));
+            return method()
+                    .withModifiers(DEFAULT)
+                    .withTypeParameters(getTypeParameters(arity))
+                    .withReturnType(getReturnType())
+                    .withName(combineMethodToGenerate)
+                    .withParameterTypes(takeParameterTypes(arity))
+                    .andParameterNames(takeInputParameterNames(arity))
+                    .withParameters(getAdditionalParameters())
+                    .withReturnStatement(methodBody);
+        }
+    }
+
+    protected abstract Optional<SimplifiedCombineMethod> getSimplifiedCombineMethod();
+
+    protected List<MethodGenerator> liftMethods() {
+        LiftMethod liftMethod = getLiftMethod();
+
+        List<MethodGenerator> liftMethods = new ArrayList<>();
+        IntStream.rangeClosed(2, maxArity).forEachOrdered(arity -> {
+            liftMethods.add(liftMethod.withArity(arity));
+        });
+        return liftMethods;
+    }
+
+    abstract class LiftMethod {
+
+        public abstract List<Parameter> getAdditionalLiftMethodParametersToPassOnToCombineMethod(int arity);
+
+        private MethodGenerator withArity(int arity) {
+
+            List<String> additionalLiftMethodParameterNamesToPassOnToCombineMethod = getAdditionalLiftMethodParametersToPassOnToCombineMethod(arity)
+                    .stream()
+                    .map(Parameter::getName)
+                    .collect(toList());
+
+            return withArity(
+                    arity,
+                    methodCall()
+                            .withObjectPath(THIS)
+                            .withMethodName(combineMethodToGenerate)
+                            .withArguments(takeInputParameterNames(arity))
+                            .withArguments(additionalLiftMethodParameterNamesToPassOnToCombineMethod)
+                            .generate()
+            );
+        }
+
+        private MethodGenerator withArity(int arity, String lambdaBody) {
+            return method()
+                    .withModifiers(DEFAULT)
+                    .withTypeParameters(takeParameterTypeConstructorArguments(arity))
+                    .withTypeParameters(returnTypeConstructorArgument.getName())
+                    .withReturnType(lambdaReturnType(getReturnTypeConstructor(), getOtherParametersTypeConstructor(), getFirstParameterTypeConstructor(), arity))
+                    .withName(liftMethodToGenerate)
+                    .withParameters(getAdditionalLiftMethodParametersToPassOnToCombineMethod(arity))
+                    .withReturnStatement(
+                            lambda()
+                                    .withParameterNames(takeInputParameterNames(arity))
+                                    .withExpression(lambdaBody)
+                                    .multiline()
+                    );
+        }
+
+        private Type lambdaReturnType(TypeConstructor returnTypeConstructor, TypeConstructor firstParameterTypeConstructor, TypeConstructor otherParametersTypeConstructor, int arity) {
+            return lambdaType(returnTypeConstructor, firstParameterTypeConstructor, otherParametersTypeConstructor, arity, Type::invariant, Type::invariant);
+        }
+    }
+
+    protected abstract LiftMethod getLiftMethod();
+
+    protected List<MethodGenerator> tupleMethods() {
+        TupleMethod tupleMethod = getTupleMethod();
+
+        List<MethodGenerator> tupleMethods = new ArrayList<>();
+
+        if (maxArity >= 3) {
+            tupleMethods.add(tupleMethod.tupleMethodWithArityTwo());
+        }
+
+        IntStream.range(3, maxArity)
+                .forEachOrdered(arity -> {
+                    tupleMethods.add(tupleMethod.tupleMethodWithArity(arity));
+                });
+
+        return tupleMethods;
+    }
+
+    abstract class TupleMethod {
+
+        public abstract List<Parameter> getAdditionalTupleMethodParametersToPassOnToTupleMethod(int arity);
+
+        public abstract List<TypeArgument> getTypeArgumentsToPassOnToAccumulatorMethodForTupleMethod(int arity);
+
+        public abstract List<String> getAdditionalArgumentsToPassOnToAccumulatorMethodForTupleMethod(int arity);
+
+        public abstract List<String> getAdditionalArgumentsToPassOnToAccumulatorMethodForTupleMethodWithArityTwo();
+
+        public MethodGenerator tupleMethodWithArityTwo() {
+            String firstInputParameterName = inputParameterNames.get(0);
+            String secondInputParameterName = inputParameterNames.get(1);
+            int arity = 2;
+            return tupleMethodWithArity(
+                    arity,
+                    methodCall()
+                            .withObjectPath(selfParameterName)
+                            .withMethodName(accumulator.getName())
+                            .withArguments(
+                                    initializeIfHasInitializer(selfParameterName, firstInputParameterName),
+                                    secondInputParameterName
+                            )
+                            .withArguments(getAdditionalArgumentsToPassOnToAccumulatorMethodForTupleMethodWithArityTwo())
+                            .generate()
+            );
+        }
+
+        public MethodGenerator tupleMethodWithArity(int arity) {
+
+            List<String> additionalTupleMethodParameterNamesToPassOnToTupleMethod = getAdditionalTupleMethodParametersToPassOnToTupleMethod(arity)
+                    .stream()
+                    .map(Parameter::getName)
+                    .collect(toList());
+
+            return tupleMethodWithArity(
+                    arity,
+                    methodCall()
+                            .withObjectPath(selfParameterName)
+                            .withTypeArguments(getTypeArgumentsToPassOnToAccumulatorMethodForTupleMethod(arity))
+                            .withMethodName(accumulator.getName())
+                            .withArguments(
+                                    methodCall()
+                                            .withType(getFullyQualifiedClassNameOfTupleClass())
+                                            .withTypeArguments(takeParameterTypeConstructorArgumentsAsTypeArguments(arity - 1))
+                                            .withTypeArguments(getClassTypeParametersAsTypeArguments())
+                                            .withMethodName(TUPLE_METHOD_NAME)
+                                            .withArguments(selfParameterName)
+                                            .withArguments(takeInputParameterNames(arity - 1))
+                                            .withArguments(additionalTupleMethodParameterNamesToPassOnToTupleMethod)
+                                            .generate(),
+                                    inputParameterNames.get(arity - 1)
+                            )
+                            .withArguments(getAdditionalArgumentsToPassOnToAccumulatorMethodForTupleMethod(arity))
+                            .generate()
+            );
+        }
+
+        public MethodGenerator tupleMethodWithArity(int arity, String methodBody) {
+            return method()
+                    .withModifiers(PUBLIC, STATIC)
+                    .withTypeParameters(takeParameterTypeConstructorArguments(arity))
+                    // Since these are all static methods, that don't have access to any class type parameters
+                    // we need to make sure that the class type parameters are available as additional method
+                    // type parameters:
+                    .withTypeParameters(classTypeParameters)
+                    .withReturnType(getTupleMethodReturnType(arity))
+                    .withName(TUPLE_METHOD_NAME)
+                    .withParameter(getFullyQualifiedClassNameToGenerate().with(getClassTypeParametersAsTypeArguments()), selfParameterName)
+                    .withParameterTypes(takeParameterTypes(arity))
+                    .andParameterNames(takeInputParameterNames(arity))
+                    .withParameters(getAdditionalTupleMethodParametersToPassOnToTupleMethod(arity))
+                    .withReturnStatement(methodBody);
+        }
+
+        private Type getTupleMethodReturnType(int arity) {
+            return Type.concrete(fullyQualifiedNameOfTupleWithArity(arity), takeParameterTypeConstructorArgumentsAsTypeArguments(arity, Type::covariant)).using(getTupleMethodReturnTypeConstructor(arity));
+        }
+
+        private TypeConstructor getTupleMethodReturnTypeConstructor(int arity) {
+            // If the arity is equal to zero, we are dealing with a special case. We use the initializer method
+            // to wrap an empty tuple using the `initializedTypeConstructor`. We can pass that as the
+            // input to the accumulator method that the user defined.
+            if (arity == 0) {
+                return optionalInitializer
+                        .map(Initializer::getInitializedTypeConstructor)
+                        .orElseThrow(() -> new IllegalStateException("An initializer method is required for a tuple method of arity zero"));
+            } else {
+                return accumulator.getAccumulatedTypeConstructor();
+            }
+        }
+    }
+
+    protected abstract TupleMethod getTupleMethod();
 
     protected boolean hasInitializer() {
         return optionalInitializer.isPresent();
@@ -230,10 +588,6 @@ public abstract class Generator<This> {
 
     protected Type lambdaParameterType(TypeConstructor returnTypeConstructor, TypeConstructor firstParameterTypeConstructor, TypeConstructor otherParametersTypeConstructor, int arity) {
         return lambdaType(returnTypeConstructor, firstParameterTypeConstructor, otherParametersTypeConstructor, arity, Type::contravariant, Type::covariant);
-    }
-
-    protected Type lambdaReturnType(TypeConstructor returnTypeConstructor, TypeConstructor firstParameterTypeConstructor, TypeConstructor otherParametersTypeConstructor, int arity) {
-        return lambdaType(returnTypeConstructor, firstParameterTypeConstructor, otherParametersTypeConstructor, arity, Type::invariant, Type::invariant);
     }
 
     protected Type lambdaType(TypeConstructor returnTypeConstructor, TypeConstructor firstParameterTypeConstructor, TypeConstructor otherParametersTypeConstructor, int arity, Function<Type, TypeArgument> parameterVariance, Function<Type, TypeArgument> returnTypeVariance) {

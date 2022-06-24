@@ -16,11 +16,34 @@ public class ParametersGenerator {
 
     private List<Parameter> parameters = new ArrayList<>();
 
+    public static Standalone parameters() {
+        return new Standalone();
+    }
+
     public String generate() {
         return parameters
                 .stream()
                 .map(ParameterGenerator::generateFrom)
                 .collect(joining(SEPARATOR, OPEN_PARENTHESIS, CLOSE_PARENTHESIS));
+    }
+
+    public static class Standalone implements HasParametersGenerator<Standalone> {
+
+        private final ParametersGenerator parametersGenerator = new ParametersGenerator();
+
+        @Override
+        public Standalone getThis() {
+            return this;
+        }
+
+        @Override
+        public ParametersGenerator getParametersGenerator() {
+            return parametersGenerator;
+        }
+
+        public List<Parameter> unwrap() {
+            return parametersGenerator.parameters;
+        }
     }
 
     public interface HasParametersGenerator<This> extends HasThis<This> {
