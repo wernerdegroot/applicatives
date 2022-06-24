@@ -2,6 +2,7 @@ package nl.wernerdegroot.applicatives.processor.generator;
 
 import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
 import nl.wernerdegroot.applicatives.processor.domain.Initializer;
+import nl.wernerdegroot.applicatives.processor.domain.Parameter;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor;
 
@@ -22,6 +23,7 @@ import static nl.wernerdegroot.applicatives.processor.generator.Lines.lines;
 import static nl.wernerdegroot.applicatives.processor.generator.MethodCallGenerator.methodCall;
 import static nl.wernerdegroot.applicatives.processor.generator.MethodGenerator.method;
 import static nl.wernerdegroot.applicatives.processor.generator.MethodReferenceGenerator.methodReference;
+import static nl.wernerdegroot.applicatives.processor.generator.ParametersGenerator.parameters;
 
 public class CovariantGenerator extends Generator<CovariantGenerator> {
 
@@ -219,40 +221,11 @@ public class CovariantGenerator extends Generator<CovariantGenerator> {
                 .withReturnStatement(returnStatement);
     }
 
-    private List<MethodGenerator> liftMethods() {
-        List<MethodGenerator> liftMethods = new ArrayList<>();
-        IntStream.rangeClosed(2, maxArity).forEachOrdered(arity -> {
-            liftMethods.add(liftMethodWithArity(arity));
-        });
-        return liftMethods;
-    }
-
-    private MethodGenerator liftMethodWithArity(int arity) {
-        return liftMethodWithArity(
-                arity,
-                methodCall()
-                        .withObjectPath(THIS)
-                        .withMethodName(accumulator.getName())
-                        .withArguments(takeInputParameterNames(arity))
-                        .withArguments(combinatorParameterName)
-                        .generate()
-        );
-    }
-
-    private MethodGenerator liftMethodWithArity(int arity, String lambdaBody) {
-        return method()
-                .withModifiers(DEFAULT)
-                .withTypeParameters(takeParameterTypeConstructorArguments(arity))
-                .withTypeParameters(returnTypeConstructorArgument.getName())
-                .withReturnType(lambdaReturnType(getReturnTypeConstructor(), getOtherParametersTypeConstructor(), getFirstParameterTypeConstructor(), arity))
-                .withName(liftMethodToGenerate)
+    @Override
+    protected List<Parameter> getAdditionalLiftMethodParametersToPassOnToCombineMethod(int arity) {
+        return parameters()
                 .withParameter(lambdaParameterType(TypeConstructor.placeholder(), TypeConstructor.placeholder(), TypeConstructor.placeholder(), arity), combinatorParameterName)
-                .withReturnStatement(
-                        lambda()
-                                .withParameterNames(takeInputParameterNames(arity))
-                                .withExpression(lambdaBody)
-                                .multiline()
-                );
+                .unwrap();
     }
 
     private List<MethodGenerator> tupleMethods() {

@@ -2,6 +2,7 @@ package nl.wernerdegroot.applicatives.processor.generator;
 
 import nl.wernerdegroot.applicatives.processor.domain.ClassName;
 import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
+import nl.wernerdegroot.applicatives.processor.domain.Parameter;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameter;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import nl.wernerdegroot.applicatives.processor.domain.type.TypeArgument;
@@ -11,18 +12,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import static java.util.stream.Collectors.toList;
 import static nl.wernerdegroot.applicatives.processor.Ordinals.getterForIndex;
 import static nl.wernerdegroot.applicatives.processor.Ordinals.withouterForIndex;
 import static nl.wernerdegroot.applicatives.processor.domain.Modifier.*;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.FUNCTION;
 import static nl.wernerdegroot.applicatives.processor.generator.ClassOrInterfaceGenerator.classOrInterface;
 import static nl.wernerdegroot.applicatives.processor.generator.Constants.*;
-import static nl.wernerdegroot.applicatives.processor.generator.LambdaGenerator.lambda;
 import static nl.wernerdegroot.applicatives.processor.generator.Lines.lines;
 import static nl.wernerdegroot.applicatives.processor.generator.MethodCallGenerator.methodCall;
 import static nl.wernerdegroot.applicatives.processor.generator.MethodGenerator.method;
 import static nl.wernerdegroot.applicatives.processor.generator.MethodReferenceGenerator.methodReference;
+import static nl.wernerdegroot.applicatives.processor.generator.ParametersGenerator.parameters;
 
 public class ContravariantGenerator extends Generator<ContravariantGenerator> {
 
@@ -241,44 +241,15 @@ public class ContravariantGenerator extends Generator<ContravariantGenerator> {
                 .withReturnStatement(methodBody);
     }
 
-    private List<MethodGenerator> liftMethods() {
-        return IntStream.range(2, maxArity)
-                .mapToObj(this::liftMethodWithArity)
-                .collect(toList());
-    }
-
-    private MethodGenerator liftMethodWithArity(int arity) {
-        return liftMethodWithArity(
-                arity,
-                methodCall()
-                        .withObjectPath(THIS)
-                        .withMethodName(combineMethodToGenerate)
-                        .withArguments(takeInputParameterNames(arity))
-                        .withArguments(decompositionParameterName)
-                        .generate()
-        );
-    }
-
-    private MethodGenerator liftMethodWithArity(int arity, String lambdaBody) {
+    @Override
+    protected List<Parameter> getAdditionalLiftMethodParametersToPassOnToCombineMethod(int arity) {
         List<TypeArgument> decompositionTypeArguments = new ArrayList<>();
         decompositionTypeArguments.add(returnTypeConstructorArgument.asType().contravariant());
         decompositionTypeArguments.addAll(takeParameterTypeConstructorArgumentsAsTypeArguments(arity, Type::covariant));
-        return method()
-                .withModifiers(DEFAULT)
-                .withTypeParameters(takeParameterTypeConstructorArguments(arity))
-                .withTypeParameters(returnTypeConstructorArgument.getName())
-                .withReturnType(lambdaReturnType(getReturnTypeConstructor(), getOtherParametersTypeConstructor(), getFirstParameterTypeConstructor(), arity))
-                .withName(liftMethodToGenerate)
-                .withParameter(
-                        Type.concrete(fullyQualifiedNameOfDecomposition(arity), decompositionTypeArguments),
-                        decompositionParameterName
-                )
-                .withReturnStatement(
-                        lambda()
-                                .withParameterNames(takeInputParameterNames(arity))
-                                .withExpression(lambdaBody)
-                                .multiline()
-                );
+
+        return parameters()
+                .withParameter(Type.concrete(fullyQualifiedNameOfDecomposition(arity), decompositionTypeArguments), decompositionParameterName)
+                .unwrap();
     }
 
     private List<MethodGenerator> tupleMethods() {

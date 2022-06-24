@@ -9,9 +9,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
+import static nl.wernerdegroot.applicatives.processor.domain.Modifier.DEFAULT;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.BI_FUNCTION;
+import static nl.wernerdegroot.applicatives.processor.generator.Constants.THIS;
+import static nl.wernerdegroot.applicatives.processor.generator.LambdaGenerator.lambda;
 import static nl.wernerdegroot.applicatives.processor.generator.MethodCallGenerator.methodCall;
 import static nl.wernerdegroot.applicatives.processor.generator.MethodGenerator.method;
 
@@ -125,6 +129,50 @@ public abstract class Generator<This> {
                         .withName(finalizer.getName())
                         .withParameter(returnTypeConstructorArgument.asType().using(finalizer.getToFinalizeTypeConstructor()), valueParameterName)
         );
+    }
+
+    protected abstract List<Parameter> getAdditionalLiftMethodParametersToPassOnToCombineMethod(int arity);
+
+    protected List<MethodGenerator> liftMethods() {
+        List<MethodGenerator> liftMethods = new ArrayList<>();
+        IntStream.rangeClosed(2, maxArity).forEachOrdered(arity -> {
+            liftMethods.add(liftMethodWithArity(arity));
+        });
+        return liftMethods;
+    }
+
+    private MethodGenerator liftMethodWithArity(int arity) {
+
+        List<String> additionLiftMethodParameterNamesToPassOnToCombineMethod = getAdditionalLiftMethodParametersToPassOnToCombineMethod(arity)
+                .stream()
+                .map(Parameter::getName)
+                .collect(toList());
+
+        return liftMethodWithArity(
+                arity,
+                methodCall()
+                        .withObjectPath(THIS)
+                        .withMethodName(combineMethodToGenerate)
+                        .withArguments(takeInputParameterNames(arity))
+                        .withArguments(additionLiftMethodParameterNamesToPassOnToCombineMethod)
+                        .generate()
+        );
+    }
+
+    private MethodGenerator liftMethodWithArity(int arity, String lambdaBody) {
+        return method()
+                .withModifiers(DEFAULT)
+                .withTypeParameters(takeParameterTypeConstructorArguments(arity))
+                .withTypeParameters(returnTypeConstructorArgument.getName())
+                .withReturnType(lambdaReturnType(getReturnTypeConstructor(), getOtherParametersTypeConstructor(), getFirstParameterTypeConstructor(), arity))
+                .withName(liftMethodToGenerate)
+                .withParameters(getAdditionalLiftMethodParametersToPassOnToCombineMethod(arity))
+                .withReturnStatement(
+                        lambda()
+                                .withParameterNames(takeInputParameterNames(arity))
+                                .withExpression(lambdaBody)
+                                .multiline()
+                );
     }
 
     protected boolean hasInitializer() {
