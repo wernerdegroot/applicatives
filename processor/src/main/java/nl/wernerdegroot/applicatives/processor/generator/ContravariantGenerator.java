@@ -10,28 +10,24 @@ import nl.wernerdegroot.applicatives.processor.domain.type.TypeArgument;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.IntStream;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static nl.wernerdegroot.applicatives.processor.Ordinals.getterForIndex;
 import static nl.wernerdegroot.applicatives.processor.Ordinals.withouterForIndex;
-import static nl.wernerdegroot.applicatives.processor.domain.Modifier.DEFAULT;
 import static nl.wernerdegroot.applicatives.processor.domain.Modifier.PUBLIC;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.FUNCTION;
 import static nl.wernerdegroot.applicatives.processor.generator.ClassOrInterfaceGenerator.classOrInterface;
 import static nl.wernerdegroot.applicatives.processor.generator.Constants.*;
 import static nl.wernerdegroot.applicatives.processor.generator.Lines.lines;
 import static nl.wernerdegroot.applicatives.processor.generator.MethodCallGenerator.methodCall;
-import static nl.wernerdegroot.applicatives.processor.generator.MethodGenerator.method;
 import static nl.wernerdegroot.applicatives.processor.generator.MethodReferenceGenerator.methodReference;
 import static nl.wernerdegroot.applicatives.processor.generator.ParametersGenerator.parameters;
 
 public class ContravariantGenerator extends Generator<ContravariantGenerator> {
 
     private static final ClassName TUPLE_CLASS_NAME = ClassName.of("Tuples");
-    private static final String TUPLE_METHOD_NAME = "tuple";
     private static final String DECOMPOSITION_DECOMPOSE_METHOD_NAME = "decompose";
     private static final String FUNCTION_IDENTITY_METHOD_NAME = "identity";
 
@@ -146,43 +142,6 @@ public class ContravariantGenerator extends Generator<ContravariantGenerator> {
     }
 
     @Override
-    protected List<String> getAdditionalArgumentsToPassOnToAccumulatorMethodForCombineMethod(int arity) {
-        return asList(
-                methodReference().withObjectPath(decompositionParameterName).withMethodName(DECOMPOSITION_DECOMPOSE_METHOD_NAME).generate(),
-                methodReference().withObjectPath(fullyQualifiedNameOfTupleWithArity(arity)).withMethodName(withouterForIndex(arity - 1)).generate(),
-                methodReference().withObjectPath(fullyQualifiedNameOfTupleWithArity(arity)).withMethodName(getterForIndex(arity - 1)).generate()
-        );
-    }
-
-    @Override
-    protected List<String> getAdditionalArgumentsToPassOnToAccumulatorMethodForCombineMethodWithArityTwo() {
-        return asList(
-                methodReference().withObjectPath(decompositionParameterName).withMethodName(DECOMPOSITION_DECOMPOSE_METHOD_NAME).generate(),
-                methodReference().withObjectPath(fullyQualifiedNameOfTupleWithArity(2)).withMethodName(getterForIndex(0)).generate(),
-                methodReference().withObjectPath(fullyQualifiedNameOfTupleWithArity(2)).withMethodName(getterForIndex(1)).generate()
-        );
-    }
-
-    @Override
-    protected List<String> getAdditionalArgumentsToPassToTupleMethodForCombineMethod(int arity) {
-        return emptyList();
-    }
-
-    @Override
-    protected List<Parameter> getAdditionalParametersForCombineMethod(int arity) {
-        List<TypeArgument> decompositionTypeArguments = new ArrayList<>();
-        decompositionTypeArguments.add(returnTypeConstructorArgument.asType().contravariant());
-        decompositionTypeArguments.addAll(takeParameterTypeConstructorArgumentsAsTypeArguments(arity, Type::covariant));
-
-        return parameters()
-                .withParameter(
-                        Type.concrete(fullyQualifiedNameOfDecomposition(arity), decompositionTypeArguments),
-                        decompositionParameterName
-                )
-                .unwrap();
-    }
-
-    @Override
     protected CombineMethod getCombineMethod() {
         return new CombineMethod() {
 
@@ -255,90 +214,72 @@ public class ContravariantGenerator extends Generator<ContravariantGenerator> {
         );
     }
 
-    private MethodGenerator combineMethodForDecomposableWithArity(int arity) {
-        return combineMethodForDecomposableWithArity(
-                arity,
-                methodCall()
-                        .withObjectPath(THIS)
-                        .withTypeArguments(takeParameterTypeConstructorArgumentsAsTypeArguments(arity))
-                        .withTypeArguments(returnTypeConstructorArgument.asType().invariant())
-                        .withMethodName(combineMethodToGenerate)
-                        .withArguments(takeInputParameterNames(arity))
-                        .withArguments(methodReference().withType(returnTypeConstructorArgument.asType()).withMethodName(DECOMPOSITION_DECOMPOSE_METHOD_NAME).generate())
-                        .generate()
-        );
-    }
+    @Override
+    protected LiftMethod getLiftMethod() {
+        return new LiftMethod() {
+            @Override
+            public List<Parameter> getAdditionalLiftMethodParametersToPassOnToCombineMethod(int arity) {
+                List<TypeArgument> decompositionTypeArguments = new ArrayList<>();
+                decompositionTypeArguments.add(returnTypeConstructorArgument.asType().contravariant());
+                decompositionTypeArguments.addAll(takeParameterTypeConstructorArgumentsAsTypeArguments(arity, Type::covariant));
 
-    private MethodGenerator combineMethodForDecomposableWithArity(int arity, String methodBody) {
-        List<TypeArgument> decompositionTypeArguments = new ArrayList<>();
-        decompositionTypeArguments.add(returnTypeConstructorArgument.asType().contravariant());
-        decompositionTypeArguments.addAll(takeParameterTypeConstructorArgumentsAsTypeArguments(arity, Type::covariant));
-        return method()
-                .withModifiers(DEFAULT)
-                .withTypeParameters(takeParameterTypeConstructorArguments(arity))
-                .withTypeParameters(returnTypeConstructorArgument.getName().extending(Type.concrete(fullyQualifiedNameOfDecomposable(arity), takeParameterTypeConstructorArgumentsAsTypeArguments(arity))))
-                .withReturnType(getReturnType())
-                .withName(combineMethodToGenerate)
-                .withParameterTypes(takeParameterTypes(arity))
-                .andParameterNames(takeInputParameterNames(arity))
-                .withReturnStatement(methodBody);
+                return parameters()
+                        .withParameter(Type.concrete(fullyQualifiedNameOfDecomposition(arity), decompositionTypeArguments), decompositionParameterName)
+                        .unwrap();
+            }
+        };
     }
 
     @Override
-    protected List<Parameter> getAdditionalLiftMethodParametersToPassOnToCombineMethod(int arity) {
-        List<TypeArgument> decompositionTypeArguments = new ArrayList<>();
-        decompositionTypeArguments.add(returnTypeConstructorArgument.asType().contravariant());
-        decompositionTypeArguments.addAll(takeParameterTypeConstructorArgumentsAsTypeArguments(arity, Type::covariant));
+    protected TupleMethod getTupleMethod() {
+        return new TupleMethod() {
 
-        return parameters()
-                .withParameter(Type.concrete(fullyQualifiedNameOfDecomposition(arity), decompositionTypeArguments), decompositionParameterName)
-                .unwrap();
-    }
+            @Override
+            public List<Parameter> getAdditionalTupleMethodParametersToPassOnToTupleMethod(int arity) {
+                return emptyList();
+            }
 
-    @Override
-    protected List<Parameter> getAdditionalTupleMethodParametersToPassOnToTupleMethod(int arity) {
-        return emptyList();
-    }
+            @Override
+            public List<TypeArgument> getTypeArgumentsToPassOnToAccumulatorMethodForTupleMethod(int arity) {
+                return emptyList();
+            }
 
-    @Override
-    protected List<TypeArgument> getTypeArgumentsToPassOnToAccumulatorMethodForTupleMethod(int arity) {
-        return emptyList();
-    }
+            @Override
+            public List<String> getAdditionalArgumentsToPassOnToAccumulatorMethodForTupleMethod(int arity) {
+                return asList(
+                        methodCall()
+                                .withType(FUNCTION.getFullyQualifiedName())
+                                .withMethodName("identity")
+                                .generate(),
+                        methodReference()
+                                .withType(fullyQualifiedNameOfTupleWithArity(arity))
+                                .withMethodName(withouterForIndex(arity - 1))
+                                .generate(),
+                        methodReference()
+                                .withType(fullyQualifiedNameOfTupleWithArity(arity))
+                                .withMethodName(getterForIndex(arity - 1))
+                                .generate()
+                );
+            }
 
-    @Override
-    protected List<String> getAdditionalArgumentsToPassOnToAccumulatorMethodForTupleMethod(int arity) {
-        return asList(
-                methodCall()
-                        .withType(FUNCTION.getFullyQualifiedName())
-                        .withMethodName("identity")
-                        .generate(),
-                methodReference()
-                        .withType(fullyQualifiedNameOfTupleWithArity(arity))
-                        .withMethodName(withouterForIndex(arity - 1))
-                        .generate(),
-                methodReference()
-                        .withType(fullyQualifiedNameOfTupleWithArity(arity))
-                        .withMethodName(getterForIndex(arity - 1))
-                        .generate()
-        );
-    }
-
-    @Override
-    protected List<String> getAdditionalArgumentsToPassOnToAccumulatorMethodForTupleMethodWithArityTwo() {
-        return asList(
-                methodCall()
-                        .withType(FUNCTION.getFullyQualifiedName())
-                        .withMethodName(FUNCTION_IDENTITY_METHOD_NAME)
-                        .generate(),
-                methodReference()
-                        .withType(fullyQualifiedNameOfTupleWithArity(2))
-                        .withMethodName(getterForIndex(0))
-                        .generate(),
-                methodReference()
-                        .withType(fullyQualifiedNameOfTupleWithArity(2))
-                        .withMethodName(getterForIndex(1))
-                        .generate()
-        );
+            @Override
+            public List<String> getAdditionalArgumentsToPassOnToAccumulatorMethodForTupleMethodWithArityTwo() {
+                return asList(
+                        methodCall()
+                                .withType(FUNCTION.getFullyQualifiedName())
+                                .withMethodName(FUNCTION_IDENTITY_METHOD_NAME)
+                                .generate(),
+                        methodReference()
+                                .withType(fullyQualifiedNameOfTupleWithArity(2))
+                                .withMethodName(getterForIndex(0))
+                                .generate(),
+                        methodReference()
+                                .withType(fullyQualifiedNameOfTupleWithArity(2))
+                                .withMethodName(getterForIndex(1))
+                                .generate()
+                );
+            }
+        };
     }
 
     private FullyQualifiedName fullyQualifiedNameOfDecomposable(int arity) {

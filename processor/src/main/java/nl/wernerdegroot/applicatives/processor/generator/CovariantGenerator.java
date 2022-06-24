@@ -189,89 +189,60 @@ public class CovariantGenerator extends Generator<CovariantGenerator> {
     }
 
     @Override
-    protected List<String> getAdditionalArgumentsToPassOnToAccumulatorMethodForCombineMethod(int arity) {
-        return singletonList(
-                lambda()
-                        .withParameterNames(tupleParameterName, elementParameterName)
-                        .withExpression(
-                                methodCall()
-                                        .withObjectPath(combinatorParameterName)
-                                        .withMethodName(COMBINATOR_APPLY_METHOD_NAME)
-                                        .withArguments(
-                                                IntStream.range(0, arity - 1)
-                                                        .boxed()
-                                                        .map(elementIndex -> methodCall().withObjectPath(tupleParameterName).withMethodName(getterForIndex(elementIndex)).generate())
-                                                        .collect(toList())
-                                        )
-                                        .withArguments(elementParameterName)
-                                        .generate()
-                        )
-                        .generate()
-        );
+    protected LiftMethod getLiftMethod() {
+        return new LiftMethod() {
+            @Override
+            public List<Parameter> getAdditionalLiftMethodParametersToPassOnToCombineMethod(int arity) {
+                return parameters()
+                        .withParameter(lambdaParameterType(TypeConstructor.placeholder(), TypeConstructor.placeholder(), TypeConstructor.placeholder(), arity), combinatorParameterName)
+                        .unwrap();
+            }
+        };
     }
 
     @Override
-    protected List<String> getAdditionalArgumentsToPassOnToAccumulatorMethodForCombineMethodWithArityTwo() {
-        return singletonList(combinatorParameterName);
-    }
+    protected TupleMethod getTupleMethod() {
+        return new TupleMethod() {
+            @Override
+            public List<Parameter> getAdditionalTupleMethodParametersToPassOnToTupleMethod(int arity) {
+                return parameters()
+                        .withParameter(INT, maxTupleSizeParameterName)
+                        .unwrap();
+            }
 
-    @Override
-    protected List<String> getAdditionalArgumentsToPassToTupleMethodForCombineMethod(int arity) {
-        return singletonList(Integer.toString(arity));
-    }
+            @Override
+            public List<TypeArgument> getTypeArgumentsToPassOnToAccumulatorMethodForTupleMethod(int arity) {
+                return asList(
+                        getCovariantTupleTypeOfArity(arity - 1).invariant(),
+                        parameterTypeConstructorArguments.get(arity - 1).asType().invariant(),
+                        getCovariantTupleTypeOfArity(arity).invariant()
+                );
+            }
 
-    @Override
-    protected List<Parameter> getAdditionalParametersForCombineMethod(int arity) {
-        return parameters()
-                .withParameter(lambdaParameterType(TypeConstructor.placeholder(), TypeConstructor.placeholder(), TypeConstructor.placeholder(), arity), combinatorParameterName)
-                .unwrap();
-    }
+            @Override
+            public List<String> getAdditionalArgumentsToPassOnToAccumulatorMethodForTupleMethod(int arity) {
+                return singletonList(
+                        methodReference()
+                                .withType(fullyQualifiedNameOfTupleWithArity(arity - 1))
+                                .withMethodName(witherForIndex(arity - 1))
+                                .generate()
+                );
+            }
 
-    @Override
-    protected List<Parameter> getAdditionalLiftMethodParametersToPassOnToCombineMethod(int arity) {
-        return parameters()
-                .withParameter(lambdaParameterType(TypeConstructor.placeholder(), TypeConstructor.placeholder(), TypeConstructor.placeholder(), arity), combinatorParameterName)
-                .unwrap();
-    }
+            @Override
+            public List<String> getAdditionalArgumentsToPassOnToAccumulatorMethodForTupleMethodWithArityTwo() {
+                return singletonList(
+                        methodCall()
+                                .withType(FAST_TUPLE)
+                                .withMethodName(FAST_TUPLE_WITH_MAX_SIZE_METHOD_NAME)
+                                .withArguments(maxTupleSizeParameterName)
+                                .generate()
+                );
+            }
 
-    @Override
-    protected List<Parameter> getAdditionalTupleMethodParametersToPassOnToTupleMethod(int arity) {
-        return parameters()
-                .withParameter(INT, maxTupleSizeParameterName)
-                .unwrap();
-    }
-
-    @Override
-    protected List<TypeArgument> getTypeArgumentsToPassOnToAccumulatorMethodForTupleMethod(int arity) {
-        return asList(
-                getCovariantTupleTypeOfArity(arity - 1).invariant(),
-                parameterTypeConstructorArguments.get(arity - 1).asType().invariant(),
-                getCovariantTupleTypeOfArity(arity).invariant()
-        );
-    }
-
-    @Override
-    protected List<String> getAdditionalArgumentsToPassOnToAccumulatorMethodForTupleMethod(int arity) {
-        return singletonList(
-                methodReference()
-                        .withType(fullyQualifiedNameOfTupleWithArity(arity - 1))
-                        .withMethodName(witherForIndex(arity - 1))
-                        .generate()
-        );
-    }
-
-    @Override
-    protected List<String> getAdditionalArgumentsToPassOnToAccumulatorMethodForTupleMethodWithArityTwo() {
-        return singletonList(
-                methodCall()
-                        .withType(FAST_TUPLE)
-                        .withMethodName(FAST_TUPLE_WITH_MAX_SIZE_METHOD_NAME)
-                        .withArguments(maxTupleSizeParameterName)
-                        .generate()
-        );
-    }
-
-    private Type getCovariantTupleTypeOfArity(int arity) {
-        return Type.concrete(fullyQualifiedNameOfTupleWithArity(arity), takeParameterTypeConstructorArgumentsAsTypeArguments(arity, Type::covariant));
+            private Type getCovariantTupleTypeOfArity(int arity) {
+                return Type.concrete(fullyQualifiedNameOfTupleWithArity(arity), takeParameterTypeConstructorArgumentsAsTypeArguments(arity, Type::covariant));
+            }
+        };
     }
 }
