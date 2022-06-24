@@ -17,13 +17,9 @@ import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static nl.wernerdegroot.applicatives.processor.Ordinals.getterForIndex;
 import static nl.wernerdegroot.applicatives.processor.Ordinals.witherForIndex;
-import static nl.wernerdegroot.applicatives.processor.domain.Modifier.PUBLIC;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.BI_FUNCTION;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.INT;
-import static nl.wernerdegroot.applicatives.processor.generator.ClassOrInterfaceGenerator.classOrInterface;
-import static nl.wernerdegroot.applicatives.processor.generator.Constants.*;
 import static nl.wernerdegroot.applicatives.processor.generator.LambdaGenerator.lambda;
-import static nl.wernerdegroot.applicatives.processor.generator.Lines.lines;
 import static nl.wernerdegroot.applicatives.processor.generator.MethodCallGenerator.methodCall;
 import static nl.wernerdegroot.applicatives.processor.generator.MethodReferenceGenerator.methodReference;
 import static nl.wernerdegroot.applicatives.processor.generator.ParametersGenerator.parameters;
@@ -68,55 +64,26 @@ public class CovariantGenerator extends Generator<CovariantGenerator> {
         return this;
     }
 
-    public String generate() {
-        Lines lines = lines();
-        lines.append(PACKAGE + SPACE + packageName.raw() + SEMICOLON);
-        lines.append(EMPTY_LINE);
-
-        // Place to gather methods:
-        List<MethodGenerator> methods = new ArrayList<>();
-
-        // If the client provided an initializer method, generate an abstract
-        // method for it and append it to the methods.
-        optionalAbstractInitializerMethod().ifPresent(methods::add);
-
-        methods.add(abstractAccumulatorMethod());
-
-        // If the client provided a finalizer method, generate an abstract
-        // method for it and append it to the methods.
-        optionalAbstractFinalizerMethod().ifPresent(methods::add);
-
-        // Continue adding the combine- and lift-methods.
-        methods.addAll(combineMethods());
-        methods.addAll(liftMethods());
-
-        lines.append(
-                classOrInterface()
-                        .asInterface()
-                        .withModifiers(PUBLIC)
-                        .withName(classNameToGenerate)
-                        .withTypeParameters(classTypeParameters)
-                        .withBody(methods.stream().collect(Lines.collecting(MethodGenerator::lines)))
-                        .withBody(EMPTY_LINE)
-                        .withBody(
-                                classOrInterface()
-                                        .asClass()
-                                        .withName(TUPLE_CLASS_NAME.raw())
-                                        .withBody(tupleMethods().stream().collect(Lines.collecting(MethodGenerator::lines)))
-                                        .lines()
-                        )
-                        .lines()
-        );
-
-        return String.join(LINE_FEED, lines);
-    }
-
     @Override
     protected List<TypeParameter> getAccumulatorTypeParameters() {
         List<TypeParameter> typeParameters = new ArrayList<>();
         typeParameters.addAll(takeParameterTypeConstructorArguments(2));
         typeParameters.add(returnTypeConstructorArgument);
         return typeParameters;
+    }
+
+    @Override
+    protected List<Parameter> getAdditionalAccumulatorParameters() {
+        return parameters()
+                .withParameter(
+                        BI_FUNCTION.with(
+                                parameterTypeConstructorArguments.get(0).contravariant(),
+                                parameterTypeConstructorArguments.get(1).contravariant(),
+                                returnTypeConstructorArgument.covariant()
+                        ),
+                        combinatorParameterName
+                )
+                .unwrap();
     }
 
     @Override
@@ -172,20 +139,6 @@ public class CovariantGenerator extends Generator<CovariantGenerator> {
     @Override
     protected Optional<Generator<CovariantGenerator>.SimplifiedCombineMethod> getSimplifiedCombineMethod() {
         return Optional.empty();
-    }
-
-    @Override
-    protected List<Parameter> getAdditionalAccumulatorParameters() {
-        return parameters()
-                .withParameter(
-                        BI_FUNCTION.with(
-                                parameterTypeConstructorArguments.get(0).contravariant(),
-                                parameterTypeConstructorArguments.get(1).contravariant(),
-                                returnTypeConstructorArgument.covariant()
-                        ),
-                        combinatorParameterName
-                )
-                .unwrap();
     }
 
     @Override

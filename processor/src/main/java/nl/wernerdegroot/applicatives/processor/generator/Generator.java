@@ -14,8 +14,10 @@ import java.util.stream.IntStream;
 import static java.util.stream.Collectors.toList;
 import static nl.wernerdegroot.applicatives.processor.domain.Modifier.*;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.BI_FUNCTION;
-import static nl.wernerdegroot.applicatives.processor.generator.Constants.THIS;
+import static nl.wernerdegroot.applicatives.processor.generator.ClassOrInterfaceGenerator.classOrInterface;
+import static nl.wernerdegroot.applicatives.processor.generator.Constants.*;
 import static nl.wernerdegroot.applicatives.processor.generator.LambdaGenerator.lambda;
+import static nl.wernerdegroot.applicatives.processor.generator.Lines.lines;
 import static nl.wernerdegroot.applicatives.processor.generator.MethodCallGenerator.methodCall;
 import static nl.wernerdegroot.applicatives.processor.generator.MethodGenerator.method;
 
@@ -109,6 +111,49 @@ public abstract class Generator<This> {
     public This withMaxArity(int maxArity) {
         this.maxArity = maxArity;
         return getThis();
+    }
+
+    public String generate() {
+        Lines lines = lines();
+        lines.append(PACKAGE + SPACE + packageName.raw() + SEMICOLON);
+        lines.append(EMPTY_LINE);
+
+        // Place to gather methods:
+        List<MethodGenerator> methods = new ArrayList<>();
+
+        // If the client provided an initializer method, generate an abstract
+        // method for it and append it to the methods.
+        optionalAbstractInitializerMethod().ifPresent(methods::add);
+
+        methods.add(abstractAccumulatorMethod());
+
+        // If the client provided a finalizer method, generate an abstract
+        // method for it and append it to the methods.
+        optionalAbstractFinalizerMethod().ifPresent(methods::add);
+
+        // Continue adding the combine- and lift-methods.
+        methods.addAll(combineMethods());
+        methods.addAll(liftMethods());
+
+        lines.append(
+                classOrInterface()
+                        .asInterface()
+                        .withModifiers(PUBLIC)
+                        .withName(classNameToGenerate)
+                        .withTypeParameters(classTypeParameters)
+                        .withBody(methods.stream().collect(Lines.collecting(MethodGenerator::lines)))
+                        .withBody(EMPTY_LINE)
+                        .withBody(
+                                classOrInterface()
+                                        .asClass()
+                                        .withName(TUPLE_CLASS_NAME.raw())
+                                        .withBody(tupleMethods().stream().collect(Lines.collecting(MethodGenerator::lines)))
+                                        .lines()
+                        )
+                        .lines()
+        );
+
+        return String.join(LINE_FEED, lines);
     }
 
     protected Optional<MethodGenerator> optionalAbstractInitializerMethod() {
@@ -319,6 +364,10 @@ public abstract class Generator<This> {
                                     .withExpression(lambdaBody)
                                     .multiline()
                     );
+        }
+
+        private Type lambdaReturnType(TypeConstructor returnTypeConstructor, TypeConstructor firstParameterTypeConstructor, TypeConstructor otherParametersTypeConstructor, int arity) {
+            return lambdaType(returnTypeConstructor, firstParameterTypeConstructor, otherParametersTypeConstructor, arity, Type::invariant, Type::invariant);
         }
     }
 
@@ -539,10 +588,6 @@ public abstract class Generator<This> {
 
     protected Type lambdaParameterType(TypeConstructor returnTypeConstructor, TypeConstructor firstParameterTypeConstructor, TypeConstructor otherParametersTypeConstructor, int arity) {
         return lambdaType(returnTypeConstructor, firstParameterTypeConstructor, otherParametersTypeConstructor, arity, Type::contravariant, Type::covariant);
-    }
-
-    protected Type lambdaReturnType(TypeConstructor returnTypeConstructor, TypeConstructor firstParameterTypeConstructor, TypeConstructor otherParametersTypeConstructor, int arity) {
-        return lambdaType(returnTypeConstructor, firstParameterTypeConstructor, otherParametersTypeConstructor, arity, Type::invariant, Type::invariant);
     }
 
     protected Type lambdaType(TypeConstructor returnTypeConstructor, TypeConstructor firstParameterTypeConstructor, TypeConstructor otherParametersTypeConstructor, int arity, Function<Type, TypeArgument> parameterVariance, Function<Type, TypeArgument> returnTypeVariance) {
