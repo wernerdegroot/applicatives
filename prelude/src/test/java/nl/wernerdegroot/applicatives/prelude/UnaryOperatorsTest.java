@@ -20,6 +20,7 @@ public class UnaryOperatorsTest {
                 name -> name + "!",
                 damage -> damage * 2
         );
+
         UnaryOperator<PokemonCard> transformPokemonCard = UnaryOperators.instance().combine(
                 name -> name.toUpperCase(),
                 level -> level + 1,

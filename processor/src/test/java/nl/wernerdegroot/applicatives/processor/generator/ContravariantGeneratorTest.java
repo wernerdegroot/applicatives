@@ -18,7 +18,7 @@ import static nl.wernerdegroot.applicatives.processor.domain.typeconstructor.Typ
 import static nl.wernerdegroot.applicatives.processor.generator.ContravariantGenerator.generator;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ContravariantGeneratorTest {
+public class ContravariantGeneratorTest implements GeneratorTest {
 
     @Test
     public void givenComparator() throws IOException {
@@ -106,17 +106,5 @@ public class ContravariantGeneratorTest {
                 .generate();
 
         assertEquals(expected, toVerify);
-    }
-
-    private static String getResourceFileAsString(String fileName) throws IOException {
-        try (InputStream is = CovariantGeneratorTest.class.getResourceAsStream(fileName)) {
-            if (is == null) {
-                throw new NullPointerException();
-            }
-
-            try (InputStreamReader isr = new InputStreamReader(is); BufferedReader reader = new BufferedReader(isr)) {
-                return reader.lines().collect(joining("\n"));
-            }
-        }
     }
 }
