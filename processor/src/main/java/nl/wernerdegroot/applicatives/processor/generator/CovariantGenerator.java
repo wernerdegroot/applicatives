@@ -193,6 +193,7 @@ public class CovariantGenerator extends Generator<CovariantGenerator> {
                 );
             }
 
+            // TODO: move to base class
             private Type getCovariantTupleTypeOfArity(int arity) {
                 return Type.concrete(fullyQualifiedNameOfTupleWithArity(arity), takeParameterTypeConstructorArgumentsAsTypeArguments(arity, Type::covariant));
             }

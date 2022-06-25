@@ -282,7 +282,7 @@ public abstract class Generator<This> {
     abstract class SimplifiedCombineMethod {
         public abstract List<TypeParameter> getTypeParameters(int arity);
 
-        public abstract List<Parameter> getAdditionalParameters();
+        public abstract List<Parameter> getAdditionalParameters(int arity);
 
         public abstract List<String> getAdditionalArgumentsToPassToCombineMethod();
 
@@ -311,7 +311,7 @@ public abstract class Generator<This> {
                     .withName(combineMethodToGenerate)
                     .withParameterTypes(takeParameterTypes(arity))
                     .andParameterNames(takeInputParameterNames(arity))
-                    .withParameters(getAdditionalParameters())
+                    .withParameters(getAdditionalParameters(arity))
                     .withReturnStatement(methodBody);
         }
     }

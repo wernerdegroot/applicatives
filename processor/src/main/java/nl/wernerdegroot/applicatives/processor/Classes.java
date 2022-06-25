@@ -51,6 +51,15 @@ public class Classes {
         }
     }
 
+    public static final String INVARIANT_CLASS_NAME = "nl.wernerdegroot.applicatives.runtime.Invariant";
+    public static final Class<Invariant> INVARIANT_CLASS = Invariant.class;
+
+    static {
+        if (!Objects.equals(INVARIANT_CLASS_NAME, INVARIANT_CLASS.getName())) {
+            throw new RuntimeException(String.format("Can't find annotation class %s", INVARIANT_CLASS_NAME));
+        }
+    }
+
     public static final FullyQualifiedName INITIALIZER_FULLY_QUALIFIED_NAME = FullyQualifiedName.of(Initializer.class.getCanonicalName());
     public static final FullyQualifiedName ACCUMULATOR_FULLY_QUALIFIED_NAME = FullyQualifiedName.of(Accumulator.class.getCanonicalName());
     public static final FullyQualifiedName FINALIZER_FULLY_QUALIFIED_NAME = FullyQualifiedName.of(Finalizer.class.getCanonicalName());
