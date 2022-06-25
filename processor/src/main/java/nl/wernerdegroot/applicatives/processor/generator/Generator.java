@@ -355,7 +355,7 @@ public abstract class Generator<This> {
                     .withModifiers(DEFAULT)
                     .withTypeParameters(takeParameterTypeConstructorArguments(arity))
                     .withTypeParameters(returnTypeConstructorArgument.getName())
-                    .withReturnType(lambdaReturnType(getReturnTypeConstructor(), getOtherParametersTypeConstructor(), getFirstParameterTypeConstructor(), arity))
+                    .withReturnType(lambdaReturnType(getReturnTypeConstructor(), getFirstParameterTypeConstructor(), getOtherParametersTypeConstructor(), arity))
                     .withName(liftMethodToGenerate)
                     .withParameters(getAdditionalLiftMethodParametersToPassOnToCombineMethod(arity))
                     .withReturnStatement(
