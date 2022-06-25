@@ -184,6 +184,11 @@ public class ContravariantGenerator extends Generator<ContravariantGenerator> {
     }
 
     @Override
+    protected Optional<SimplifiedLiftMethod> getSimplifiedLiftMethod() {
+        return Optional.empty();
+    }
+
+    @Override
     protected TupleMethod getTupleMethod() {
         return new TupleMethod() {
 

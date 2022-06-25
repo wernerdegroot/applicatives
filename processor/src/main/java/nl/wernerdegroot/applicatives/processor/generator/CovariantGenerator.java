@@ -154,6 +154,11 @@ public class CovariantGenerator extends Generator<CovariantGenerator> {
     }
 
     @Override
+    protected Optional<SimplifiedLiftMethod> getSimplifiedLiftMethod() {
+        return Optional.empty();
+    }
+
+    @Override
     protected TupleMethod getTupleMethod() {
         return new TupleMethod() {
             @Override

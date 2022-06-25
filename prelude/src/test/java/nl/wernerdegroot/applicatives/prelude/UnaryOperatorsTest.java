@@ -15,7 +15,7 @@ public class UnaryOperatorsTest {
 
     @Test
     public void combineAndLift() {
-        UnaryOperator<Move> transformMove = UnaryOperators.instance().lift(Move::new, Move::decompose).apply(
+        UnaryOperator<Move> transformMove = UnaryOperators.instance().lift(Move::new).apply(
                 cost -> cost.stream().flatMap(energyType -> Stream.of(energyType, energyType)).collect(toList()),
                 name -> name + "!",
                 damage -> damage * 2

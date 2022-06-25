@@ -314,16 +314,39 @@ public abstract class Generator<This> {
                     .withParameters(getAdditionalParameters(arity))
                     .withReturnStatement(methodBody);
         }
+
+        public SimplifiedLiftMethod asSimplifiedLiftMethod() {
+            return new SimplifiedLiftMethod() {
+                @Override
+                public List<TypeParameter> getTypeParameters(int arity) {
+                    return SimplifiedCombineMethod.this.getTypeParameters(arity);
+                }
+
+                @Override
+                public List<Parameter> getAdditionalParameters(int arity) {
+                    return SimplifiedCombineMethod.this.getAdditionalParameters(arity);
+                }
+
+                @Override
+                public List<String> getAdditionalArgumentsToPassToCombineMethod() {
+                    return SimplifiedCombineMethod.this.getAdditionalArgumentsToPassToCombineMethod();
+                }
+            };
+        }
     }
 
     protected abstract Optional<SimplifiedCombineMethod> getSimplifiedCombineMethod();
 
     protected List<MethodGenerator> liftMethods() {
         LiftMethod liftMethod = getLiftMethod();
+        Optional<SimplifiedLiftMethod> optionalSimplifiedLiftMethod = getSimplifiedLiftMethod();
 
         List<MethodGenerator> liftMethods = new ArrayList<>();
         IntStream.rangeClosed(2, maxArity).forEachOrdered(arity -> {
             liftMethods.add(liftMethod.withArity(arity));
+            optionalSimplifiedLiftMethod.ifPresent(simplifiedLiftMethod -> {
+                liftMethods.add(simplifiedLiftMethod.withArity(arity));
+            });
         });
         return liftMethods;
     }
@@ -372,6 +395,48 @@ public abstract class Generator<This> {
     }
 
     protected abstract LiftMethod getLiftMethod();
+
+    abstract class SimplifiedLiftMethod {
+
+        public abstract List<TypeParameter> getTypeParameters(int arity);
+
+        public abstract List<Parameter> getAdditionalParameters(int arity);
+
+        public abstract List<String> getAdditionalArgumentsToPassToCombineMethod();
+
+        private MethodGenerator withArity(int arity) {
+            return withArity(
+                    arity,
+                    methodCall()
+                            .withObjectPath(THIS)
+                            .withMethodName(combineMethodToGenerate)
+                            .withArguments(takeInputParameterNames(arity))
+                            .withArguments(getAdditionalArgumentsToPassToCombineMethod())
+                            .generate()
+            );
+        }
+
+        private MethodGenerator withArity(int arity, String lambdaBody) {
+            return method()
+                    .withModifiers(DEFAULT)
+                    .withTypeParameters(getTypeParameters(arity))
+                    .withReturnType(lambdaReturnType(getReturnTypeConstructor(), getFirstParameterTypeConstructor(), getOtherParametersTypeConstructor(), arity))
+                    .withName(liftMethodToGenerate)
+                    .withParameters(getAdditionalParameters(arity))
+                    .withReturnStatement(
+                            lambda()
+                                    .withParameterNames(takeInputParameterNames(arity))
+                                    .withExpression(lambdaBody)
+                                    .multiline()
+                    );
+        }
+
+        private Type lambdaReturnType(TypeConstructor returnTypeConstructor, TypeConstructor firstParameterTypeConstructor, TypeConstructor otherParametersTypeConstructor, int arity) {
+            return lambdaType(returnTypeConstructor, firstParameterTypeConstructor, otherParametersTypeConstructor, arity, Type::invariant, Type::invariant);
+        }
+    }
+
+    protected abstract Optional<SimplifiedLiftMethod> getSimplifiedLiftMethod();
 
     protected List<MethodGenerator> tupleMethods() {
         TupleMethod tupleMethod = getTupleMethod();

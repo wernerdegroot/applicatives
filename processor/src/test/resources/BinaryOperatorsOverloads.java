@@ -35,14 +35,29 @@ public interface BinaryOperatorsOverloads {
                 this.combine(first, second, fn, decomposition);
     }
 
+    default <P1, P2, R extends nl.wernerdegroot.applicatives.runtime.decompositions.Decomposable2<P1, P2>> java.util.function.BiFunction<java.util.function.BinaryOperator<P1>, java.util.function.BinaryOperator<P2>, java.util.function.BiFunction<R, R, R>> lift(java.util.function.BiFunction<? super P1, ? super P2, ? extends R> fn) {
+        return (first, second) ->
+                this.combine(first, second, fn, R::decompose);
+    }
+
     default <P1, P2, P3, R> nl.wernerdegroot.applicatives.runtime.Function3<java.util.function.BinaryOperator<P1>, java.util.function.BinaryOperator<P2>, java.util.function.BinaryOperator<P3>, java.util.function.BiFunction<R, R, R>> lift(nl.wernerdegroot.applicatives.runtime.Function3<? super P1, ? super P2, ? super P3, ? extends R> fn, nl.wernerdegroot.applicatives.runtime.decompositions.Decomposition3<? super R, ? extends P1, ? extends P2, ? extends P3> decomposition) {
         return (first, second, third) ->
                 this.combine(first, second, third, fn, decomposition);
     }
 
+    default <P1, P2, P3, R extends nl.wernerdegroot.applicatives.runtime.decompositions.Decomposable3<P1, P2, P3>> nl.wernerdegroot.applicatives.runtime.Function3<java.util.function.BinaryOperator<P1>, java.util.function.BinaryOperator<P2>, java.util.function.BinaryOperator<P3>, java.util.function.BiFunction<R, R, R>> lift(nl.wernerdegroot.applicatives.runtime.Function3<? super P1, ? super P2, ? super P3, ? extends R> fn) {
+        return (first, second, third) ->
+                this.combine(first, second, third, fn, R::decompose);
+    }
+
     default <P1, P2, P3, P4, R> nl.wernerdegroot.applicatives.runtime.Function4<java.util.function.BinaryOperator<P1>, java.util.function.BinaryOperator<P2>, java.util.function.BinaryOperator<P3>, java.util.function.BinaryOperator<P4>, java.util.function.BiFunction<R, R, R>> lift(nl.wernerdegroot.applicatives.runtime.Function4<? super P1, ? super P2, ? super P3, ? super P4, ? extends R> fn, nl.wernerdegroot.applicatives.runtime.decompositions.Decomposition4<? super R, ? extends P1, ? extends P2, ? extends P3, ? extends P4> decomposition) {
         return (first, second, third, fourth) ->
                 this.combine(first, second, third, fourth, fn, decomposition);
+    }
+
+    default <P1, P2, P3, P4, R extends nl.wernerdegroot.applicatives.runtime.decompositions.Decomposable4<P1, P2, P3, P4>> nl.wernerdegroot.applicatives.runtime.Function4<java.util.function.BinaryOperator<P1>, java.util.function.BinaryOperator<P2>, java.util.function.BinaryOperator<P3>, java.util.function.BinaryOperator<P4>, java.util.function.BiFunction<R, R, R>> lift(nl.wernerdegroot.applicatives.runtime.Function4<? super P1, ? super P2, ? super P3, ? super P4, ? extends R> fn) {
+        return (first, second, third, fourth) ->
+                this.combine(first, second, third, fourth, fn, R::decompose);
     }
 
     class Tuples {

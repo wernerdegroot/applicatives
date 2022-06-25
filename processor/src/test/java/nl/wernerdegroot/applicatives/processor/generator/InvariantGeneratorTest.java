@@ -116,15 +116,15 @@ public class InvariantGeneratorTest implements GeneratorTest {
                         Accumulator.of(
                                 "combineImpl",
                                 SET.with(placeholder().invariant()),
-                                BIT_SET.with(placeholder().invariant()),
-                                BIT_SET.with(placeholder().invariant())
+                                BIT_SET.asType().asTypeConstructor(),
+                                BIT_SET.asType().asTypeConstructor()
                         )
                 )
                 .withOptionalFinalizer(
                         Optional.of(
                                 Finalizer.of(
                                         "finalize",
-                                        BIT_SET.with(placeholder().invariant()),
+                                        BIT_SET.asType().asTypeConstructor(),
                                         SET.with(placeholder().invariant())
                                 )
                         )
