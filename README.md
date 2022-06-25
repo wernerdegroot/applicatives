@@ -14,6 +14,8 @@ Java code generation for applicative functors, selective functors and more.
     * [Stacking](#stacking)
     * [Contravariant](#contravariant)
     * [Decomposition](#decomposition)
+    * [More contravariant data types](#more-contravariant-data-types)
+    * [Invariant](#invariant)
     * [Contributing](#contributing)
     * [More contravariant data type](#more-contravariant-data-types)
     * [License](#license)
@@ -673,7 +675,7 @@ Decomposition4<PokemonCard, String, Integer, EnergyType, List<Move>> decompositi
         pokemonCard -> Tuple.of(
                 pokemonCard.getName(), 
                 pokemonCard.getHp(), 
-                pokemonCard.getEnergyType,
+                pokemonCard.getEnergyType(),
                 pokemonCard.getMoves()
         );
 
@@ -699,6 +701,41 @@ You can use `@Contravariant` for any data structure for which you can write a cl
 Many of these are included in the `prelude` module.
 
 Other examples of contravariant data types that can be combined include [Hamcrest's matchers](http://hamcrest.org/JavaHamcrest/tutorial), validators, etc.
+
+## Invariant
+
+It should not be surprising at this point that an `@Invariant` annotation is also provided. Perhaps the most obvious application of it is to combine `UnaryOperator`s:
+
+```java
+public class UnaryOperators implements UnaryOperatorsOverloads {
+
+    private static final UnaryOperators INSTANCE = new UnaryOperators();
+
+    public static UnaryOperators instance() {
+        return INSTANCE;
+    }
+
+    @Override
+    @Invariant
+    public <A, B, Intermediate, C> UnaryOperator<C> combine(
+            UnaryOperator<A> left,
+            UnaryOperator<B> right,
+            BiFunction<? super A, ? super B, ? extends C> combinator,
+            Function<? super C, ? extends Intermediate> toIntermediate,
+            Function<? super Intermediate, ? extends A> extractLeft,
+            Function<? super Intermediate, ? extends B> extractRight) {
+
+        return parameter -> {
+            Intermediate intermediate = toIntermediate.apply(parameter);
+            A fromLeft = left.apply(extractLeft.apply(intermediate));
+            B fromRight = right.apply(extractRight.apply(intermediate));
+            return combinator.apply(fromLeft, fromRight);
+        };
+    }
+}
+```
+
+Note that a class is already conveniently included for you in the `prelude` module. Check out the [implementation](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/main/java/nl/wernerdegroot/applicatives/prelude/UnaryOperators.java) and the [tests](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/test/java/nl/wernerdegroot/applicatives/prelude/UnaryOperatorsTest.java).
 
 ## Contributing
 
