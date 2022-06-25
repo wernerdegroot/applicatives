@@ -1,4 +1,5 @@
 * Add tests for builder with _just_ an intializer, or _just_ a finalizer.
+* Simplified lift.
 * Add `combinatorMethodName` to covariant things too (now included in annotation but not processed by generator)
 * Explicit type arguments to method call are not `TypeArgument` (for a data type). They can't specify variance. Used in generators.
 * Fix

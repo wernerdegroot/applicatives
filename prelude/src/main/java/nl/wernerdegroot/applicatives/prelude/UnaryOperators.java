@@ -8,6 +8,12 @@ import java.util.function.UnaryOperator;
 
 public class UnaryOperators implements UnaryOperatorsOverloads {
 
+    private static final UnaryOperators INSTANCE = new UnaryOperators();
+
+    public static UnaryOperators instance() {
+        return INSTANCE;
+    }
+
     @Override
     @Invariant
     public <A, B, Intermediate, C> UnaryOperator<C> combine(
