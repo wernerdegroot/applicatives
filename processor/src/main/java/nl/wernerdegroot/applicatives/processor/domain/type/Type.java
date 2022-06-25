@@ -46,9 +46,12 @@ public interface Type {
     TypeBuilder LIST = new TypeBuilder(FullyQualifiedName.of("java.util.List"));
     TypeBuilder ARRAY_LIST = new TypeBuilder(FullyQualifiedName.of("java.util.ArrayList"));
     TypeBuilder SET = new TypeBuilder(FullyQualifiedName.of("java.util.Set"));
+    TypeBuilder BIT_SET = new TypeBuilder(FullyQualifiedName.of("java.util.BitSet"));
     TypeBuilder MAP = new TypeBuilder(FullyQualifiedName.of("java.util.Map"));
     TypeBuilder FUNCTION = new TypeBuilder(FullyQualifiedName.of("java.util.function.Function"));
     TypeBuilder BI_FUNCTION = new TypeBuilder(FullyQualifiedName.of("java.util.function.BiFunction"));
+    TypeBuilder UNARY_OPERATOR = new TypeBuilder(FullyQualifiedName.of("java.util.function.UnaryOperator"));
+    TypeBuilder BINARY_OPERATOR = new TypeBuilder(FullyQualifiedName.of("java.util.function.BinaryOperator"));
     TypeBuilder COMPLETABLE_FUTURE = new TypeBuilder(FullyQualifiedName.of("java.util.concurrent.CompletableFuture"));
     TypeBuilder COMPARABLE = new TypeBuilder(FullyQualifiedName.of("java.lang.Comparable"));
     TypeBuilder TUPLE2 = new TypeBuilder(FullyQualifiedName.of("nl.wernerdegroot.applicatives.runtime.Tuple2"));

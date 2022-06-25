@@ -1,4 +1,6 @@
-* Add `combinatorMethodName` to covariant things too (now included in annotation but not processed by generator)
+* Add tests for builder with _just_ an intializer, or _just_ a finalizer.
+* Can we generate a lift signature from a combine signature? Should be possible. Definitely for the simplified ones.
+* Simplified lift.
 * Explicit type arguments to method call are not `TypeArgument` (for a data type). They can't specify variance. Used in generators.
 * Fix
   ```

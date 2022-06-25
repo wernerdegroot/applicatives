@@ -51,6 +51,28 @@ public class Classes {
         }
     }
 
+    public static final String INVARIANT_CLASS_NAME = "nl.wernerdegroot.applicatives.runtime.Invariant";
+    public static final Class<Invariant> INVARIANT_CLASS = Invariant.class;
+
+    static {
+        if (!Objects.equals(INVARIANT_CLASS_NAME, INVARIANT_CLASS.getName())) {
+            throw new RuntimeException(String.format("Can't find annotation class %s", INVARIANT_CLASS_NAME));
+        }
+    }
+
+    public static final String INVARIANT_BUILDER_CANONICAL_NAME = "nl.wernerdegroot.applicatives.runtime.Invariant.Builder";
+    public static final String INVARIANT_BUILDER_CLASS_NAME = "nl.wernerdegroot.applicatives.runtime.Invariant$Builder";
+    public static final Class<Invariant.Builder> INVARIANT_BUILDER_CLASS = Invariant.Builder.class;
+
+    static {
+        if (!Objects.equals(INVARIANT_BUILDER_CLASS_NAME, INVARIANT_BUILDER_CLASS.getName())) {
+            throw new RuntimeException(String.format("Can't find annotation class %s", INVARIANT_BUILDER_CLASS_NAME));
+        }
+        if (!Objects.equals(INVARIANT_BUILDER_CANONICAL_NAME, INVARIANT_BUILDER_CLASS.getCanonicalName())) {
+            throw new RuntimeException(String.format("Can't find annotation class %s", INVARIANT_BUILDER_CANONICAL_NAME));
+        }
+    }
+
     public static final FullyQualifiedName INITIALIZER_FULLY_QUALIFIED_NAME = FullyQualifiedName.of(Initializer.class.getCanonicalName());
     public static final FullyQualifiedName ACCUMULATOR_FULLY_QUALIFIED_NAME = FullyQualifiedName.of(Accumulator.class.getCanonicalName());
     public static final FullyQualifiedName FINALIZER_FULLY_QUALIFIED_NAME = FullyQualifiedName.of(Finalizer.class.getCanonicalName());
