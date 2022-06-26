@@ -44,6 +44,7 @@
         <module>runtime</module>
         <module>processor</module>
         <module>prelude</module>
+        <module>json</module>
     </modules>
 
     <properties>
