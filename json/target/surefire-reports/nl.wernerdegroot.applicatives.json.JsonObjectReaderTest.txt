@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: nl.wernerdegroot.applicatives.json.JsonObjectReaderTest
--------------------------------------------------------------------------------
-Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s - in nl.wernerdegroot.applicatives.json.JsonObjectReaderTest
