@@ -2,9 +2,8 @@ package nl.wernerdegroot.applicatives.json;
 
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
-import java.util.List;
 
-public interface JsonObjectFormat<T> extends JsonReader<T>, JsonObjectWriter<T> {
+public interface JsonObjectFormat<T> extends JsonReader<T>, JsonObjectWriter<T>, JsonFormat<T> {
 
     static <T> JsonObjectFormat<T> of(JsonReader<T> reader, JsonObjectWriter<T> writer) {
         return new JsonObjectFormat<T>() {
@@ -18,10 +17,5 @@ public interface JsonObjectFormat<T> extends JsonReader<T>, JsonObjectWriter<T> 
                 writer.write(builder, toWrite);
             }
         };
-    }
-
-    @Override
-    default JsonFormat<List<T>> list() {
-        return JsonFormat.of(JsonReader.super.list(), JsonObjectWriter.super.list());
     }
 }
