@@ -3,6 +3,7 @@
 /runtime/target
 /processor/target
 /prelude/target
+/json/target
 
 # IntelliJ
 /.idea
