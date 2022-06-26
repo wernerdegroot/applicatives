@@ -22,7 +22,12 @@ public class Key {
     }
 
     public <T> JsonObjectReader<T> readUsing(JsonReader<T> reader) {
-        return (path, toRead) -> reader.read(path.append(key), toRead.get(key));
+        return (toRead, ctx) -> {
+            ctx.pushKey(key);
+            T result = reader.read(toRead.get(key), ctx);
+            ctx.popKey();
+            return result;
+        };
     }
 
     public JsonObjectReader<String> readString() {
@@ -75,5 +80,33 @@ public class Key {
 
     public JsonObjectWriter<BigInteger> writeBigInteger() {
         return writeUsing(BIG_INTEGER);
+    }
+
+    public <T> JsonObjectFormat<T> formatUsing(JsonFormat<T> format) {
+        return JsonObjectFormat.of(readUsing(format), writeUsing(format));
+    }
+
+    public JsonObjectFormat<String> formatString() {
+        return formatUsing(STRING);
+    }
+
+    public JsonObjectFormat<Integer> formatInt() {
+        return formatUsing(INT);
+    }
+
+    public JsonObjectFormat<Long> formatLong() {
+        return formatUsing(LONG);
+    }
+
+    public JsonObjectFormat<Double> formatDouble() {
+        return formatUsing(DOUBLE);
+    }
+
+    public JsonObjectFormat<BigDecimal> formatBigDecimal() {
+        return formatUsing(BIG_DECIMAL);
+    }
+
+    public JsonObjectFormat<BigInteger> formatBigInteger() {
+        return formatUsing(BIG_INTEGER);
     }
 }

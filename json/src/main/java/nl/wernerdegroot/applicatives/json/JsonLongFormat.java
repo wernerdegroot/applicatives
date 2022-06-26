@@ -5,11 +5,8 @@ import javax.json.JsonNumber;
 import javax.json.JsonValue;
 
 import static javax.json.JsonValue.ValueType.NUMBER;
-import static nl.wernerdegroot.applicatives.json.Errors.UNEXPECTED_NULL;
 import static nl.wernerdegroot.applicatives.json.Errors.NOT_A_NUMBER;
-import static nl.wernerdegroot.applicatives.json.Json.failed;
-import static nl.wernerdegroot.applicatives.json.Json.success;
-import static nl.wernerdegroot.applicatives.json.Json.Result;
+import static nl.wernerdegroot.applicatives.json.Errors.UNEXPECTED_NULL;
 
 public class JsonLongFormat implements JsonFormat<Long> {
 
@@ -19,17 +16,19 @@ public class JsonLongFormat implements JsonFormat<Long> {
     }
 
     @Override
-    public Result<Long> read(Path path, JsonValue toRead) {
+    public Long read(JsonValue toRead, ValidationContext ctx) {
         if (toRead == null) {
-            return failed(path, UNEXPECTED_NULL.getErrorMessageKey());
+            ctx.notifyFailure(UNEXPECTED_NULL.getErrorMessageKey());
+            return null;
         }
 
         if (toRead.getValueType() != NUMBER) {
-            return failed(path, NOT_A_NUMBER.getErrorMessageKey(), toRead.getValueType());
+            ctx.notifyFailure(NOT_A_NUMBER.getErrorMessageKey(), toRead.getValueType());
+            return null;
         }
 
         JsonNumber jsonNumber = (JsonNumber) toRead;
 
-        return success(jsonNumber.longValue());
+        return jsonNumber.longValue();
     }
 }

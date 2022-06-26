@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: nl.wernerdegroot.applicatives.json.JsonObjectFormatTest
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.006 s - in nl.wernerdegroot.applicatives.json.JsonObjectFormatTest

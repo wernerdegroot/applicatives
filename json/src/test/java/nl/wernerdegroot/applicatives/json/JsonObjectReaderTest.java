@@ -3,32 +3,30 @@ package nl.wernerdegroot.applicatives.json;
 import org.junit.jupiter.api.Test;
 
 import static java.util.Arrays.asList;
+import static javax.json.JsonValue.ValueType.TRUE;
 import static nl.wernerdegroot.applicatives.json.EnergyType.COLORLESS;
 import static nl.wernerdegroot.applicatives.json.EnergyType.GRASS;
 import static nl.wernerdegroot.applicatives.json.Key.key;
-import static nl.wernerdegroot.applicatives.json.Validated.invalid;
-import static nl.wernerdegroot.applicatives.json.Validated.valid;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class JsonObjectReaderTest {
 
-    private final JsonReader<EnergyType> energyTypeReader = Json.STRING.validate(s -> {
+    private final JsonReader<EnergyType> energyTypeReader = Json.STRING.validate((str, ctx) -> {
         try {
-            return valid(EnergyType.valueOf(s));
+            return EnergyType.valueOf(str);
         } catch (IllegalArgumentException e) {
-            return invalid( "json.parse.error.unknownEnergyType", s);
+            return ctx.notifyFailure("json.parse.error.unknownEnergyType", str);
         }
     });
 
-    private final JsonObjectReader<Move> moveReader = Json.instance().readers(
+    private final JsonReader<Move> moveReader = Json.instance().readers(
             key("cost").readUsing(energyTypeReader.list()),
             key("name").readString(),
             key("damage").readInt(),
             Move::new
     );
 
-    private final JsonObjectReader<PokemonCard> pokemonCardReader = Json.instance().readers(
+    private final JsonReader<PokemonCard> pokemonCardReader = Json.instance().readers(
             key("name").readString(),
             key("hp").readInt(),
             key("energyType").readUsing(energyTypeReader),
@@ -40,55 +38,44 @@ public class JsonObjectReaderTest {
     public void givenValidPokemonCard() {
         String toRead = "{\"name\":\"Bulbasaur\",\"hp\":60,\"energyType\":\"GRASS\",\"moves\":[{\"cost\":[\"GRASS\"],\"name\":\"Tackle\",\"damage\":10},{\"cost\":[\"GRASS\",\"COLORLESS\",\"COLORLESS\"],\"name\":\"Razor Leaf\",\"damage\":30}]}";
 
-        PokemonCard expected = PokemonCard.of(
-                "Bulbasaur",
-                60,
-                GRASS,
-                asList(
-                        Move.of(
-                                asList(GRASS),
-                                "Tackle",
-                                10
-                        ),
-                        Move.of(
-                                asList(GRASS, COLORLESS, COLORLESS),
-                                "Razor Leaf",
-                                30
+        Json.Result<PokemonCard> expected = Json.success(
+                PokemonCard.of(
+                        "Bulbasaur",
+                        60,
+                        GRASS,
+                        asList(
+                                Move.of(
+                                        asList(GRASS),
+                                        "Tackle",
+                                        10
+                                ),
+                                Move.of(
+                                        asList(GRASS, COLORLESS, COLORLESS),
+                                        "Razor Leaf",
+                                        30
+                                )
                         )
                 )
         );
 
         Json.Result<PokemonCard> toVerify = pokemonCardReader.readString(toRead);
 
-        assertTrue(toVerify.isSuccess());
-        assertEquals(expected, toVerify.get());
+        assertEquals(expected, toVerify);
     }
 
     @Test
     public void givenInvalidPokemonCard() {
-        String toRead = "{\"name\":\"Bulbasaur\",\"hp\":60,\"energyType\":\"MAGIC\",\"moves\":[{\"cost\":[\"GRASS\"],\"name\":\"Tackle\",\"damage\":true},{\"cost\":[\"GRASS\",\"COLORLESS\",\"COLORLESS\"],\"name\":\"Razor Leaf\",\"damage\":30}]}";
+        String toRead = "{\"name\":\"Bulbasaur\",\"hp\":60,\"energyType\":\"MAGIC\",\"moves\":[{\"cost\":[\"GRASS\"],\"name\":\"Tackle\",\"damage\":true},{\"cost\":[\"GRASS\",\"SAND\",\"COLORLESS\"],\"name\":\"Razor Leaf\",\"damage\":30}]}";
 
-        PokemonCard expected = PokemonCard.of(
-                "Bulbasaur",
-                60,
-                GRASS,
+        Json.Result<PokemonCard> expected = Json.failed(
                 asList(
-                        Move.of(
-                                asList(GRASS),
-                                "Tackle",
-                                10
-                        ),
-                        Move.of(
-                                asList(GRASS, COLORLESS, COLORLESS),
-                                "Razor Leaf",
-                                30
-                        )
+                        Failure.of("energyType", "json.parse.error.unknownEnergyType", "MAGIC"),
+                        Failure.of("moves.0.damage", "json.parse.error.notANumber", TRUE),
+                        Failure.of("moves.1.cost.1", "json.parse.error.unknownEnergyType", "SAND")
                 )
         );
-
         Json.Result<PokemonCard> toVerify = pokemonCardReader.readString(toRead);
 
-        assertTrue(toVerify.isSuccess());
-        assertEquals(expected, toVerify.get());
+        assertEquals(expected, toVerify);
     }
 }

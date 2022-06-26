@@ -1,17 +1,13 @@
 package nl.wernerdegroot.applicatives.json;
 
 import nl.wernerdegroot.applicatives.runtime.Contravariant;
-import nl.wernerdegroot.applicatives.runtime.Covariant;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.function.BiFunction;
+import java.util.Objects;
 import java.util.function.Function;
 
-import static java.util.Collections.singletonList;
-
-public class Json implements JsonReaderOverloads, JsonWriterOverloads {
+public class Json implements JsonReaders, JsonWriterOverloads, JsonFormats {
 
     private static final Json INSTANCE = new Json();
 
@@ -27,7 +23,7 @@ public class Json implements JsonReaderOverloads, JsonWriterOverloads {
     }
 
     @Override
-    @Contravariant(className = "*WriterOverloads")
+    @Contravariant(className = "*WriterOverloads", liftMethodName = "contralift")
     public <A, B, Intermediate, C> JsonObjectWriter<C> writers(
             JsonObjectWriter<? super A> left,
             JsonObjectWriter<? super B> right,
@@ -42,37 +38,8 @@ public class Json implements JsonReaderOverloads, JsonWriterOverloads {
         };
     }
 
-    @Override
-    @Covariant(className = "*ReaderOverloads")
-    public <A, B, C> JsonObjectReader<C> readers(
-            JsonObjectReader<? extends A> left,
-            JsonObjectReader<? extends B> right,
-            BiFunction<? super A, ? super B, ? extends C> combinator) {
-
-        return (path, toRead) -> {
-            Result<? extends A> fromLeft = left.read(path, toRead);
-            Result<? extends B> fromRight = right.read(path, toRead);
-            if (fromLeft.isSuccess() && fromRight.isSuccess()) {
-                return success(combinator.apply(fromLeft.get(), fromRight.get()));
-            } else {
-                List<Failure> failures = new ArrayList<>();
-                if (!fromLeft.isSuccess()) {
-                    failures.addAll(fromLeft.getFailures());
-                }
-                if (!fromRight.isSuccess()) {
-                    failures.addAll(fromRight.getFailures());
-                }
-                return failed(failures);
-            }
-        };
-    }
-
     public static <T> Success<T> success(T value) {
         return new Success<>(value);
-    }
-
-    public static <T> Failed<T> failed(Path path, String errorMessageKey, Object... arguments) {
-        return new Failed<>(singletonList(new Failure(path, errorMessageKey, arguments)));
     }
 
     public static <T> Failed<T> failed(List<Failure> failures) {
@@ -80,7 +47,6 @@ public class Json implements JsonReaderOverloads, JsonWriterOverloads {
     }
 
     public interface Result<T> {
-        <U> Result<U> validate(Path path, Function<? super T, ? extends Validated<U>> validation);
 
         boolean isSuccess();
 
@@ -97,11 +63,6 @@ public class Json implements JsonReaderOverloads, JsonWriterOverloads {
         }
 
         @Override
-        public <U> Result<U> validate(Path path, Function<? super T, ? extends Validated<U>> validation) {
-            return validation.apply(value).asResult(path);
-        }
-
-        @Override
         public boolean isSuccess() {
             return true;
         }
@@ -115,6 +76,26 @@ public class Json implements JsonReaderOverloads, JsonWriterOverloads {
         public List<Failure> getFailures() {
             throw new NoSuchElementException();
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Success<?> success = (Success<?>) o;
+            return Objects.equals(value, success.value);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(value);
+        }
+
+        @Override
+        public String toString() {
+            return "Success{" +
+                    "value=" + value +
+                    '}';
+        }
     }
 
     public static class Failed<T> implements Result<T> {
@@ -122,11 +103,6 @@ public class Json implements JsonReaderOverloads, JsonWriterOverloads {
 
         public Failed(List<Failure> failures) {
             this.failures = failures;
-        }
-
-        @Override
-        public <U> Result<U> validate(Path path, Function<? super T, ? extends Validated<U>> validation) {
-            return new Failed<>(failures);
         }
 
         @Override
@@ -142,6 +118,26 @@ public class Json implements JsonReaderOverloads, JsonWriterOverloads {
         @Override
         public List<Failure> getFailures() {
             return failures;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Failed<?> failed = (Failed<?>) o;
+            return Objects.equals(getFailures(), failed.getFailures());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(getFailures());
+        }
+
+        @Override
+        public String toString() {
+            return "Failed{" +
+                    "failures=" + failures +
+                    '}';
         }
     }
 

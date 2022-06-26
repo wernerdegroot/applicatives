@@ -14,8 +14,6 @@ public interface Validated<T> {
 
     <U> U fold(Function<? super Invalid<T>, ? extends U> handleInvalid, Function<? super Valid<T>, ? extends U> handleValid);
 
-    Json.Result<T> asResult(Path path);
-
     class Valid<T> implements Validated<T> {
         private final T value;
 
@@ -28,10 +26,6 @@ public interface Validated<T> {
             return handleValid.apply(this);
         }
 
-        @Override
-        public Json.Result<T> asResult(Path path) {
-            return Json.success(value);
-        }
     }
 
     class Invalid<T> implements Validated<T> {
@@ -46,11 +40,6 @@ public interface Validated<T> {
         @Override
         public <U> U fold(Function<? super Invalid<T>, ? extends U> handleInvalid, Function<? super Valid<T>, ? extends U> handleValid) {
             return handleInvalid.apply(this);
-        }
-
-        @Override
-        public Json.Result<T> asResult(Path path) {
-            return Json.failed(path, errorMessageKey, arguments);
         }
     }
 }

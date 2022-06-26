@@ -1,22 +1,41 @@
 package nl.wernerdegroot.applicatives.json;
 
 import javax.json.JsonValue;
+import java.io.StringReader;
 import java.util.List;
-import java.util.function.Function;
+
+import static javax.json.Json.createReader;
+import static nl.wernerdegroot.applicatives.json.Json.failed;
+import static nl.wernerdegroot.applicatives.json.Json.success;
 
 public interface JsonReader<T> {
 
-    Json.Result<T> read(Path path, JsonValue toRead);
+    T read(JsonValue toRead, ValidationContext ctx);
 
     default JsonReader<List<T>> list() {
         return new JsonListReader<>(this);
     }
 
-    default <U> JsonReader<U> validate(Function<? super T, ? extends Validated<U>> validation) {
-        return (path, toRead) -> read(path, toRead).validate(path, validation);
+    default <U> JsonReader<U> validate(Validation<? super T, ? extends U> validation) {
+        return (toRead, ctx) -> {
+            ctx.startReading();
+            T result = read(toRead, ctx);
+            if (!ctx.finishReading()) {
+                return null;
+            } else {
+                return validation.validate(result, ctx);
+            }
+        };
     }
 
-    default Json.Result<T> read(JsonValue toRead) {
-        return read(Path.empty(), toRead);
+    default Json.Result<T> readString(String toRead) {
+        ValidationContext validationContext = new ValidationContext();
+        validationContext.startReading();
+        T result = read(createReader(new StringReader(toRead)).readValue(), validationContext);
+        if (validationContext.finishReading()) {
+            return success(result);
+        } else {
+            return failed(validationContext.getFailures());
+        }
     }
 }

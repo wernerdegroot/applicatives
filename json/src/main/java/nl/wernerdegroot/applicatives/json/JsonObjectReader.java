@@ -2,42 +2,29 @@ package nl.wernerdegroot.applicatives.json;
 
 import javax.json.JsonObject;
 import javax.json.JsonValue;
-import java.io.StringReader;
-import java.util.List;
 
-import static javax.json.Json.createReader;
-import static javax.json.JsonValue.ValueType.NUMBER;
 import static javax.json.JsonValue.ValueType.OBJECT;
-import static nl.wernerdegroot.applicatives.json.Errors.*;
-import static nl.wernerdegroot.applicatives.json.Json.failed;
+import static nl.wernerdegroot.applicatives.json.Errors.NOT_AN_OBJECT;
+import static nl.wernerdegroot.applicatives.json.Errors.UNEXPECTED_NULL;
 
-public interface JsonObjectReader<T> {
+public interface JsonObjectReader<T> extends JsonReader<T> {
 
-    Json.Result<T> read(Path path, JsonObject toRead);
+    T read(JsonObject toRead, ValidationContext ctx);
 
-    default Json.Result<T> readString(String toRead) {
-        return read(Path.empty(), createReader(new StringReader(toRead)).readValue());
-    }
-
-    default Json.Result<T> read(Path path, JsonValue toRead) {
+    @Override
+    default T read(JsonValue toRead, ValidationContext ctx) {
         if (toRead == null) {
-            return failed(path, UNEXPECTED_NULL.getErrorMessageKey());
+            ctx.notifyFailure(UNEXPECTED_NULL.getErrorMessageKey());
+            return null;
         }
 
         if (toRead.getValueType() != OBJECT) {
-            return failed(path, NOT_AN_OBJECT.getErrorMessageKey(), toRead.getValueType());
+            ctx.notifyFailure(NOT_AN_OBJECT.getErrorMessageKey(), toRead.getValueType());
+            return null;
         }
 
         JsonObject jsonObject = (JsonObject) toRead;
 
-        return read(path, jsonObject);
-    }
-
-    default JsonReader<T> asReader() {
-        return this::read;
-    }
-
-    default JsonReader<List<T>> list() {
-        return asReader().list();
+        return read(jsonObject, ctx);
     }
 }

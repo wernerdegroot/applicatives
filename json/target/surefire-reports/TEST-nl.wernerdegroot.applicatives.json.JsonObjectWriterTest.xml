@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" name="nl.wernerdegroot.applicatives.json.JsonObjectWriterTest" time="0.067" tests="1" errors="0" skipped="0" failures="0">
+  <properties>
+    <property name="gopherProxySet" value="false"/>
+    <property name="awt.toolkit" value="sun.lwawt.macosx.LWCToolkit"/>
+    <property name="file.encoding.pkg" value="sun.io"/>
+    <property name="java.specification.version" value="1.8"/>
+    <property name="sun.cpu.isalist" value=""/>
+    <property name="sun.jnu.encoding" value="UTF-8"/>
+    <property name="java.class.path" value="/Users/wernerdegroot/Sandboxes/nl.wernerdegroot/applicatives/json/target/test-classes:/Users/wernerdegroot/Sandboxes/nl.wernerdegroot/applicatives/json/target/classes:/Users/wernerdegroot/.m2/repository/nl/wernerdegroot/applicatives/runtime/1.1.0/runtime-1.1.0.jar:/Users/wernerdegroot/.m2/repository/javax/json/javax.json-api/1.1/javax.json-api-1.1.jar:/Users/wernerdegroot/.m2/repository/org/glassfish/javax.json/1.1/javax.json-1.1.jar:/Users/wernerdegroot/.m2/repository/org/junit/jupiter/junit-jupiter/5.8.1/junit-jupiter-5.8.1.jar:/Users/wernerdegroot/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.8.1/junit-jupiter-api-5.8.1.jar:/Users/wernerdegroot/.m2/repository/org/opentest4j/opentest4j/1.2.0/opentest4j-1.2.0.jar:/Users/wernerdegroot/.m2/repository/org/junit/platform/junit-platform-commons/1.8.1/junit-platform-commons-1.8.1.jar:/Users/wernerdegroot/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/wernerdegroot/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.8.1/junit-jupiter-params-5.8.1.jar:/Users/wernerdegroot/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.8.1/junit-jupiter-engine-5.8.1.jar:/Users/wernerdegroot/.m2/repository/org/junit/platform/junit-platform-engine/1.8.1/junit-platform-engine-1.8.1.jar:"/>
+    <property name="java.vm.vendor" value="BellSoft"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="java.vendor.url" value="https://bell-sw.com/"/>
+    <property name="user.timezone" value=""/>
+    <property name="java.vm.specification.version" value="1.8"/>
+    <property name="os.name" value="Mac OS X"/>
+    <property name="user.country" value="NL"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="sun.boot.library.path" value="/Users/wernerdegroot/Library/Java/JavaVirtualMachines/liberica-1.8.0_312/jre/lib"/>
+    <property name="sun.java.command" value="/Users/wernerdegroot/Sandboxes/nl.wernerdegroot/applicatives/json/target/surefire/surefirebooter6118782288606398966.jar /Users/wernerdegroot/Sandboxes/nl.wernerdegroot/applicatives/json/target/surefire 2022-06-26T19-36-17_904-jvmRun1 surefire4785158766150064821tmp surefire_04537711067753672363tmp"/>
+    <property name="http.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
+    <property name="surefire.test.class.path" value="/Users/wernerdegroot/Sandboxes/nl.wernerdegroot/applicatives/json/target/test-classes:/Users/wernerdegroot/Sandboxes/nl.wernerdegroot/applicatives/json/target/classes:/Users/wernerdegroot/.m2/repository/nl/wernerdegroot/applicatives/runtime/1.1.0/runtime-1.1.0.jar:/Users/wernerdegroot/.m2/repository/javax/json/javax.json-api/1.1/javax.json-api-1.1.jar:/Users/wernerdegroot/.m2/repository/org/glassfish/javax.json/1.1/javax.json-1.1.jar:/Users/wernerdegroot/.m2/repository/org/junit/jupiter/junit-jupiter/5.8.1/junit-jupiter-5.8.1.jar:/Users/wernerdegroot/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.8.1/junit-jupiter-api-5.8.1.jar:/Users/wernerdegroot/.m2/repository/org/opentest4j/opentest4j/1.2.0/opentest4j-1.2.0.jar:/Users/wernerdegroot/.m2/repository/org/junit/platform/junit-platform-commons/1.8.1/junit-platform-commons-1.8.1.jar:/Users/wernerdegroot/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/wernerdegroot/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.8.1/junit-jupiter-params-5.8.1.jar:/Users/wernerdegroot/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.8.1/junit-jupiter-engine-5.8.1.jar:/Users/wernerdegroot/.m2/repository/org/junit/platform/junit-platform-engine/1.8.1/junit-platform-engine-1.8.1.jar:"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="user.home" value="/Users/wernerdegroot"/>
+    <property name="user.language" value="en"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.home" value="/Users/wernerdegroot/Library/Java/JavaVirtualMachines/liberica-1.8.0_312/jre"/>
+    <property name="basedir" value="/Users/wernerdegroot/Sandboxes/nl.wernerdegroot/applicatives/json"/>
+    <property name="file.separator" value="/"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="java.awt.graphicsenv" value="sun.awt.CGraphicsEnvironment"/>
+    <property name="surefire.real.class.path" value="/Users/wernerdegroot/Sandboxes/nl.wernerdegroot/applicatives/json/target/surefire/surefirebooter6118782288606398966.jar"/>
+    <property name="sun.boot.class.path" value="/Users/wernerdegroot/Library/Java/JavaVirtualMachines/liberica-1.8.0_312/jre/lib/resources.jar:/Users/wernerdegroot/Library/Java/JavaVirtualMachines/liberica-1.8.0_312/jre/lib/rt.jar:/Users/wernerdegroot/Library/Java/JavaVirtualMachines/liberica-1.8.0_312/jre/lib/sunrsasign.jar:/Users/wernerdegroot/Library/Java/JavaVirtualMachines/liberica-1.8.0_312/jre/lib/jsse.jar:/Users/wernerdegroot/Library/Java/JavaVirtualMachines/liberica-1.8.0_312/jre/lib/jce.jar:/Users/wernerdegroot/Library/Java/JavaVirtualMachines/liberica-1.8.0_312/jre/lib/charsets.jar:/Users/wernerdegroot/Library/Java/JavaVirtualMachines/liberica-1.8.0_312/jre/lib/jfr.jar:/Users/wernerdegroot/Library/Java/JavaVirtualMachines/liberica-1.8.0_312/jre/classes"/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="ftp.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
+    <property name="java.runtime.version" value="1.8.0_312-b07"/>
+    <property name="user.name" value="wernerdegroot"/>
+    <property name="path.separator" value=":"/>
+    <property name="os.version" value="12.3.1"/>
+    <property name="java.endorsed.dirs" value="/Users/wernerdegroot/Library/Java/JavaVirtualMachines/liberica-1.8.0_312/jre/lib/endorsed"/>
+    <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
+    <property name="file.encoding" value="US-ASCII"/>
+    <property name="java.vm.name" value="OpenJDK 64-Bit Server VM"/>
+    <property name="localRepository" value="/Users/wernerdegroot/.m2/repository"/>
+    <property name="java.vendor.url.bug" value="https://bell-sw.com/support"/>
+    <property name="java.io.tmpdir" value="/var/folders/0x/tpz434_s3178j3g477_gdc940000gn/T/"/>
+    <property name="idea.version" value="2022.1.1"/>
+    <property name="java.version" value="1.8.0_312"/>
+    <property name="user.dir" value="/Users/wernerdegroot/Sandboxes/nl.wernerdegroot/applicatives/json"/>
+    <property name="os.arch" value="aarch64"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="java.awt.printerjob" value="sun.lwawt.macosx.CPrinterJob"/>
+    <property name="sun.os.patch.level" value="unknown"/>
+    <property name="java.library.path" value="/Users/wernerdegroot/Library/Java/Extensions:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java:."/>
+    <property name="java.vm.info" value="mixed mode"/>
+    <property name="java.vendor" value="BellSoft"/>
+    <property name="java.vm.version" value="25.312-b07"/>
+    <property name="java.ext.dirs" value="/Users/wernerdegroot/Library/Java/Extensions:/Users/wernerdegroot/Library/Java/JavaVirtualMachines/liberica-1.8.0_312/jre/lib/ext:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeBig"/>
+    <property name="java.class.version" value="52.0"/>
+    <property name="socksNonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
+  </properties>
+  <testcase name="givenPokemonCard" classname="nl.wernerdegroot.applicatives.json.JsonObjectWriterTest" time="0.038"/>
+</testsuite>

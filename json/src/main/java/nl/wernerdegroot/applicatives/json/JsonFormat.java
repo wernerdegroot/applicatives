@@ -8,8 +8,8 @@ public interface JsonFormat<T> extends JsonReader<T>, JsonWriter<T> {
     static <T> JsonFormat<T> of(JsonReader<T> reader, JsonWriter<T> writer) {
         return new JsonFormat<T>() {
             @Override
-            public Json.Result<T> read(Path path, JsonValue toRead) {
-                return reader.read(path, toRead);
+            public T read(JsonValue toRead, ValidationContext ctx) {
+                return reader.read(toRead, ctx);
             }
 
             @Override
