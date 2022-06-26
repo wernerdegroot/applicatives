@@ -15,4 +15,8 @@ public interface JsonWriter<T> {
     default <U> JsonWriter<U> contramap(Function<? super U, ? extends T> fn) {
         return toWrite -> write(fn.apply(toWrite));
     }
+
+    default String writeString(T toWrite) {
+        return write(toWrite).toString();
+    }
 }

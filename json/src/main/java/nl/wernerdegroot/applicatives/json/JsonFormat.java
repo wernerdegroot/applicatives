@@ -2,6 +2,7 @@ package nl.wernerdegroot.applicatives.json;
 
 import javax.json.JsonValue;
 import java.util.List;
+import java.util.function.Function;
 
 public interface JsonFormat<T> extends JsonReader<T>, JsonWriter<T> {
 
@@ -22,5 +23,9 @@ public interface JsonFormat<T> extends JsonReader<T>, JsonWriter<T> {
     @Override
     default JsonFormat<List<T>> list() {
         return of(JsonReader.super.list(), JsonWriter.super.list());
+    }
+
+    default <U> JsonFormat<U> inmap(Function<? super T, ? extends U> fn, Function<? super U, ? extends T> gn) {
+        return of(map(fn), contramap(gn));
     }
 }

@@ -3,6 +3,7 @@ package nl.wernerdegroot.applicatives.json;
 import javax.json.JsonValue;
 import java.io.StringReader;
 import java.util.List;
+import java.util.function.Function;
 
 import static javax.json.Json.createReader;
 import static nl.wernerdegroot.applicatives.json.Json.failed;
@@ -14,6 +15,10 @@ public interface JsonReader<T> {
 
     default JsonReader<List<T>> list() {
         return new JsonListReader<>(this);
+    }
+
+    default <U> JsonReader<U> map(Function<? super T, ? extends U> fn) {
+        return (toRead, ctx) -> fn.apply(read(toRead, ctx));
     }
 
     default <U> JsonReader<U> validate(Validation<? super T, ? extends U> validation) {

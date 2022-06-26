@@ -13,9 +13,4 @@ public interface JsonObjectWriter<T> extends JsonWriter<T> {
         write(builder, toWrite);
         return builder.build();
     }
-
-    default String writeString(T toWrite) {
-        return write(toWrite).toString();
-    }
-
 }
