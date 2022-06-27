@@ -12,17 +12,17 @@ public class JsonObjectWriterTest {
 
     private final JsonWriter<EnergyType> energyTypeWriter = Json.STRING.contramap(EnergyType::name);
 
-    private final JsonObjectWriter<Move> moveWriter = Json.instance().writers(
-            key("cost").writeUsing(energyTypeWriter.list()),
-            key("name").writeString(),
-            key("damage").writeInt()
+    private final JsonObjectWriter<Move> moveWriter = Json.instance().writer(
+            key("cost").using(energyTypeWriter.list()),
+            key("name").asString(),
+            key("damage").asInt()
     );
 
-    private final JsonObjectWriter<PokemonCard> pokemonCardWriter = Json.instance().writers(
-            key("name").writeString(),
-            key("hp").writeInt(),
-            key("energyType").writeUsing(energyTypeWriter),
-            key("moves").writeUsing(moveWriter.list())
+    private final JsonObjectWriter<PokemonCard> pokemonCardWriter = Json.instance().writer(
+            key("name").asString(),
+            key("hp").asInt(),
+            key("energyType").using(energyTypeWriter),
+            key("moves").using(moveWriter.list())
     );
 
     @Test

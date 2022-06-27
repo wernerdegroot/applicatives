@@ -1,5 +1,6 @@
 package nl.wernerdegroot.applicatives.json;
 
+import javax.json.JsonValue;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
@@ -21,6 +22,10 @@ public class Key {
         return new Key(key);
     }
 
+    public <T> JsonObjectReader<T> using(JsonReader<T> reader) {
+        return readUsing(reader);
+    }
+
     public <T> JsonObjectReader<T> readUsing(JsonReader<T> reader) {
         return (toRead, ctx) -> {
             ctx.pushKey(key);
@@ -30,83 +35,47 @@ public class Key {
         };
     }
 
-    public JsonObjectReader<String> readString() {
-        return readUsing(STRING);
-    }
-
-    public JsonObjectReader<Integer> readInt() {
-        return readUsing(INT);
-    }
-
-    public JsonObjectReader<Long> readLong() {
-        return readUsing(LONG);
-    }
-
-    public JsonObjectReader<Double> readDouble() {
-        return readUsing(DOUBLE);
-    }
-
-    public JsonObjectReader<BigInteger> readBigInteger() {
-        return readUsing(BIG_INTEGER);
-    }
-
-    public JsonObjectReader<BigDecimal> readBigDecimal() {
-        return readUsing(BIG_DECIMAL);
+    public <T> JsonObjectWriter<T> using(JsonWriter<T> writer) {
+        return writeUsing(writer);
     }
 
     public <T> JsonObjectWriter<T> writeUsing(JsonWriter<T> writer) {
         return (builder, toWrite) -> builder.add(key, writer.write(toWrite));
     }
 
-    public JsonObjectWriter<String> writeString() {
-        return writeUsing(STRING);
-    }
-
-    public JsonObjectWriter<Integer> writeInt() {
-        return writeUsing(INT);
-    }
-
-    public JsonObjectWriter<Long> writeLong() {
-        return writeUsing(LONG);
-    }
-
-    public JsonObjectWriter<Double> writeDouble() {
-        return writeUsing(DOUBLE);
-    }
-
-    public JsonObjectWriter<BigDecimal> writeBigDecimal() {
-        return writeUsing(BIG_DECIMAL);
-    }
-
-    public JsonObjectWriter<BigInteger> writeBigInteger() {
-        return writeUsing(BIG_INTEGER);
-    }
-
-    public <T> JsonObjectFormat<T> formatUsing(JsonFormat<T> format) {
+    public <T> JsonObjectFormat<T> using(JsonFormat<T> format) {
         return JsonObjectFormat.of(readUsing(format), writeUsing(format));
     }
 
-    public JsonObjectFormat<String> formatString() {
-        return formatUsing(STRING);
+    public <T> JsonObjectWriter<T> withJsonValue(JsonValue jsonValue) {
+        return (builder, ignored) -> builder.add(key, jsonValue);
     }
 
-    public JsonObjectFormat<Integer> formatInt() {
-        return formatUsing(INT);
+    public JsonObjectFormat<String> asString() {
+        return using(STRING);
     }
 
-    public JsonObjectFormat<Long> formatLong() {
-        return formatUsing(LONG);
+    public <T> JsonObjectWriter<T> withString(String value) {
+        return withJsonValue(STRING.write(value));
     }
 
-    public JsonObjectFormat<Double> formatDouble() {
-        return formatUsing(DOUBLE);
+    public JsonObjectFormat<Integer> asInt() {
+        return using(INT);
     }
 
-    public JsonObjectFormat<BigDecimal> formatBigDecimal() {
-        return formatUsing(BIG_DECIMAL);
+    public JsonObjectFormat<Long> asLong() {
+        return using(LONG);
     }
 
-    public JsonObjectFormat<BigInteger> formatBigInteger() {
-        return formatUsing(BIG_INTEGER);
+    public JsonObjectFormat<Double> asDouble() {
+        return using(DOUBLE);
+    }
+
+    public JsonObjectFormat<BigDecimal> asBigDecimal() {
+        return using(BIG_DECIMAL);
+    }
+
+    public JsonObjectFormat<BigInteger> asBigInteger() {
+        return using(BIG_INTEGER);
     }
 }

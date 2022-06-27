@@ -11,6 +11,12 @@ import static nl.wernerdegroot.applicatives.json.Json.success;
 
 public interface JsonReader<T> {
 
+    static <T> JsonReader<T> fail(String errorMessageKey, Object... arguments) {
+        return (toRead, ctx) -> {
+            return ctx.notifyFailure(errorMessageKey, arguments);
+        };
+    }
+
     T read(JsonValue toRead, ValidationContext ctx);
 
     default JsonReader<List<T>> list() {
@@ -19,6 +25,10 @@ public interface JsonReader<T> {
 
     default <U> JsonReader<U> map(Function<? super T, ? extends U> fn) {
         return (toRead, ctx) -> fn.apply(read(toRead, ctx));
+    }
+
+    default <U> JsonReader<U> flatMap(Function<? super T, ? extends JsonReader<? extends U>> fn) {
+        return (toRead, ctx) -> fn.apply(read(toRead, ctx)).read(toRead, ctx);
     }
 
     default <U> JsonReader<U> validate(Validation<? super T, ? extends U> validation) {

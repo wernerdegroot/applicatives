@@ -19,18 +19,18 @@ public class JsonObjectReaderTest {
         }
     });
 
-    private final JsonReader<Move> moveReader = Json.instance().readers(
-            key("cost").readUsing(energyTypeReader.list()),
-            key("name").readString(),
-            key("damage").readInt(),
+    private final JsonReader<Move> moveReader = Json.instance().reader(
+            key("cost").using(energyTypeReader.list()),
+            key("name").asString(),
+            key("damage").asInt(),
             Move::new
     );
 
-    private final JsonReader<PokemonCard> pokemonCardReader = Json.instance().readers(
-            key("name").readString(),
-            key("hp").readInt(),
-            key("energyType").readUsing(energyTypeReader),
-            key("moves").readUsing(moveReader.list()),
+    private final JsonReader<PokemonCard> pokemonCardReader = Json.instance().reader(
+            key("name").asString(),
+            key("hp").asInt(),
+            key("energyType").using(energyTypeReader),
+            key("moves").using(moveReader.list()),
             PokemonCard::new
     );
 

@@ -9,7 +9,7 @@ public interface JsonFormats extends JsonFormatsOverloads {
 
     @Override
     @Invariant(liftMethodName = "inlift")
-    default <A, B, Intermediate, C> JsonObjectFormat<C> formats(
+    default <A, B, Intermediate, C> JsonObjectFormat<C> format(
             JsonObjectFormat<A> left,
             JsonObjectFormat<B> right,
             BiFunction<? super A, ? super B, ? extends C> combinator,
@@ -18,8 +18,8 @@ public interface JsonFormats extends JsonFormatsOverloads {
             Function<? super Intermediate, ? extends B> extractRight) {
 
         return JsonObjectFormat.of(
-                Json.instance().readers(left, right, combinator),
-                Json.instance().writers(left, right, toIntermediate, extractLeft, extractRight)
+                Json.instance().reader(left, right, combinator),
+                Json.instance().writer(left, right, toIntermediate, extractLeft, extractRight)
         );
     }
 

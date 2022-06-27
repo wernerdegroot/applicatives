@@ -21,18 +21,18 @@ public class JsonObjectFormatTest {
             Json.STRING.contramap(EnergyType::name)
     );
 
-    private final JsonFormat<Move> moveFormat = Json.instance().formats(
-            key("cost").formatUsing(energyTypeFormat.list()),
-            key("name").formatString(),
-            key("damage").formatInt(),
+    private final JsonFormat<Move> moveFormat = Json.instance().format(
+            key("cost").using(energyTypeFormat.list()),
+            key("name").asString(),
+            key("damage").asInt(),
             Move::new
     );
 
-    private final JsonFormat<PokemonCard> pokemonCardFormat = Json.instance().formats(
-            key("name").formatString(),
-            key("hp").formatInt(),
-            key("energyType").formatUsing(energyTypeFormat),
-            key("moves").formatUsing(moveFormat.list()),
+    private final JsonFormat<PokemonCard> pokemonCardFormat = Json.instance().format(
+            key("name").asString(),
+            key("hp").asInt(),
+            key("energyType").using(energyTypeFormat),
+            key("moves").using(moveFormat.list()),
             PokemonCard::new
     );
 

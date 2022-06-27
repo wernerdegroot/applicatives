@@ -6,7 +6,7 @@ import java.util.function.Function;
 
 public interface JsonFormat<T> extends JsonReader<T>, JsonWriter<T> {
 
-    static <T> JsonFormat<T> of(JsonReader<T> reader, JsonWriter<T> writer) {
+    static <T> JsonFormat<T> of(JsonReader<? extends T> reader, JsonWriter<? super T> writer) {
         return new JsonFormat<T>() {
             @Override
             public T read(JsonValue toRead, ValidationContext ctx) {

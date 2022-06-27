@@ -8,7 +8,7 @@ public interface JsonReaders extends JsonReadersOverloads {
 
     @Override
     @Covariant(className = "JsonReadersOverloads")
-    default <A, B, C> JsonReader<C> readers(
+    default <A, B, C> JsonReader<C> reader(
             JsonReader<? extends A> left,
             JsonReader<? extends B> right,
             BiFunction<? super A, ? super B, ? extends C> combinator) {

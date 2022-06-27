@@ -13,4 +13,11 @@ public interface JsonObjectWriter<T> extends JsonWriter<T> {
         write(builder, toWrite);
         return builder.build();
     }
+
+    default JsonObjectWriter<T> combineWith(JsonObjectWriter<? super T> that) {
+        return (builder, toWrite) -> {
+            this.write(builder, toWrite);
+            that.write(builder, toWrite);
+        };
+    }
 }

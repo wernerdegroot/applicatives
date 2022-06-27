@@ -24,7 +24,7 @@ public class Json implements JsonReaders, JsonWriterOverloads, JsonFormats {
 
     @Override
     @Contravariant(className = "*WriterOverloads", liftMethodName = "contralift")
-    public <A, B, Intermediate, C> JsonObjectWriter<C> writers(
+    public <A, B, Intermediate, C> JsonObjectWriter<C> writer(
             JsonObjectWriter<? super A> left,
             JsonObjectWriter<? super B> right,
             Function<? super C, ? extends Intermediate> toIntermediate,
