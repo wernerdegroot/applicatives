@@ -8,6 +8,10 @@ public interface JsonObjectWriter<T> extends JsonWriter<T> {
 
     void write(JsonObjectBuilder builder, T toWrite);
 
+    default <U> JsonObjectWriter<U> withValue(T value) {
+        return (builder, ignored) -> write(builder, value);
+    }
+
     default JsonValue write(T toWrite) {
         JsonObjectBuilder builder = Json.createObjectBuilder();
         write(builder, toWrite);

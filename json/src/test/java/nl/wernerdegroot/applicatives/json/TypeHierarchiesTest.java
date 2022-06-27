@@ -129,11 +129,11 @@ public class TypeHierarchiesTest {
             shape -> {
                 if (shape instanceof Ellipse) {
                     return ellipseFormat
-                            .combineWith(key("type").withString("Ellipse"))
+                            .combineWith(key("type").asString().withValue("Ellipse"))
                             .write((Ellipse) shape);
                 } else if (shape instanceof Rectangle) {
                     return rectangleFormat
-                            .combineWith(key("type").withString("Rectangle"))
+                            .combineWith(key("type").asString().withValue("Rectangle"))
                             .write((Rectangle) shape);
                 } else {
                     throw new IllegalArgumentException("No such shape!");

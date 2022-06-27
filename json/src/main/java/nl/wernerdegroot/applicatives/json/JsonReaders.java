@@ -4,6 +4,8 @@ import nl.wernerdegroot.applicatives.runtime.Covariant;
 
 import java.util.function.BiFunction;
 
+import static nl.wernerdegroot.applicatives.json.ReadResult.SUCCESS;
+
 public interface JsonReaders extends JsonReadersOverloads {
 
     @Override
@@ -17,7 +19,7 @@ public interface JsonReaders extends JsonReadersOverloads {
             ctx.startReading();
             A fromLeft = left.read(toRead, ctx);
             B fromRight = right.read(toRead, ctx);
-            return ctx.finishReading() ? combinator.apply(fromLeft, fromRight) : null;
+            return ctx.finishReading() == SUCCESS ? combinator.apply(fromLeft, fromRight) : null;
         };
     }
 }

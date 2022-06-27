@@ -8,6 +8,7 @@ import java.util.function.Function;
 import static javax.json.Json.createReader;
 import static nl.wernerdegroot.applicatives.json.Json.failed;
 import static nl.wernerdegroot.applicatives.json.Json.success;
+import static nl.wernerdegroot.applicatives.json.ReadResult.SUCCESS;
 
 public interface JsonReader<T> {
 
@@ -35,11 +36,7 @@ public interface JsonReader<T> {
         return (toRead, ctx) -> {
             ctx.startReading();
             T result = read(toRead, ctx);
-            if (!ctx.finishReading()) {
-                return null;
-            } else {
-                return validation.validate(result, ctx);
-            }
+            return ctx.finishReading() == SUCCESS ? validation.validate(result, ctx) : null;
         };
     }
 
@@ -47,10 +44,6 @@ public interface JsonReader<T> {
         ValidationContext validationContext = new ValidationContext();
         validationContext.startReading();
         T result = read(createReader(new StringReader(toRead)).readValue(), validationContext);
-        if (validationContext.finishReading()) {
-            return success(result);
-        } else {
-            return failed(validationContext.getFailures());
-        }
+        return validationContext.finishReading() == SUCCESS ? success(result) : failed(validationContext.getFailures());
     }
 }

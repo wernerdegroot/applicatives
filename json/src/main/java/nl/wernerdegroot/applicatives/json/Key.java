@@ -1,6 +1,5 @@
 package nl.wernerdegroot.applicatives.json;
 
-import javax.json.JsonValue;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
@@ -47,16 +46,8 @@ public class Key {
         return JsonObjectFormat.of(readUsing(format), writeUsing(format));
     }
 
-    public <T> JsonObjectWriter<T> withJsonValue(JsonValue jsonValue) {
-        return (builder, ignored) -> builder.add(key, jsonValue);
-    }
-
     public JsonObjectFormat<String> asString() {
         return using(STRING);
-    }
-
-    public <T> JsonObjectWriter<T> withString(String value) {
-        return withJsonValue(STRING.write(value));
     }
 
     public JsonObjectFormat<Integer> asInt() {
