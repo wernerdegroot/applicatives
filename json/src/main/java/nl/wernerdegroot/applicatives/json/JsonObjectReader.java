@@ -7,6 +7,9 @@ import static javax.json.JsonValue.ValueType.OBJECT;
 import static nl.wernerdegroot.applicatives.json.Errors.NOT_AN_OBJECT;
 import static nl.wernerdegroot.applicatives.json.Errors.UNEXPECTED_NULL;
 
+/**
+ * For reading JSON objects (as opposed to other JSON values).
+ */
 public interface JsonObjectReader<T> extends JsonReader<T> {
 
     T read(JsonObject toRead, ValidationContext ctx);

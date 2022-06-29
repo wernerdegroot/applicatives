@@ -18,13 +18,11 @@ public class JsonLongFormat implements JsonFormat<Long> {
     @Override
     public Long read(JsonValue toRead, ValidationContext ctx) {
         if (toRead == null) {
-            ctx.notifyFailure(UNEXPECTED_NULL.getErrorMessageKey());
-            return null;
+            return ctx.notifyFailure(UNEXPECTED_NULL.getErrorMessageKey());
         }
 
         if (toRead.getValueType() != NUMBER) {
-            ctx.notifyFailure(NOT_A_NUMBER.getErrorMessageKey(), toRead.getValueType());
-            return null;
+            return ctx.notifyFailure(NOT_A_NUMBER.getErrorMessageKey(), toRead.getValueType());
         }
 
         JsonNumber jsonNumber = (JsonNumber) toRead;

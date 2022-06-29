@@ -4,9 +4,11 @@
 /processor/target
 /prelude/target
 /json/target
+/records/target
 
 # IntelliJ
 /.idea
+/records/.idea
 *.iml
 
 # Log file

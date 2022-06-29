@@ -4,6 +4,9 @@ import javax.json.JsonValue;
 import java.util.List;
 import java.util.function.Function;
 
+/**
+ * A `JsonWriter` is a simple class that transforms a `T` into a `JsonValue`.
+ */
 public interface JsonWriter<T> {
 
     JsonValue write(T toWrite);

@@ -1,4 +1,5 @@
 * JSON benchmarks at https://github.com/fabienrenaud/java-json-benchmark/blob/master/src/main/java/com/github/fabienrenaud/jjb/stream/UsersStreamDeserializer.java
+* Free `Decomposable` for records
 * Add tests for builder with _just_ an intializer, or _just_ a finalizer.
 * Can we generate a lift signature from a combine signature? Should be possible. Definitely for the simplified ones.
 * Explicit type arguments to method call are not `TypeArgument` (for a data type). They can't specify variance. Used in generators.
@@ -8,7 +9,6 @@
   return withType(FullyQualifiedName.of(type.getName().raw()));
   }
   ```
-* Docs for contravariant: https://www.youtube.com/watch?v=IJ_bVVsQhvc (counter-intuitive = contra-intuitive)
 * Support for static methods
 * Use processor (perhaps older version, to prevent circular dependencies) to generate `Validated` methods.
 * Test deconstructor (and other things too) when using a constructor or deconstructor of a generic type like Tuple3.

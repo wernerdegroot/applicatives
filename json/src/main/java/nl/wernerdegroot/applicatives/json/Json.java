@@ -1,13 +1,10 @@
 package nl.wernerdegroot.applicatives.json;
 
-import nl.wernerdegroot.applicatives.runtime.Contravariant;
-
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.function.Function;
 
-public class Json implements JsonReaders, JsonWriterOverloads, JsonFormats {
+public class Json implements JsonReaders, JsonWriters, JsonFormats {
 
     private static final Json INSTANCE = new Json();
 
@@ -20,22 +17,6 @@ public class Json implements JsonReaders, JsonWriterOverloads, JsonFormats {
 
     public static Json instance() {
         return INSTANCE;
-    }
-
-    @Override
-    @Contravariant(className = "*WriterOverloads", liftMethodName = "contralift")
-    public <A, B, Intermediate, C> JsonObjectWriter<C> writer(
-            JsonObjectWriter<? super A> left,
-            JsonObjectWriter<? super B> right,
-            Function<? super C, ? extends Intermediate> toIntermediate,
-            Function<? super Intermediate, ? extends A> extractLeft,
-            Function<? super Intermediate, ? extends B> extractRight) {
-
-        return (builder, toWrite) -> {
-            Intermediate intermediate = toIntermediate.apply(toWrite);
-            left.write(builder, extractLeft.apply(intermediate));
-            right.write(builder, extractRight.apply(intermediate));
-        };
     }
 
     public static <T> Success<T> success(T value) {

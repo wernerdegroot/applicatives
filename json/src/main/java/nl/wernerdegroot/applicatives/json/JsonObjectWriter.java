@@ -4,6 +4,9 @@ import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
+/**
+ * For writing JSON objects (as opposed to other JSON values).
+ */
 public interface JsonObjectWriter<T> extends JsonWriter<T> {
 
     void write(JsonObjectBuilder builder, T toWrite);

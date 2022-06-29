@@ -5,6 +5,11 @@ import java.util.*;
 import static nl.wernerdegroot.applicatives.json.ReadResult.FAILED;
 import static nl.wernerdegroot.applicatives.json.ReadResult.SUCCESS;
 
+/**
+ * To hold the status of reading JSON (did we encounter validation
+ * errors or not?), track the path at which we are currently parsing,
+ * and to signal failures.
+ */
 public class ValidationContext {
 
     private final Deque<String> path = new ArrayDeque<>();

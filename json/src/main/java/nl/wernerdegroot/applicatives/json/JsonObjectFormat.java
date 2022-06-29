@@ -3,6 +3,9 @@ package nl.wernerdegroot.applicatives.json;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
+/**
+ * For reading and writing JSON objects (as opposed to other JSON values).
+ */
 public interface JsonObjectFormat<T> extends JsonReader<T>, JsonObjectWriter<T>, JsonFormat<T> {
 
     static <T> JsonObjectFormat<T> of(JsonReader<T> reader, JsonObjectWriter<T> writer) {

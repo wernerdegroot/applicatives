@@ -21,13 +21,11 @@ public class JsonListReader<T> implements JsonReader<List<T>> {
     @Override
     public List<T> read(JsonValue toRead, ValidationContext ctx) {
         if (toRead == null) {
-            ctx.notifyFailure(UNEXPECTED_NULL.getErrorMessageKey());
-            return null;
+            return ctx.notifyFailure(UNEXPECTED_NULL.getErrorMessageKey());
         }
 
         if (toRead.getValueType() != ARRAY) {
-            ctx.notifyFailure(NOT_AN_ARRAY.getErrorMessageKey(), toRead.getValueType());
-            return null;
+            return ctx.notifyFailure(NOT_AN_ARRAY.getErrorMessageKey(), toRead.getValueType());
         }
 
         JsonArray jsonArray = (JsonArray) toRead;

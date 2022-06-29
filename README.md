@@ -1,8 +1,13 @@
 # Applicatives
 
-Java code generation for applicative functors, selective functors and more.
+Java code generation for applicative functors, divisible functors and more.
+
+Check out [reading and writing JSON](https://github.com/wernerdegroot/applicatives/tree/main/json) to get a feel for the power of the paradigm.
+
+## Table of contents
 
 - [Applicatives](#applicatives)
+    * [Table of contents](#table-of-contents)
     * [Getting started](#getting-started)
     * [Motivating example](#motivating-example)
         + [Combining two `CompletableFuture`s](#combining-two-completablefutures)
