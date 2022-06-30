@@ -4,6 +4,7 @@ import javax.json.JsonValue;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 import static javax.json.Json.createReader;
@@ -26,6 +27,10 @@ public interface JsonReader<T> {
 
     default JsonReader<List<T>> list() {
         return new JsonListReader<>(this);
+    }
+
+    default JsonReader<Optional<T>> optional() {
+        return new JsonOptionalReader<>(this);
     }
 
     default <U> JsonReader<U> map(Function<? super T, ? extends U> fn) {

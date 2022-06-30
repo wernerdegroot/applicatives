@@ -46,20 +46,20 @@ Then we could construct a `JsonReader` for them as follows:
 
 ```java
 JsonReader<Location> locationReader = Json.instance().reader(
-    key("latitude").asDouble(),
-    key("longitude").asDouble(),
+    key("latitude").using(doubleReader),
+    key("longitude").using(doubleReader),
     Location::new
 );
 
 JsonReader<Resident> residentReader = Json.instance().reader(
-    key("name").asString(),
-    key("age").asInt(),
-    key("role").asOptionalString(),
+    key("name").using(stringReader),
+    key("age").using(intReader),
+    key("role").using(stringReader.optional()),
     Resident::new
 );
 
 JsonReader<Place> placeReader = Json.instance().reader(
-    key("name").asString(),
+    key("name").using(stringReader),
     key("location").using(locationReader),
     key("residents").using(residentReader.list()),
     Resident::new
@@ -78,20 +78,20 @@ Similar to a `JsonReader`, we could construct a `JsonWriter` as:
 
 ```java
 JsonWriter<Location> locationWriter = Json.instance().writer(
-    key("latitude").asDouble(),
-    key("longitude").asDouble(),
+    key("latitude").using(doubleWriter),
+    key("longitude").using(doubleWriter),
     Decomposition.of(Location::latitude, Location::longitude)
 );
 
 JsonWriter<Resident> residentWriter = Json.instance().writer(
-    key("name").asString(),
-    key("age").asInt(),
-    key("role").asOptionalString(),
+    key("name").using(stringWriter),
+    key("age").using(intWriter),
+    key("role").using(stringWriter.optional()),
     Decomposition.of(Resident::name, Resident::age, Resident::role)
 );
 
 JsonWriter<Place> placeWriter = Json.instance().writer(
-    key("name").asString(),
+    key("name").using(stringWriter),
     key("location").using(locationWriter),
     key("residents").using(residentWriter.list()),
     Decomposition.of(Place::name, Place::location, Place::residents)
@@ -109,7 +109,24 @@ Place place = new Place(
 String json = placeWriter.writeString(place);
 ```
 
-Similar (but opposite) to the `JsonReader`, we have to show Java how deconstruct each `record` (like `Place`) into its constituent parts (like `String`, `Location` and `List<Resident>`). We use a `Decomposition` for that. Unfortunately, Java [is not smart enough (yet)](https://openjdk.org/projects/amber/design-notes/towards-better-serialization#sidebar-pattern-matching) to figure this out on its own.
+Similar (but opposite) to the `JsonReader`, we have to show Java how deconstruct each `record` (like `Place`) into its constituent parts (like `String`, `Location` and `List<Resident>`) using a "decomposition" (like `Decomposition.of(Place::name, Place::location, Place::residents)`). We use a `Decomposition` for that. Unfortunately, Java [is not smart enough (yet)](https://openjdk.org/projects/amber/design-notes/towards-better-serialization#sidebar-pattern-matching) to figure this out on its own. If you don't mind a little reflection, you could modify these records and implement one of the interfaces provided in `nl.wernerdegroot.applicatives.records`. For example:
+
+```java
+public record Place(String name, Location location, List<Resident> residents)
+    implements Record3<Place, String, Location, List<Resident>> { }
+```
+
+This small investment yields great returns:
+
+```java
+JsonWriter<Place> placeWriter = Json.instance().writer(
+    key("name").using(stringWriter),
+    key("location").using(locationWriter),
+    key("residents").using(residentWriter.list())
+);
+```
+
+In what follows, we will assume that the records `Location`, `Resident` and `Place` implement these interfaces.
 
 ## `JsonFormat`
 
@@ -117,26 +134,23 @@ Having a separate `JsonReader` and `JsonWriter` that both describe the same prop
 
 ```java
 JsonFormat<Location> locationFormat = Json.instance().format(
-    key("latitude").asDouble(),
-    key("longitude").asDouble(),
-    Location::new,
-    Decomposition.of(Location::latitude, Location::longitude)
+    key("latitude").using(doubleFormat),
+    key("longitude").using(doubleFormat),
+    Location::new
 );
 
 JsonFormat<Resident> residentFormat = Json.instance().format(
-    key("name").asString(),
-    key("age").asInt(),
-    key("role").asOptionalString(),
-    Resident::new,
-    Decomposition.of(Resident::name, Resident::age, Resident::role)
+    key("name").using(stringFormat),
+    key("age").using(intFormat),
+    key("role").using(stringFormat.optional()),
+    Resident::new
 );
 
 JsonFormat<Place> placeFormat = Json.instance().format(
-    key("name").asString(),
+    key("name").using(stringFormat),
     key("location").using(locationFormat),
     key("residents").using(residentFormat.list()),
-    Resident::new,
-    Decomposition.of(Place::name, Place::location, Place::residents)
+    Resident::new
 );
 ```
 
@@ -162,9 +176,11 @@ Until now we have written `JsonReader`s and `JsonWriter`s that deal exclusively 
 ```java
 public sealed interface Shape permits Ellipse, Rectangle { }
 
-public record Ellipse(int width, int height) implements Shape { }
+public record Ellipse(int width, int height) 
+    implements Shape, Record2<Ellipse, Integer, Integer> { }
 
-public record Rectangle(int width, int height) implements Shape { }
+public record Rectangle(int width, int height)
+    implements Shape, Record2<Rectangle, Integer, Integer> { }
 ```
 
 We can write each of these types as a JSON object with two fields: `width` and `height`. However, when it comes to reading JSON we have a problem. We no longer know what type of shape we’re dealing with.
@@ -175,17 +191,15 @@ Let’s see this in action. We begin by defining a `JsonFormat` for each subtype
 
 ```java
 JsonObjectFormat<Ellipse> ellipseFormat = Json.instance().format(
-    key("width").asInt(),
-    key("height").asInt(),
-    Ellipse::new,
-    Decomposition.of(Ellipse::width, Ellipse::height)
+    key("width").using(intFormat),
+    key("height").using(intFormat),
+    Ellipse::new
 );
 
 JsonObjectFormat<Rectangle> rectangleFormat = Json.instance().format(
-    key("width").asInt(),
-    key("height").asInt(),
-    Rectangle::new,
-    Decomposition.of(Rectangle::width, Rectangle::height)
+    key("width").using(intFormat),
+    key("height").using(intFormat),
+    Rectangle::new
 );
 ```
 
@@ -193,7 +207,7 @@ We then write a `JsonFormat` for `Shape` that adds in the `type` attribute. We d
 
 ```java
 JsonFormat<Shape> shapeFormat = JsonFormat.of(
-    key("type").asString().flatMap(type -> 
+    key("type").using(stringReader).flatMap(type -> 
         switch (type) {
             case "Ellipse" -> ellipseFormat;
             case "Rectangle" -> rectangleFormat;
@@ -204,11 +218,11 @@ JsonFormat<Shape> shapeFormat = JsonFormat.of(
         switch (shape) {
             case Ellipse ellipse ->
                 ellipseFormat
-                    .combineWith(key("type").asString().withValue("Ellipse"))
+                    .combineWith(key("type").using(stringWriter).withValue("Ellipse"))
                     .write(ellipse);
             case Rectangle rectangle ->
                 rectangleFormat
-                    .combineWith(key("type").asString().withValue("Rectangle"))
+                    .combineWith(key("type").using(stringWriter).withValue("Rectangle"))
                     .write(rectangle);
         }
 );
@@ -220,18 +234,18 @@ You can extend a `JsonReader` or a `JsonFormat` with additional validation rules
 
 ```java
 JsonReader<Location> locationReader = Json.instance().reader(
-    key("latitude").asDouble().verify((latitude, context) -> {
+    key("latitude").using(doubleReader.verify((latitude, context) -> {
         if (latitude < -90.0 || latitude > 90){
             context.notifyFailure("invalid.latitude", latitude);
         }
-    }),
-    key("longitude").asDouble().validate((longitude, context) -> {
+    })),
+    key("longitude").using(doubleReader.verify((longitude, context) -> {
         if (longitude < -180.0 || longitude > 180){
             context.notifyFailure("invalid.longitude", longitude);
         }
-    }),
+    })),
     Location::new
 );
 ```
 
-When validation for the `latitude` or the `longitude`, the reader will return a `Json.Result<Place>` that signals the failure (`Json.Failed<Place>`).
+The way failures are reported is similar to the way [Hibernate validator works](https://docs.jboss.org/hibernate/validator/5.0/reference/en-US/html/validator-customconstraints.html#validator-customconstraints-validator). When validation for the `latitude` or the `longitude` fails, the reader will return a `Json.Result<Place>` that signals the failure (`Json.Failed<Place>`).

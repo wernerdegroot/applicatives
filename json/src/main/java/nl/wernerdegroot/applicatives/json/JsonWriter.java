@@ -2,6 +2,7 @@ package nl.wernerdegroot.applicatives.json;
 
 import javax.json.JsonValue;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -21,5 +22,9 @@ public interface JsonWriter<T> {
 
     default String writeString(T toWrite) {
         return write(toWrite).toString();
+    }
+
+    default JsonWriter<Optional<T>> optional() {
+        return new JsonOptionalWriter<>(this);
     }
 }

@@ -5,32 +5,34 @@ import org.junit.jupiter.api.Test;
 import static java.util.Arrays.asList;
 import static nl.wernerdegroot.applicatives.json.EnergyType.COLORLESS;
 import static nl.wernerdegroot.applicatives.json.EnergyType.GRASS;
+import static nl.wernerdegroot.applicatives.json.Json.intFormat;
+import static nl.wernerdegroot.applicatives.json.Json.stringFormat;
 import static nl.wernerdegroot.applicatives.json.Key.key;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class JsonObjectFormatTest {
 
     private final JsonFormat<EnergyType> energyTypeFormat = JsonFormat.of(
-            Json.STRING.validate((str, ctx) -> {
+            stringFormat.validate((str, ctx) -> {
                 try {
                     return EnergyType.valueOf(str);
                 } catch (IllegalArgumentException e) {
                     return ctx.notifyFailure("json.parse.error.unknownEnergyType", str);
                 }
             }),
-            Json.STRING.contramap(EnergyType::name)
+            stringFormat.contramap(EnergyType::name)
     );
 
     private final JsonFormat<Move> moveFormat = Json.instance().format(
             key("cost").using(energyTypeFormat.list()),
-            key("name").asString(),
-            key("damage").asInt(),
+            key("name").using(stringFormat),
+            key("damage").using(intFormat),
             Move::new
     );
 
     private final JsonFormat<PokemonCard> pokemonCardFormat = Json.instance().format(
-            key("name").asString(),
-            key("hp").asInt(),
+            key("name").using(stringFormat),
+            key("hp").using(intFormat),
             key("energyType").using(energyTypeFormat),
             key("moves").using(moveFormat.list()),
             PokemonCard::new

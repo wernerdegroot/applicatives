@@ -5,22 +5,24 @@ import org.junit.jupiter.api.Test;
 import static java.util.Arrays.asList;
 import static nl.wernerdegroot.applicatives.json.EnergyType.COLORLESS;
 import static nl.wernerdegroot.applicatives.json.EnergyType.GRASS;
+import static nl.wernerdegroot.applicatives.json.Json.intWriter;
+import static nl.wernerdegroot.applicatives.json.Json.stringWriter;
 import static nl.wernerdegroot.applicatives.json.Key.key;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class JsonObjectWriterTest {
 
-    private final JsonWriter<EnergyType> energyTypeWriter = Json.STRING.contramap(EnergyType::name);
+    private final JsonWriter<EnergyType> energyTypeWriter = Json.stringFormat.contramap(EnergyType::name);
 
     private final JsonObjectWriter<Move> moveWriter = Json.instance().writer(
             key("cost").using(energyTypeWriter.list()),
-            key("name").asString(),
-            key("damage").asInt()
+            key("name").using(stringWriter),
+            key("damage").using(intWriter)
     );
 
     private final JsonObjectWriter<PokemonCard> pokemonCardWriter = Json.instance().writer(
-            key("name").asString(),
-            key("hp").asInt(),
+            key("name").using(stringWriter),
+            key("hp").using(intWriter),
             key("energyType").using(energyTypeWriter),
             key("moves").using(moveWriter.list())
     );

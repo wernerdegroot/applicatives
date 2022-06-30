@@ -1,5 +1,7 @@
 package nl.wernerdegroot.applicatives.json;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -8,12 +10,29 @@ public class Json implements JsonReaders, JsonWriters, JsonFormats {
 
     private static final Json INSTANCE = new Json();
 
-    public static JsonStringFormat STRING = new JsonStringFormat();
-    public static JsonIntFormat INT = new JsonIntFormat();
-    public static JsonLongFormat LONG = new JsonLongFormat();
-    public static JsonDoubleFormat DOUBLE = new JsonDoubleFormat();
-    public static JsonBigDecimalFormat BIG_DECIMAL = new JsonBigDecimalFormat();
-    public static JsonBigIntegerFormat BIG_INTEGER = new JsonBigIntegerFormat();
+    public static JsonStringFormat stringFormat = new JsonStringFormat();
+    public static JsonReader<String> stringReader = stringFormat;
+    public static JsonWriter<String> stringWriter = stringFormat;
+
+    public static JsonIntFormat intFormat = new JsonIntFormat();
+    public static JsonReader<Integer> intReader = intFormat;
+    public static JsonWriter<Integer> intWriter = intFormat;
+
+    public static JsonLongFormat longFormat = new JsonLongFormat();
+    public static JsonReader<Long> longReader = longFormat;
+    public static JsonWriter<Long> longWriter = longFormat;
+
+    public static JsonDoubleFormat doubleFormat = new JsonDoubleFormat();
+    public static JsonReader<Double> doubleReader = doubleFormat;
+    public static JsonWriter<Double> doubleWriter = doubleFormat;
+
+    public static JsonBigDecimalFormat bigDecimalFormat = new JsonBigDecimalFormat();
+    public static JsonReader<BigDecimal> bigDecimalReader = bigDecimalFormat;
+    public static JsonWriter<BigDecimal> bigDecimalWriter = bigDecimalFormat;
+
+    public static JsonBigIntegerFormat bigIntegerFormat = new JsonBigIntegerFormat();
+    public static JsonReader<BigInteger> bigIntegerReader = bigIntegerFormat;
+    public static JsonWriter<BigInteger> bigIntegerWriter = bigIntegerFormat;
 
     public static Json instance() {
         return INSTANCE;

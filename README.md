@@ -1,6 +1,6 @@
 # Applicatives
 
-Java code generation for applicative functors, divisible functors and more.
+Easily combine `CompletableFuture`s, `List`s, `Function`s, `Predicate`s and even your own data types!
 
 Check out [reading and writing JSON](https://github.com/wernerdegroot/applicatives/tree/main/json) to get a feel for the power of the paradigm.
 

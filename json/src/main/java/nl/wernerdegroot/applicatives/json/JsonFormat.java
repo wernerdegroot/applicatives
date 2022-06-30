@@ -38,8 +38,9 @@ public interface JsonFormat<T> extends JsonReader<T>, JsonWriter<T> {
         );
     }
 
+    @Override
     default JsonFormat<Optional<T>> optional() {
-        return new JsonOptionalFormat<>(this);
+        return of(JsonReader.super.optional(), JsonWriter.super.optional());
     }
 
     default <U> JsonFormat<U> inmap(Function<? super T, ? extends U> fn, Function<? super U, ? extends T> gn) {

@@ -6,12 +6,14 @@ import static java.util.Arrays.asList;
 import static javax.json.JsonValue.ValueType.TRUE;
 import static nl.wernerdegroot.applicatives.json.EnergyType.COLORLESS;
 import static nl.wernerdegroot.applicatives.json.EnergyType.GRASS;
+import static nl.wernerdegroot.applicatives.json.Json.intReader;
+import static nl.wernerdegroot.applicatives.json.Json.stringReader;
 import static nl.wernerdegroot.applicatives.json.Key.key;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class JsonObjectReaderTest {
 
-    private final JsonReader<EnergyType> energyTypeReader = Json.STRING.validate((str, ctx) -> {
+    private final JsonReader<EnergyType> energyTypeReader = Json.stringFormat.validate((str, ctx) -> {
         try {
             return EnergyType.valueOf(str);
         } catch (IllegalArgumentException e) {
@@ -21,14 +23,14 @@ public class JsonObjectReaderTest {
 
     private final JsonReader<Move> moveReader = Json.instance().reader(
             key("cost").using(energyTypeReader.list()),
-            key("name").asString(),
-            key("damage").asInt(),
+            key("name").using(stringReader),
+            key("damage").using(intReader),
             Move::new
     );
 
     private final JsonReader<PokemonCard> pokemonCardReader = Json.instance().reader(
-            key("name").asString(),
-            key("hp").asInt(),
+            key("name").using(stringReader),
+            key("hp").using(intReader),
             key("energyType").using(energyTypeReader),
             key("moves").using(moveReader.list()),
             PokemonCard::new

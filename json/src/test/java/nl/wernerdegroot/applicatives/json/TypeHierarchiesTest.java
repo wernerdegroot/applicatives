@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Objects;
 import java.util.function.BiFunction;
 
+import static nl.wernerdegroot.applicatives.json.Json.*;
 import static nl.wernerdegroot.applicatives.json.Key.key;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -104,19 +105,19 @@ public class TypeHierarchiesTest {
     }
 
     private final JsonObjectFormat<Ellipse> ellipseFormat = Json.instance().format(
-            key("width").asInt(),
-            key("height").asInt(),
+            key("width").using(intFormat),
+            key("height").using(intFormat),
             Ellipse::new
     );
 
     private final JsonObjectFormat<Rectangle> rectangleFormat = Json.instance().format(
-            key("width").asInt(),
-            key("height").asInt(),
+            key("width").using(intFormat),
+            key("height").using(intFormat),
             Rectangle::new
     );
 
     private final JsonFormat<Shape> shapeFormat = JsonFormat.of(
-            key("type").asString().flatMap(type -> {
+            key("type").using(stringReader).flatMap(type -> {
                 switch (type) {
                     case "Ellipse":
                         return ellipseFormat;
@@ -129,11 +130,11 @@ public class TypeHierarchiesTest {
             shape -> {
                 if (shape instanceof Ellipse) {
                     return ellipseFormat
-                            .combineWith(key("type").asString().withValue("Ellipse"))
+                            .combineWith(key("type").using(stringWriter).withValue("Ellipse"))
                             .write((Ellipse) shape);
                 } else if (shape instanceof Rectangle) {
                     return rectangleFormat
-                            .combineWith(key("type").asString().withValue("Rectangle"))
+                            .combineWith(key("type").using(stringWriter).withValue("Rectangle"))
                             .write((Rectangle) shape);
                 } else {
                     throw new IllegalArgumentException("No such shape!");

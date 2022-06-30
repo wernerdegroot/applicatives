@@ -6,12 +6,12 @@ import java.util.Optional;
 import static javax.json.JsonValue.ValueType.NULL;
 import static nl.wernerdegroot.applicatives.json.ReadResult.SUCCESS;
 
-public class JsonOptionalFormat<T> implements JsonFormat<Optional<T>> {
+public class JsonOptionalReader<T> implements JsonReader<Optional<T>> {
 
-    private final JsonFormat<T> innerFormat;
+    private final JsonReader<T> innerReader;
 
-    public JsonOptionalFormat(JsonFormat<T> innerFormat) {
-        this.innerFormat = innerFormat;
+    public JsonOptionalReader(JsonReader<T> innerReader) {
+        this.innerReader = innerReader;
     }
 
     @Override
@@ -25,12 +25,7 @@ public class JsonOptionalFormat<T> implements JsonFormat<Optional<T>> {
         }
 
         ctx.startReading();
-        T inner = innerFormat.read(toRead, ctx);
+        T inner = innerReader.read(toRead, ctx);
         return ctx.finishReading() == SUCCESS ? Optional.of(inner) : null;
-    }
-
-    @Override
-    public JsonValue write(Optional<T> toWrite) {
-        return toWrite.map(innerFormat::write).orElse(null);
     }
 }
