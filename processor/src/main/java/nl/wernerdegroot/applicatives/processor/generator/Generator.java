@@ -275,6 +275,15 @@ public abstract class Generator<This> {
                     .withParameters(getAdditionalParameters(arity))
                     .withReturnStatement(methodBody);
         }
+
+        public LiftMethod asLiftMethod() {
+            return new LiftMethod() {
+                @Override
+                public List<Parameter> getAdditionalLiftMethodParametersToPassOnToCombineMethod(int arity) {
+                    return getAdditionalParameters(arity);
+                }
+            };
+        }
     }
 
     protected abstract CombineMethod getCombineMethod();
