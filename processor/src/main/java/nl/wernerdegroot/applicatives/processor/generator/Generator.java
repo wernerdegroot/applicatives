@@ -29,8 +29,8 @@ public abstract class Generator<This> {
     protected PackageName packageName;
     protected String classNameToGenerate;
     protected List<TypeParameter> classTypeParameters;
-    protected List<TypeParameter> parameterTypeConstructorArguments;
-    protected TypeParameter returnTypeConstructorArgument;
+    protected List<TypeParameter> participantTypeParameters;
+    protected TypeParameter compositeTypeParameter;
     protected Optional<Initializer> optionalInitializer;
     protected Accumulator accumulator;
     protected Optional<Finalizer> optionalFinalizer;
@@ -58,13 +58,13 @@ public abstract class Generator<This> {
         return getThis();
     }
 
-    public This withParameterTypeConstructorArguments(List<TypeParameter> inputTypeConstructorArguments) {
-        this.parameterTypeConstructorArguments = inputTypeConstructorArguments;
+    public This withParticipantTypeParameters(List<TypeParameter> participantTypeParameters) {
+        this.participantTypeParameters = participantTypeParameters;
         return getThis();
     }
 
-    public This withReturnTypeConstructorArgument(TypeParameter returnTypeConstructorArgument) {
-        this.returnTypeConstructorArgument = returnTypeConstructorArgument;
+    public This withCompositeTypeParameter(TypeParameter compositeTypeParameter) {
+        this.compositeTypeParameter = compositeTypeParameter;
         return getThis();
     }
 
@@ -159,10 +159,10 @@ public abstract class Generator<This> {
     protected Optional<MethodGenerator> optionalAbstractInitializerMethod() {
         return optionalInitializer.map(initializer ->
                 method()
-                        .withTypeParameters(returnTypeConstructorArgument.getName())
-                        .withReturnType(returnTypeConstructorArgument.asType().using(initializer.getInitializedTypeConstructor()))
+                        .withTypeParameters(compositeTypeParameter.getName())
+                        .withReturnType(compositeTypeParameter.asType().using(initializer.getInitializedTypeConstructor()))
                         .withName(initializer.getName())
-                        .withParameter(returnTypeConstructorArgument.asType().using(initializer.getToInitializeTypeConstructor()), valueParameterName)
+                        .withParameter(compositeTypeParameter.asType().using(initializer.getToInitializeTypeConstructor()), valueParameterName)
         );
     }
 
@@ -185,10 +185,10 @@ public abstract class Generator<This> {
     protected Optional<MethodGenerator> optionalAbstractFinalizerMethod() {
         return optionalFinalizer.map(finalizer ->
                 method()
-                        .withTypeParameters(returnTypeConstructorArgument.getName())
-                        .withReturnType(returnTypeConstructorArgument.asType().using(finalizer.getFinalizedTypeConstructor()))
+                        .withTypeParameters(compositeTypeParameter.getName())
+                        .withReturnType(compositeTypeParameter.asType().using(finalizer.getFinalizedTypeConstructor()))
                         .withName(finalizer.getName())
-                        .withParameter(returnTypeConstructorArgument.asType().using(finalizer.getToFinalizeTypeConstructor()), valueParameterName)
+                        .withParameter(compositeTypeParameter.asType().using(finalizer.getToFinalizeTypeConstructor()), valueParameterName)
         );
     }
 
@@ -248,7 +248,7 @@ public abstract class Generator<This> {
                     .withArguments(
                             methodCall()
                                     .withType(getFullyQualifiedClassNameOfTupleClass())
-                                    .withTypeArguments(takeParameterTypeConstructorArgumentsAsTypes(arity - 1))
+                                    .withTypeArguments(takeParticipantTypeParametersAsTypes(arity - 1))
                                     .withTypeArguments(getClassTypeParametersAsTypes())
                                     .withMethodName(TUPLE_METHOD_NAME)
                                     .withArguments(THIS)
@@ -266,8 +266,8 @@ public abstract class Generator<This> {
         protected MethodGenerator combineMethodWithArity(int arity, String methodBody) {
             return method()
                     .withModifiers(DEFAULT)
-                    .withTypeParameters(takeParameterTypeConstructorArguments(arity))
-                    .withTypeParameters(returnTypeConstructorArgument.getName())
+                    .withTypeParameters(takeParticipantTypeParameters(arity))
+                    .withTypeParameters(compositeTypeParameter.getName())
                     .withReturnType(getReturnType())
                     .withName(combineMethodToGenerate)
                     .withParameterTypes(takeParameterTypes(arity))
@@ -300,8 +300,8 @@ public abstract class Generator<This> {
                     arity,
                     methodCall()
                             .withObjectPath(THIS)
-                            .withTypeArguments(takeParameterTypeConstructorArgumentsAsTypes(arity))
-                            .withTypeArguments(returnTypeConstructorArgument.asType())
+                            .withTypeArguments(takeParticipantTypeParametersAsTypes(arity))
+                            .withTypeArguments(compositeTypeParameter.asType())
                             .withMethodName(combineMethodToGenerate)
                             .withArguments(takeInputParameterNames(arity))
                             .withArguments(getAdditionalArgumentsToPassToCombineMethod())
@@ -311,8 +311,8 @@ public abstract class Generator<This> {
 
         public MethodGenerator withArity(int arity, String methodBody) {
             List<TypeArgument> decompositionTypeArguments = new ArrayList<>();
-            decompositionTypeArguments.add(returnTypeConstructorArgument.asType().contravariant());
-            decompositionTypeArguments.addAll(takeParameterTypeConstructorArgumentsAsTypeArguments(arity, Type::covariant));
+            decompositionTypeArguments.add(compositeTypeParameter.asType().contravariant());
+            decompositionTypeArguments.addAll(takeParticipantTypeParametersAsTypeArguments(arity, Type::covariant));
             return method()
                     .withModifiers(DEFAULT)
                     .withTypeParameters(getTypeParameters(arity))
@@ -385,8 +385,8 @@ public abstract class Generator<This> {
         private MethodGenerator withArity(int arity, String lambdaBody) {
             return method()
                     .withModifiers(DEFAULT)
-                    .withTypeParameters(takeParameterTypeConstructorArguments(arity))
-                    .withTypeParameters(returnTypeConstructorArgument.getName())
+                    .withTypeParameters(takeParticipantTypeParameters(arity))
+                    .withTypeParameters(compositeTypeParameter.getName())
                     .withReturnType(lambdaReturnType(getReturnTypeConstructor(), getFirstParameterTypeConstructor(), getOtherParametersTypeConstructor(), arity))
                     .withName(liftMethodToGenerate)
                     .withParameters(getAdditionalLiftMethodParametersToPassOnToCombineMethod(arity))
@@ -508,7 +508,7 @@ public abstract class Generator<This> {
                             .withArguments(
                                     methodCall()
                                             .withType(getFullyQualifiedClassNameOfTupleClass())
-                                            .withTypeArguments(takeParameterTypeConstructorArgumentsAsTypes(arity - 1))
+                                            .withTypeArguments(takeParticipantTypeParametersAsTypes(arity - 1))
                                             .withTypeArguments(getClassTypeParametersAsTypes())
                                             .withMethodName(TUPLE_METHOD_NAME)
                                             .withArguments(selfParameterName)
@@ -525,7 +525,7 @@ public abstract class Generator<This> {
         public MethodGenerator tupleMethodWithArity(int arity, String methodBody) {
             return method()
                     .withModifiers(PUBLIC, STATIC)
-                    .withTypeParameters(takeParameterTypeConstructorArguments(arity))
+                    .withTypeParameters(takeParticipantTypeParameters(arity))
                     // Since these are all static methods, that don't have access to any class type parameters
                     // we need to make sure that the class type parameters are available as additional method
                     // type parameters:
@@ -540,7 +540,7 @@ public abstract class Generator<This> {
         }
 
         private Type getTupleMethodReturnType(int arity) {
-            return Type.concrete(fullyQualifiedNameOfTupleWithArity(arity), takeParameterTypeConstructorArgumentsAsTypeArguments(arity, Type::covariant)).using(getTupleMethodReturnTypeConstructor(arity));
+            return Type.concrete(fullyQualifiedNameOfTupleWithArity(arity), takeParticipantTypeParametersAsTypeArguments(arity, Type::covariant)).using(getTupleMethodReturnTypeConstructor(arity));
         }
 
         private TypeConstructor getTupleMethodReturnTypeConstructor(int arity) {
@@ -585,38 +585,38 @@ public abstract class Generator<This> {
                 .collect(toList());
     }
 
-    protected List<TypeParameter> takeParameterTypeConstructorArguments(int toTake) {
-        return parameterTypeConstructorArguments.subList(0, toTake);
+    protected List<TypeParameter> takeParticipantTypeParameters(int toTake) {
+        return participantTypeParameters.subList(0, toTake);
     }
 
-    protected List<Type> getParameterTypeConstructorArgumentsAsTypes() {
-        return parameterTypeConstructorArguments
+    protected List<Type> getParticipantTypeParametersAsTypes() {
+        return participantTypeParameters
                 .stream()
                 .map(TypeParameter::asType)
                 .collect(toList());
     }
 
-    protected List<Type> takeParameterTypeConstructorArgumentsAsTypes(int toTake) {
-        return getParameterTypeConstructorArgumentsAsTypes().subList(0, toTake);
+    protected List<Type> takeParticipantTypeParametersAsTypes(int toTake) {
+        return getParticipantTypeParametersAsTypes().subList(0, toTake);
     }
 
-    protected List<TypeArgument> takeParameterTypeConstructorArgumentsAsTypeArguments(int toTake) {
-        return takeParameterTypeConstructorArgumentsAsTypeArguments(toTake, Type::invariant);
+    protected List<TypeArgument> takeParticipantTypeParametersAsTypeArguments(int toTake) {
+        return takeParticipantTypeParametersAsTypeArguments(toTake, Type::invariant);
     }
 
-    protected List<TypeArgument> takeParameterTypeConstructorArgumentsAsTypeArguments(int toTake, Function<Type, TypeArgument> variance) {
-        return takeParameterTypeConstructorArgumentsAsTypes(toTake)
+    protected List<TypeArgument> takeParticipantTypeParametersAsTypeArguments(int toTake, Function<Type, TypeArgument> variance) {
+        return takeParticipantTypeParametersAsTypes(toTake)
                 .stream()
                 .map(variance)
                 .collect(toList());
     }
 
     protected Type getReturnType() {
-        return returnTypeConstructorArgument.asType().using(getReturnTypeConstructor());
+        return compositeTypeParameter.asType().using(getReturnTypeConstructor());
     }
 
     protected Type getAccumulatorReturnType() {
-        return returnTypeConstructorArgument.asType().using(accumulator.getAccumulatedTypeConstructor());
+        return compositeTypeParameter.asType().using(accumulator.getAccumulatedTypeConstructor());
     }
 
     protected TypeConstructor getReturnTypeConstructor() {
@@ -630,12 +630,12 @@ public abstract class Generator<This> {
     protected List<Type> takeParameterTypes(int toTake, TypeConstructor firstParameterTypeConstructor, TypeConstructor otherParametersTypeConstructor) {
         List<Type> result = new ArrayList<>();
 
-        getParameterTypeConstructorArgumentsAsTypes()
+        getParticipantTypeParametersAsTypes()
                 .stream()
                 .limit(1)
                 .map(firstParameterTypeConstructor::apply)
                 .forEachOrdered(result::add);
-        getParameterTypeConstructorArgumentsAsTypes()
+        getParticipantTypeParametersAsTypes()
                 .stream()
                 .limit(toTake)
                 .skip(1)
@@ -677,7 +677,7 @@ public abstract class Generator<This> {
                 .stream()
                 .map(parameterVariance)
                 .forEachOrdered(typeArguments::add);
-        typeArguments.add(returnTypeVariance.apply(returnTypeConstructorArgument.asType().using(returnTypeConstructor)));
+        typeArguments.add(returnTypeVariance.apply(compositeTypeParameter.asType().using(returnTypeConstructor)));
 
         return Type.concrete(fullyQualifiedNameOfFunction(arity), typeArguments);
     }

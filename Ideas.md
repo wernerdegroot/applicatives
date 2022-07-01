@@ -26,7 +26,6 @@
       .bind(ctx -> somethingElse)
       .returning(ctx -> new Person(ctx.getFirstName(), ctx.getLastName());
     ```
-* Benji Webers decomposition function `<T> T (C source, BiFunction<A, B, T> extractor)` instead of the current Decomposition
 * Alternative, Decidable. Also see https://www.youtube.com/watch?v=IJ_bVVsQhvc and https://en.wikibooks.org/wiki/Haskell/Alternative_and_MonadPlus
 * Implement free applicative functors
 * Improve performance of JSON project by using streaming API.
