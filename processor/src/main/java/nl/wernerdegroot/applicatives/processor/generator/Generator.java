@@ -248,8 +248,8 @@ public abstract class Generator<This> {
                     .withArguments(
                             methodCall()
                                     .withType(getFullyQualifiedClassNameOfTupleClass())
-                                    .withTypeArguments(takeParameterTypeConstructorArgumentsAsTypeArguments(arity - 1))
-                                    .withTypeArguments(getClassTypeParametersAsTypeArguments())
+                                    .withTypeArguments(takeParameterTypeConstructorArgumentsAsTypes(arity - 1))
+                                    .withTypeArguments(getClassTypeParametersAsTypes())
                                     .withMethodName(TUPLE_METHOD_NAME)
                                     .withArguments(THIS)
                                     .withArguments(takeInputParameterNames(arity - 1))
@@ -291,8 +291,8 @@ public abstract class Generator<This> {
                     arity,
                     methodCall()
                             .withObjectPath(THIS)
-                            .withTypeArguments(takeParameterTypeConstructorArgumentsAsTypeArguments(arity))
-                            .withTypeArguments(returnTypeConstructorArgument.asType().invariant())
+                            .withTypeArguments(takeParameterTypeConstructorArgumentsAsTypes(arity))
+                            .withTypeArguments(returnTypeConstructorArgument.asType())
                             .withMethodName(combineMethodToGenerate)
                             .withArguments(takeInputParameterNames(arity))
                             .withArguments(getAdditionalArgumentsToPassToCombineMethod())
@@ -459,7 +459,7 @@ public abstract class Generator<This> {
 
         public abstract List<Parameter> getAdditionalTupleMethodParametersToPassOnToTupleMethod(int arity);
 
-        public abstract List<TypeArgument> getTypeArgumentsToPassOnToAccumulatorMethodForTupleMethod(int arity);
+        public abstract List<Type> getTypeArgumentsToPassOnToAccumulatorMethodForTupleMethod(int arity);
 
         public abstract List<String> getAdditionalArgumentsToPassOnToAccumulatorMethodForTupleMethod(int arity);
 
@@ -499,8 +499,8 @@ public abstract class Generator<This> {
                             .withArguments(
                                     methodCall()
                                             .withType(getFullyQualifiedClassNameOfTupleClass())
-                                            .withTypeArguments(takeParameterTypeConstructorArgumentsAsTypeArguments(arity - 1))
-                                            .withTypeArguments(getClassTypeParametersAsTypeArguments())
+                                            .withTypeArguments(takeParameterTypeConstructorArgumentsAsTypes(arity - 1))
+                                            .withTypeArguments(getClassTypeParametersAsTypes())
                                             .withMethodName(TUPLE_METHOD_NAME)
                                             .withArguments(selfParameterName)
                                             .withArguments(takeInputParameterNames(arity - 1))
@@ -560,6 +560,13 @@ public abstract class Generator<This> {
 
     protected FullyQualifiedName getFullyQualifiedClassNameOfTupleClass() {
         return getFullyQualifiedClassNameToGenerate().withClassName(TUPLE_CLASS_NAME);
+    }
+
+    protected List<Type> getClassTypeParametersAsTypes() {
+        return classTypeParameters
+                .stream()
+                .map(TypeParameter::asType)
+                .collect(toList());
     }
 
     protected List<TypeArgument> getClassTypeParametersAsTypeArguments() {

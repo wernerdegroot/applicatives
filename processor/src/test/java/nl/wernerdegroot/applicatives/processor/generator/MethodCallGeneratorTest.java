@@ -13,7 +13,7 @@ public class MethodCallGeneratorTest {
     public void givenInstanceMethodAndExplicitTypeArguments() {
         String toVerify = methodCall()
                 .withObjectPath("objects")
-                .withTypeArguments(CHAR_SEQUENCE.invariant())
+                .withTypeArguments(CHAR_SEQUENCE)
                 .withMethodName("map")
                 .withArguments("java.lang.Object::toString")
                 .generate();

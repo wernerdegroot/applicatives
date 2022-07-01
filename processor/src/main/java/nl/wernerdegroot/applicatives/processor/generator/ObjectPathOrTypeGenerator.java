@@ -1,6 +1,8 @@
 package nl.wernerdegroot.applicatives.processor.generator;
 
 import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
+import nl.wernerdegroot.applicatives.processor.domain.TypeParameter;
+import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
 import nl.wernerdegroot.applicatives.processor.domain.type.ConcreteType;
 import nl.wernerdegroot.applicatives.processor.domain.type.GenericType;
 import nl.wernerdegroot.applicatives.processor.generator.ObjectPathGenerator.HasObjectPathGenerator;
@@ -9,13 +11,18 @@ import java.util.Optional;
 
 public class ObjectPathOrTypeGenerator {
 
-    private Optional<FullyQualifiedName> optionalType = Optional.empty();
+    private Optional<FullyQualifiedName> optionalConcreteType = Optional.empty();
+    private Optional<TypeParameterName> optionalGenericType = Optional.empty();
     private Optional<ObjectPathGenerator> optionalObjectPathGenerator = Optional.empty();
 
     public String generate() {
         Optional<String> optionalObjectPathAsString = optionalObjectPathGenerator.map(ObjectPathGenerator::generate);
-        Optional<String> optionalTypeAsString = optionalType.map(FullyQualifiedName::raw);
-        return optionalObjectPathAsString.map(Optional::of).orElse(optionalTypeAsString).orElseThrow(NullPointerException::new);
+        Optional<String> optionalConcreteTypeAsString = optionalConcreteType.map(FullyQualifiedName::raw);
+        Optional<String> optionalGenericTypeAsString = optionalGenericType.map(TypeParameterName::raw);
+        return optionalObjectPathAsString
+                .map(Optional::of).orElse(optionalConcreteTypeAsString)
+                .map(Optional::of).orElse(optionalGenericTypeAsString)
+                .orElseThrow(NullPointerException::new);
     }
 
     public interface HasObjectPathOrTypeGenerator<This> extends HasObjectPathGenerator<This> {
@@ -30,7 +37,12 @@ public class ObjectPathOrTypeGenerator {
         }
 
         default This withType(FullyQualifiedName type) {
-            getObjectPathOrTypeGenerator().optionalType = Optional.of(type);
+            getObjectPathOrTypeGenerator().optionalConcreteType = Optional.of(type);
+            return getThis();
+        }
+
+        default This withType(TypeParameterName type) {
+            getObjectPathOrTypeGenerator().optionalGenericType = Optional.of(type);
             return getThis();
         }
 
@@ -39,7 +51,11 @@ public class ObjectPathOrTypeGenerator {
         }
 
         default This withType(GenericType type) {
-            return withType(FullyQualifiedName.of(type.getName().raw()));
+            return withType(type.getName());
+        }
+
+        default This withType(TypeParameter type) {
+            return withType(type.getName());
         }
     }
 }
