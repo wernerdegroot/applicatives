@@ -24,32 +24,32 @@ public final class Conflicts {
      * and always try to prevent conflicts will all 26 possible input type
      * constructor arguments (whether they are used or not).
      */
-    public static final int NUMBER_OF_PARAMETER_TYPE_CONSTRUCTOR_ARGUMENTS = 26;
+    public static final int MAX_NUMBER_OF_PARTICIPANTS = 26;
 
-    public static final List<TypeParameterName> PARAMETER_TYPE_CONSTRUCTOR_ARGUMENT_NAMES = IntStream
-            .range(0, NUMBER_OF_PARAMETER_TYPE_CONSTRUCTOR_ARGUMENTS)
-            .mapToObj(Conflicts::parameterTypeConstructorArgumentName)
+    public static final List<TypeParameterName> PARTICIPANT_TYPE_PARAMETER_NAMES = IntStream
+            .range(0, MAX_NUMBER_OF_PARTICIPANTS)
+            .mapToObj(Conflicts::getParticipantTypeParameterName)
             .collect(toList());
 
-    public static final List<TypeParameter> PARAMETER_TYPE_CONSTRUCTOR_ARGUMENTS = PARAMETER_TYPE_CONSTRUCTOR_ARGUMENT_NAMES
+    public static final List<TypeParameter> PARTICIPANT_TYPE_PARAMETERS = PARTICIPANT_TYPE_PARAMETER_NAMES
             .stream()
             .map(TypeParameter::of)
             .collect(toList());
 
     public static final List<String> INPUT_PARAMETER_NAMES = IntStream
-            .range(0, NUMBER_OF_PARAMETER_TYPE_CONSTRUCTOR_ARGUMENTS)
+            .range(0, MAX_NUMBER_OF_PARTICIPANTS)
             .mapToObj(Conflicts::inputParameterName)
             .collect(toList());
 
-    public static final String INPUT_TYPE_CONSTRUCTOR_ARGUMENT_PREFIX = "P";
+    public static final String PARTICIPANT_TYPE_PARAMETER_NAME_PREFIX = "P";
 
-    public static final TypeParameterName RETURN_TYPE_CONSTRUCTOR_ARGUMENT_NAME = TypeParameterName.of("R");
+    public static final TypeParameterName COMPOSITE_TYPE_PARAMETER_NAME = TypeParameterName.of("R");
 
-    public static final TypeParameterName INTERMEDIATE_TYPE_CONSTRUCTOR_ARGUMENT_NAME = TypeParameterName.of("Intermediate");
+    public static final TypeParameterName INTERMEDIATE_TYPE_PARAMETER_NAME = TypeParameterName.of("Intermediate");
 
-    public static final TypeParameter RETURN_TYPE_CONSTRUCTOR_ARGUMENT = TypeParameter.of(RETURN_TYPE_CONSTRUCTOR_ARGUMENT_NAME);
+    public static final TypeParameter COMPOSITE_TYPE_PARAMETER = TypeParameter.of(COMPOSITE_TYPE_PARAMETER_NAME);
 
-    public static final TypeParameter INTERMEDIATE_TYPE_CONSTRUCTOR_ARGUMENT = TypeParameter.of(INTERMEDIATE_TYPE_CONSTRUCTOR_ARGUMENT_NAME);
+    public static final TypeParameter INTERMEDIATE_TYPE_PARAMETER = TypeParameter.of(INTERMEDIATE_TYPE_PARAMETER_NAME);
 
     public static final String VALUE_PARAMETER_NAME = "value";
 
@@ -77,12 +77,12 @@ public final class Conflicts {
         return ORDINALS.get(i);
     }
 
-    public static TypeParameterName parameterTypeConstructorArgumentName(int i) {
-        String name = INPUT_TYPE_CONSTRUCTOR_ARGUMENT_PREFIX + (i + 1);
+    public static TypeParameterName getParticipantTypeParameterName(int i) {
+        String name = PARTICIPANT_TYPE_PARAMETER_NAME_PREFIX + (i + 1);
         return TypeParameterName.of(name);
     }
 
-    public static TypeParameterName alternativeClassTypeParameterName(int i) {
+    public static TypeParameterName getAlternativeClassTypeParameterName(int i) {
         String name = CLASS_TYPE_PARAMETER_NAME_PREFIX + (i + 1);
         return TypeParameterName.of(name);
     }

@@ -31,12 +31,12 @@ public class ConflictFinder {
      */
     public static Map<TypeParameterName, TypeParameterName> findClassTypeParameterNameReplacements(List<TypeParameter> classTypeParameters) {
         List<TypeParameter> typeParametersThatCanCauseConflicts = new ArrayList<>();
-        typeParametersThatCanCauseConflicts.addAll(PARAMETER_TYPE_CONSTRUCTOR_ARGUMENTS);
-        typeParametersThatCanCauseConflicts.add(INTERMEDIATE_TYPE_CONSTRUCTOR_ARGUMENT);
-        typeParametersThatCanCauseConflicts.add(RETURN_TYPE_CONSTRUCTOR_ARGUMENT);
+        typeParametersThatCanCauseConflicts.addAll(PARTICIPANT_TYPE_PARAMETERS);
+        typeParametersThatCanCauseConflicts.add(INTERMEDIATE_TYPE_PARAMETER);
+        typeParametersThatCanCauseConflicts.add(COMPOSITE_TYPE_PARAMETER);
 
         Map<TypeParameterName, TypeParameterName> classTypeParameterReplacements = typeParametersHaveConflicts(classTypeParameters, typeParametersThatCanCauseConflicts)
-                ? generateTypeParameterNameReplacements(classTypeParameters, Conflicts::alternativeClassTypeParameterName)
+                ? generateTypeParameterNameReplacements(classTypeParameters, Conflicts::getAlternativeClassTypeParameterName)
                 : identityTypeParameterReplacements(classTypeParameters);
 
         return classTypeParameterReplacements;

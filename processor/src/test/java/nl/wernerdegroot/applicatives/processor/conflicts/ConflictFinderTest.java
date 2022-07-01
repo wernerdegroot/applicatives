@@ -12,8 +12,8 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static nl.wernerdegroot.applicatives.processor.conflicts.ConflictFinder.findClassTypeParameterNameReplacements;
-import static nl.wernerdegroot.applicatives.processor.conflicts.Conflicts.PARAMETER_TYPE_CONSTRUCTOR_ARGUMENT_NAMES;
-import static nl.wernerdegroot.applicatives.processor.conflicts.Conflicts.RETURN_TYPE_CONSTRUCTOR_ARGUMENT_NAME;
+import static nl.wernerdegroot.applicatives.processor.conflicts.Conflicts.PARTICIPANT_TYPE_PARAMETER_NAMES;
+import static nl.wernerdegroot.applicatives.processor.conflicts.Conflicts.COMPOSITE_TYPE_PARAMETER_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ConflictFinderTest {
@@ -33,7 +33,7 @@ public class ConflictFinderTest {
     }
 
     @Test
-    public void findClassTypeParameterNameReplacementGivenConflictWithNewInputTypeConstructorArguments() {
+    public void findClassTypeParameterNameReplacementGivenConflictWithNewParticipantTypeParameters() {
         INPUT_AND_RESULT_TYPE_CONSTRUCTOR_ARGUMENT_NAMES.forEach(conflictingTypeParameter -> {
             List<TypeParameter> classTypeParameters = typeParameters(T, conflictingTypeParameter, V);
 
@@ -63,7 +63,7 @@ public class ConflictFinderTest {
 
     static {
         INPUT_AND_RESULT_TYPE_CONSTRUCTOR_ARGUMENT_NAMES = new ArrayList<>();
-        INPUT_AND_RESULT_TYPE_CONSTRUCTOR_ARGUMENT_NAMES.addAll(PARAMETER_TYPE_CONSTRUCTOR_ARGUMENT_NAMES);
-        INPUT_AND_RESULT_TYPE_CONSTRUCTOR_ARGUMENT_NAMES.add(RETURN_TYPE_CONSTRUCTOR_ARGUMENT_NAME);
+        INPUT_AND_RESULT_TYPE_CONSTRUCTOR_ARGUMENT_NAMES.addAll(PARTICIPANT_TYPE_PARAMETER_NAMES);
+        INPUT_AND_RESULT_TYPE_CONSTRUCTOR_ARGUMENT_NAMES.add(COMPOSITE_TYPE_PARAMETER_NAME);
     }
 }

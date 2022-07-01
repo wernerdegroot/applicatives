@@ -1,6 +1,5 @@
 package nl.wernerdegroot.applicatives.processor.generator;
 
-import nl.wernerdegroot.applicatives.processor.domain.ClassName;
 import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
 import nl.wernerdegroot.applicatives.processor.domain.Parameter;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameter;
@@ -23,11 +22,10 @@ import static nl.wernerdegroot.applicatives.processor.generator.ParametersGenera
 
 public class ContravariantGenerator extends Generator<ContravariantGenerator> {
 
-    private static final ClassName TUPLE_CLASS_NAME = ClassName.of("Tuples");
     private static final String DECOMPOSITION_DECOMPOSE_METHOD_NAME = "decompose";
     private static final String FUNCTION_IDENTITY_METHOD_NAME = "identity";
 
-    private TypeParameter intermediateTypeConstructorArgument;
+    private TypeParameter intermediateTypeParameter;
     private String decompositionParameterName;
     private String toIntermediateParameterName;
     private String extractLeftParameterName;
@@ -42,8 +40,8 @@ public class ContravariantGenerator extends Generator<ContravariantGenerator> {
         return this;
     }
 
-    public ContravariantGenerator withIntermediateTypeConstructorArgument(TypeParameter intermediateTypeConstructorArgument) {
-        this.intermediateTypeConstructorArgument = intermediateTypeConstructorArgument;
+    public ContravariantGenerator withIntermediateTypeParameter(TypeParameter intermediateTypeParameter) {
+        this.intermediateTypeParameter = intermediateTypeParameter;
         return this;
     }
 
@@ -70,9 +68,9 @@ public class ContravariantGenerator extends Generator<ContravariantGenerator> {
     @Override
     protected List<TypeParameter> getAccumulatorTypeParameters() {
         List<TypeParameter> typeParameters = new ArrayList<>();
-        typeParameters.addAll(takeParameterTypeConstructorArguments(2));
-        typeParameters.add(intermediateTypeConstructorArgument);
-        typeParameters.add(returnTypeConstructorArgument);
+        typeParameters.addAll(takeParticipantTypeParameters(2));
+        typeParameters.add(intermediateTypeParameter);
+        typeParameters.add(compositeTypeParameter);
         return typeParameters;
     }
 
@@ -80,15 +78,15 @@ public class ContravariantGenerator extends Generator<ContravariantGenerator> {
     protected List<Parameter> getAdditionalAccumulatorParameters() {
         return parameters()
                 .withParameter(
-                        FUNCTION.with(returnTypeConstructorArgument.contravariant(), intermediateTypeConstructorArgument.covariant()),
+                        FUNCTION.with(compositeTypeParameter.contravariant(), intermediateTypeParameter.covariant()),
                         toIntermediateParameterName
                 )
                 .withParameter(
-                        FUNCTION.with(intermediateTypeConstructorArgument.contravariant(), parameterTypeConstructorArguments.get(0).covariant()),
+                        FUNCTION.with(intermediateTypeParameter.contravariant(), participantTypeParameters.get(0).covariant()),
                         extractLeftParameterName
                 )
                 .withParameter(
-                        FUNCTION.with(intermediateTypeConstructorArgument.contravariant(), parameterTypeConstructorArguments.get(1).covariant()),
+                        FUNCTION.with(intermediateTypeParameter.contravariant(), participantTypeParameters.get(1).covariant()),
                         extractRightParameterName
                 )
                 .unwrap();
@@ -129,8 +127,8 @@ public class ContravariantGenerator extends Generator<ContravariantGenerator> {
             @Override
             public List<Parameter> getAdditionalParameters(int arity) {
                 List<TypeArgument> decompositionTypeArguments = new ArrayList<>();
-                decompositionTypeArguments.add(returnTypeConstructorArgument.asType().contravariant());
-                decompositionTypeArguments.addAll(takeParameterTypeConstructorArgumentsAsTypeArguments(arity, Type::covariant));
+                decompositionTypeArguments.add(compositeTypeParameter.asType().contravariant());
+                decompositionTypeArguments.addAll(takeParticipantTypeParametersAsTypeArguments(arity, Type::covariant));
 
                 return parameters()
                         .withParameter(
@@ -149,8 +147,8 @@ public class ContravariantGenerator extends Generator<ContravariantGenerator> {
                     @Override
                     public List<TypeParameter> getTypeParameters(int arity) {
                         List<TypeParameter> typeParameters = new ArrayList<>();
-                        typeParameters.addAll(takeParameterTypeConstructorArguments(arity));
-                        typeParameters.add(returnTypeConstructorArgument.getName().extending(Type.concrete(fullyQualifiedNameOfDecomposable(arity), takeParameterTypeConstructorArgumentsAsTypeArguments(arity))));
+                        typeParameters.addAll(takeParticipantTypeParameters(arity));
+                        typeParameters.add(compositeTypeParameter.getName().extending(Type.concrete(fullyQualifiedNameOfDecomposable(arity), takeParticipantTypeParametersAsTypeArguments(arity))));
                         return typeParameters;
                     }
 
@@ -161,7 +159,7 @@ public class ContravariantGenerator extends Generator<ContravariantGenerator> {
 
                     @Override
                     public List<String> getAdditionalArgumentsToPassToCombineMethod() {
-                        return singletonList(methodReference().withType(returnTypeConstructorArgument).withMethodName(DECOMPOSITION_DECOMPOSE_METHOD_NAME).generate());
+                        return singletonList(methodReference().withType(compositeTypeParameter).withMethodName(DECOMPOSITION_DECOMPOSE_METHOD_NAME).generate());
                     }
                 }
         );

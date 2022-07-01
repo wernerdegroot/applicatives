@@ -34,7 +34,7 @@ public class InvariantGenerator extends Generator<InvariantGenerator> {
     private String maxTupleSizeParameterName;
     private String tupleParameterName;
     private String elementParameterName;
-    private TypeParameter intermediateTypeConstructorArgument;
+    private TypeParameter intermediateTypeParameter;
     private String decompositionParameterName;
     private String toIntermediateParameterName;
     private String extractLeftParameterName;
@@ -69,8 +69,8 @@ public class InvariantGenerator extends Generator<InvariantGenerator> {
         return this;
     }
 
-    public InvariantGenerator withIntermediateTypeConstructorArgument(TypeParameter intermediateTypeConstructorArgument) {
-        this.intermediateTypeConstructorArgument = intermediateTypeConstructorArgument;
+    public InvariantGenerator withIntermediateTypeParameter(TypeParameter intermediateTypeParameter) {
+        this.intermediateTypeParameter = intermediateTypeParameter;
         return this;
     }
 
@@ -97,9 +97,9 @@ public class InvariantGenerator extends Generator<InvariantGenerator> {
     @Override
     protected List<TypeParameter> getAccumulatorTypeParameters() {
         List<TypeParameter> typeParameters = new ArrayList<>();
-        typeParameters.addAll(takeParameterTypeConstructorArguments(2));
-        typeParameters.add(intermediateTypeConstructorArgument);
-        typeParameters.add(returnTypeConstructorArgument);
+        typeParameters.addAll(takeParticipantTypeParameters(2));
+        typeParameters.add(intermediateTypeParameter);
+        typeParameters.add(compositeTypeParameter);
         return typeParameters;
     }
 
@@ -108,22 +108,22 @@ public class InvariantGenerator extends Generator<InvariantGenerator> {
         return parameters()
                 .withParameter(
                         BI_FUNCTION.with(
-                                parameterTypeConstructorArguments.get(0).contravariant(),
-                                parameterTypeConstructorArguments.get(1).contravariant(),
-                                returnTypeConstructorArgument.covariant()
+                                participantTypeParameters.get(0).contravariant(),
+                                participantTypeParameters.get(1).contravariant(),
+                                compositeTypeParameter.covariant()
                         ),
                         combinatorParameterName
                 )
                 .withParameter(
-                        FUNCTION.with(returnTypeConstructorArgument.contravariant(), intermediateTypeConstructorArgument.covariant()),
+                        FUNCTION.with(compositeTypeParameter.contravariant(), intermediateTypeParameter.covariant()),
                         toIntermediateParameterName
                 )
                 .withParameter(
-                        FUNCTION.with(intermediateTypeConstructorArgument.contravariant(), parameterTypeConstructorArguments.get(0).covariant()),
+                        FUNCTION.with(intermediateTypeParameter.contravariant(), participantTypeParameters.get(0).covariant()),
                         extractLeftParameterName
                 )
                 .withParameter(
-                        FUNCTION.with(intermediateTypeConstructorArgument.contravariant(), parameterTypeConstructorArguments.get(1).covariant()),
+                        FUNCTION.with(intermediateTypeParameter.contravariant(), participantTypeParameters.get(1).covariant()),
                         extractRightParameterName
                 )
                 .unwrap();
@@ -181,8 +181,8 @@ public class InvariantGenerator extends Generator<InvariantGenerator> {
             @Override
             public List<Parameter> getAdditionalParameters(int arity) {
                 List<TypeArgument> decompositionTypeArguments = new ArrayList<>();
-                decompositionTypeArguments.add(returnTypeConstructorArgument.asType().contravariant());
-                decompositionTypeArguments.addAll(takeParameterTypeConstructorArgumentsAsTypeArguments(arity, Type::covariant));
+                decompositionTypeArguments.add(compositeTypeParameter.asType().contravariant());
+                decompositionTypeArguments.addAll(takeParticipantTypeParametersAsTypeArguments(arity, Type::covariant));
 
                 return parameters()
                         .withParameter(lambdaParameterType(TypeConstructor.placeholder(), TypeConstructor.placeholder(), TypeConstructor.placeholder(), arity), combinatorParameterName)
@@ -202,8 +202,8 @@ public class InvariantGenerator extends Generator<InvariantGenerator> {
                     @Override
                     public List<TypeParameter> getTypeParameters(int arity) {
                         List<TypeParameter> typeParameters = new ArrayList<>();
-                        typeParameters.addAll(takeParameterTypeConstructorArguments(arity));
-                        typeParameters.add(returnTypeConstructorArgument.getName().extending(Type.concrete(fullyQualifiedNameOfDecomposable(arity), takeParameterTypeConstructorArgumentsAsTypeArguments(arity))));
+                        typeParameters.addAll(takeParticipantTypeParameters(arity));
+                        typeParameters.add(compositeTypeParameter.getName().extending(Type.concrete(fullyQualifiedNameOfDecomposable(arity), takeParticipantTypeParametersAsTypeArguments(arity))));
                         return typeParameters;
                     }
 
@@ -218,7 +218,7 @@ public class InvariantGenerator extends Generator<InvariantGenerator> {
                     public List<String> getAdditionalArgumentsToPassToCombineMethod() {
                         return asList(
                                 combinatorParameterName,
-                                methodReference().withType(returnTypeConstructorArgument.asType()).withMethodName(DECOMPOSITION_DECOMPOSE_METHOD_NAME).generate()
+                                methodReference().withType(compositeTypeParameter.asType()).withMethodName(DECOMPOSITION_DECOMPOSE_METHOD_NAME).generate()
                         );
                     }
                 }
@@ -250,7 +250,7 @@ public class InvariantGenerator extends Generator<InvariantGenerator> {
             public List<Type> getTypeArgumentsToPassOnToAccumulatorMethodForTupleMethod(int arity) {
                 return asList(
                         getCovariantTupleTypeOfArity(arity - 1),
-                        parameterTypeConstructorArguments.get(arity - 1).asType(),
+                        participantTypeParameters.get(arity - 1).asType(),
                         getCovariantTupleTypeOfArity(arity),
                         getCovariantTupleTypeOfArity(arity)
                 );
@@ -302,7 +302,7 @@ public class InvariantGenerator extends Generator<InvariantGenerator> {
             }
 
             private Type getCovariantTupleTypeOfArity(int arity) {
-                return Type.concrete(fullyQualifiedNameOfTupleWithArity(arity), takeParameterTypeConstructorArgumentsAsTypeArguments(arity, Type::covariant));
+                return Type.concrete(fullyQualifiedNameOfTupleWithArity(arity), takeParticipantTypeParametersAsTypeArguments(arity, Type::covariant));
             }
         };
     }

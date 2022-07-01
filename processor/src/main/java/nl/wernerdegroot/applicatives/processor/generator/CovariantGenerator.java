@@ -67,8 +67,8 @@ public class CovariantGenerator extends Generator<CovariantGenerator> {
     @Override
     protected List<TypeParameter> getAccumulatorTypeParameters() {
         List<TypeParameter> typeParameters = new ArrayList<>();
-        typeParameters.addAll(takeParameterTypeConstructorArguments(2));
-        typeParameters.add(returnTypeConstructorArgument);
+        typeParameters.addAll(takeParticipantTypeParameters(2));
+        typeParameters.add(compositeTypeParameter);
         return typeParameters;
     }
 
@@ -77,9 +77,9 @@ public class CovariantGenerator extends Generator<CovariantGenerator> {
         return parameters()
                 .withParameter(
                         BI_FUNCTION.with(
-                                parameterTypeConstructorArguments.get(0).contravariant(),
-                                parameterTypeConstructorArguments.get(1).contravariant(),
-                                returnTypeConstructorArgument.covariant()
+                                participantTypeParameters.get(0).contravariant(),
+                                participantTypeParameters.get(1).contravariant(),
+                                compositeTypeParameter.covariant()
                         ),
                         combinatorParameterName
                 )
@@ -165,7 +165,7 @@ public class CovariantGenerator extends Generator<CovariantGenerator> {
             public List<Type> getTypeArgumentsToPassOnToAccumulatorMethodForTupleMethod(int arity) {
                 return asList(
                         getCovariantTupleTypeOfArity(arity - 1),
-                        parameterTypeConstructorArguments.get(arity - 1).asType(),
+                        participantTypeParameters.get(arity - 1).asType(),
                         getCovariantTupleTypeOfArity(arity)
                 );
             }
@@ -193,7 +193,7 @@ public class CovariantGenerator extends Generator<CovariantGenerator> {
 
             // TODO: move to base class
             private Type getCovariantTupleTypeOfArity(int arity) {
-                return Type.concrete(fullyQualifiedNameOfTupleWithArity(arity), takeParameterTypeConstructorArgumentsAsTypeArguments(arity, Type::covariant));
+                return Type.concrete(fullyQualifiedNameOfTupleWithArity(arity), takeParticipantTypeParametersAsTypeArguments(arity, Type::covariant));
             }
         };
     }
