@@ -3,16 +3,12 @@ package nl.wernerdegroot.applicatives.processor.generator;
 import nl.wernerdegroot.applicatives.processor.domain.*;
 import org.junit.jupiter.api.Test;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Optional;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static java.util.stream.Collectors.joining;
 import static nl.wernerdegroot.applicatives.processor.conflicts.Conflicts.*;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.*;
 import static nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor.placeholder;
