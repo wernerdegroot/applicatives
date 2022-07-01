@@ -259,12 +259,12 @@ public class InvariantGenerator extends Generator<InvariantGenerator> {
             }
 
             @Override
-            public List<TypeArgument> getTypeArgumentsToPassOnToAccumulatorMethodForTupleMethod(int arity) {
+            public List<Type> getTypeArgumentsToPassOnToAccumulatorMethodForTupleMethod(int arity) {
                 return asList(
-                        getCovariantTupleTypeOfArity(arity - 1).invariant(),
-                        parameterTypeConstructorArguments.get(arity - 1).asType().invariant(),
-                        getCovariantTupleTypeOfArity(arity).invariant(),
-                        getCovariantTupleTypeOfArity(arity).invariant()
+                        getCovariantTupleTypeOfArity(arity - 1),
+                        parameterTypeConstructorArguments.get(arity - 1).asType(),
+                        getCovariantTupleTypeOfArity(arity),
+                        getCovariantTupleTypeOfArity(arity)
                 );
             }
 
