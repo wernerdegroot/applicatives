@@ -48,8 +48,10 @@ public interface Type {
     TypeBuilder SET = new TypeBuilder(FullyQualifiedName.of("java.util.Set"));
     TypeBuilder BIT_SET = new TypeBuilder(FullyQualifiedName.of("java.util.BitSet"));
     TypeBuilder MAP = new TypeBuilder(FullyQualifiedName.of("java.util.Map"));
+    TypeBuilder TREE_MAP = new TypeBuilder(FullyQualifiedName.of("java.util.TreeMap"));
     TypeBuilder FUNCTION = new TypeBuilder(FullyQualifiedName.of("java.util.function.Function"));
     TypeBuilder BI_FUNCTION = new TypeBuilder(FullyQualifiedName.of("java.util.function.BiFunction"));
+    TypeBuilder PREDICATE = new TypeBuilder(FullyQualifiedName.of("java.util.function.Predicate"));
     TypeBuilder UNARY_OPERATOR = new TypeBuilder(FullyQualifiedName.of("java.util.function.UnaryOperator"));
     TypeBuilder BINARY_OPERATOR = new TypeBuilder(FullyQualifiedName.of("java.util.function.BinaryOperator"));
     TypeBuilder COMPLETABLE_FUTURE = new TypeBuilder(FullyQualifiedName.of("java.util.concurrent.CompletableFuture"));

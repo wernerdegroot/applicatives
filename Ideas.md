@@ -1,6 +1,5 @@
 * Make sure we can publish with both Java 8 and 17
-* Add tests for builder with _just_ an intializer, or _just_ a finalizer.
-* Can we generate a lift signature from a combine signature? Should be possible. Definitely for the simplified ones.
+* Find a better name for "type constructor argument"
 * Support for static methods
 * Use processor (perhaps older version, to prevent circular dependencies) to generate `Validated` methods.
 * Test deconstructor (and other things too) when using a constructor or deconstructor of a generic type like Tuple3.
