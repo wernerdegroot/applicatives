@@ -1,3 +1,4 @@
+* Make sure we can publish with both Java 8 and 17
 * JSON benchmarks at https://github.com/fabienrenaud/java-json-benchmark/blob/master/src/main/java/com/github/fabienrenaud/jjb/stream/UsersStreamDeserializer.java
 * Add tests for builder with _just_ an intializer, or _just_ a finalizer.
 * Can we generate a lift signature from a combine signature? Should be possible. Definitely for the simplified ones.
