@@ -30,6 +30,8 @@ All the way to the bottom, there is a similar link in `README.md`.
 
 The README mentions the version number several times.
 
+The READMEs of the `json` module and the `records` module also mentions the version number.
+
 ## Upgrade the `nexus-staging-maven-plugin` plugin
 
 Upgrade the `nexus-staging-maven-plugin` plugin to the latest version.
