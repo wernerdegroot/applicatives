@@ -161,7 +161,7 @@ public class ContravariantGenerator extends Generator<ContravariantGenerator> {
 
                     @Override
                     public List<String> getAdditionalArgumentsToPassToCombineMethod() {
-                        return singletonList(methodReference().withType(returnTypeConstructorArgument.asType()).withMethodName(DECOMPOSITION_DECOMPOSE_METHOD_NAME).generate());
+                        return singletonList(methodReference().withType(returnTypeConstructorArgument).withMethodName(DECOMPOSITION_DECOMPOSE_METHOD_NAME).generate());
                     }
                 }
         );
@@ -187,7 +187,7 @@ public class ContravariantGenerator extends Generator<ContravariantGenerator> {
             }
 
             @Override
-            public List<TypeArgument> getTypeArgumentsToPassOnToAccumulatorMethodForTupleMethod(int arity) {
+            public List<Type> getTypeArgumentsToPassOnToAccumulatorMethodForTupleMethod(int arity) {
                 return emptyList();
             }
 
