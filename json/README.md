@@ -109,7 +109,7 @@ Place place = new Place(
 String json = placeWriter.writeString(place);
 ```
 
-Similar (but opposite) to the `JsonReader`, we have to show Java how deconstruct each `record` (like `Place`) into its constituent parts (like `String`, `Location` and `List<Resident>`) using a "decomposition" (like `Decomposition.of(Place::name, Place::location, Place::residents)`). We use a `Decomposition` for that. Unfortunately, Java [is not smart enough (yet)](https://openjdk.org/projects/amber/design-notes/towards-better-serialization#sidebar-pattern-matching) to figure this out on its own. If you don't mind a little reflection, you could modify these records and implement one of the interfaces provided in `nl.wernerdegroot.applicatives.records`. For example:
+Similar (but opposite) to the `JsonReader`, we have to show Java how deconstruct each `record` (like `Place`) into its constituent parts (like `String`, `Location` and `List<Resident>`) using a "decomposition" (like `Decomposition.of(Place::name, Place::location, Place::residents)`). We use a `Decomposition` for that. Unfortunately, Java [is not smart enough (yet)](https://openjdk.org/projects/amber/design-notes/towards-better-serialization#sidebar-pattern-matching) to figure this out on its own. If you don't mind a little reflection, you could modify these records and implement one of the interfaces provided in [`nl.wernerdegroot.applicatives.records`](https://github.com/wernerdegroot/applicatives/tree/main/records). For example:
 
 ```java
 public record Place(String name, Location location, List<Resident> residents)

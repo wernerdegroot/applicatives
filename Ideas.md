@@ -1,5 +1,4 @@
 * JSON benchmarks at https://github.com/fabienrenaud/java-json-benchmark/blob/master/src/main/java/com/github/fabienrenaud/jjb/stream/UsersStreamDeserializer.java
-* Free `Decomposable` for records
 * Add tests for builder with _just_ an intializer, or _just_ a finalizer.
 * Can we generate a lift signature from a combine signature? Should be possible. Definitely for the simplified ones.
 * Explicit type arguments to method call are not `TypeArgument` (for a data type). They can't specify variance. Used in generators.
@@ -17,17 +16,15 @@
 * Static -> class, abstract instance method -> abstract class
 * Because builder-methods are not for exposing, perhaps pass reference to builder object instead (make this configurable `style = "inheritance"` or `style = "delegation"`).
 * combineAndThen
-* Implement free applicative functors
-* Traversal (perhaps requires `Hkt<List<?>, T>`)
 * Document process to publish
 * Github Actions
 * Code coverage
 * Remove Google auto-registration. Why again?
 * element.getKind == record?
+* Increase coverage of processor-classes (now almost 0%)
 * Imports
 * Introduce `ParameterName` and `ClassName`?
 * Allow subtypes in return type (return `CartesianProductList` in applicative for `List`)
-* Increase coverage of processor-classes (now almost 0%)
 * Introduce monad, with a builder like `FastTuple` that allows:
     
     ```
@@ -39,3 +36,4 @@
     ```
 * Benji Webers decomposition function `<T> T (C source, BiFunction<A, B, T> extractor)` instead of the current Decomposition
 * Alternative, Decidable. Also see https://www.youtube.com/watch?v=IJ_bVVsQhvc and https://en.wikibooks.org/wiki/Haskell/Alternative_and_MonadPlus
+* Implement free applicative functors

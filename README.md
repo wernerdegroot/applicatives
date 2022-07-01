@@ -418,7 +418,7 @@ public class CanBeAnything<C1, C2, ..., CN> implements GeneratedClass<C1, C2, ..
 * `java.util.Stream`
 * `java.util.stream.Collector`
 
-There are many other data structures like this, such as `Mono`/`Flux` from [Reactor](https://projectreactor.io/), [parser combinators](https://en.wikipedia.org/wiki/Parser_combinator), etc.
+There are many other data structures like this, such as `Mono`/`Flux` from [Reactor](https://projectreactor.io/), [parser combinators](https://en.wikipedia.org/wiki/Parser_combinator), [JSON readers](https://github.com/wernerdegroot/applicatives/blob/main/json/src/main/java/nl/wernerdegroot/applicatives/json/JsonReaders.java), etc.
 
 Moreover, any "stack" of these data structures (a `List` of `Optional`s, or a `Function` that returns a `Stream` of `CompletableFuture`s) can automatically be combined this way too! The sections [Lift](#lift) and [Stacking](#stacking) describe how stacking of applicatives works.
 
@@ -668,20 +668,25 @@ public class PokemonCard implements Decomposable4<String, Integer, EnergyType, L
 }
 ```
 
-It's a neat trick that I learned over at [Benji Weber's blog](https://benjiweber.co.uk/blog/2020/09/19/fun-with-java-records/). It's a neat way to decompose objects into basically any other object with similar attributes.
+It's a neat trick that I learned over at [Benji Weber's blog](https://benjiweber.co.uk/blog/2020/09/19/fun-with-java-records/). By implementing `Decomposable4` or one of its siblings you can decompose objects into basically any other object with similar attributes. If your class implements such an interface, the `combine` method is able to take advantage of it by splitting it up into its constituent parts.
 
-If your class implements such an interface, the `combine` method is able to take advantage of it by splitting it up into its constituent parts.
+If you are using records (and you don't mind a little reflection), you may also want to check out [`nl.wernerdegroot.applicatives.records`](https://github.com/wernerdegroot/applicatives/tree/main/records). For example:
 
-If you are unable (or unwilling) to modify your classes to implement an additional interface like this, you can always opt for a stand-alone decomposition:
+```java
+public record PokemonCard(String name, int hp, EnergyType energyType, List<Move> moves)
+    implements Record4<String, Integer, EnergyType, List<Move>> { }
+```
+
+If you are unable (or unwilling) to modify your classes to implement an additional interface like `Decomposable3` or `Record4`, you can always opt for a stand-alone decomposition:
 
 ```java
 // Break a PokemonCard apart into a Tuple of String, Integer, EnergyType and List<Move>:
 Decomposition4<PokemonCard, String, Integer, EnergyType, List<Move>> decomposition = 
-        pokemonCard -> Tuple.of(
-                pokemonCard.getName(), 
-                pokemonCard.getHp(), 
-                pokemonCard.getEnergyType(),
-                pokemonCard.getMoves()
+        Decomposition.of(
+                PokemonCard::getName, 
+                PokemonCard::getHp, 
+                PokemonCard::getEnergyType,
+                PokemonCard::getMoves
         );
 
 Predicate<PokemonCard> isValidPokemon = 
@@ -705,7 +710,7 @@ You can use `@Contravariant` for any data structure for which you can write a cl
 
 Many of these are included in the `prelude` module.
 
-Other examples of contravariant data types that can be combined include [Hamcrest's matchers](http://hamcrest.org/JavaHamcrest/tutorial), validators, etc.
+Other examples of contravariant data types that can be combined include [Hamcrest's matchers](http://hamcrest.org/JavaHamcrest/tutorial), validators, [JSON writers](https://github.com/wernerdegroot/applicatives/blob/main/json/src/main/java/nl/wernerdegroot/applicatives/json/JsonWriters.java), etc.
 
 ## Invariant
 
@@ -740,7 +745,7 @@ public class UnaryOperators implements UnaryOperatorsOverloads {
 }
 ```
 
-Note that a class is already conveniently included for you in the `prelude` module. Check out the [implementation](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/main/java/nl/wernerdegroot/applicatives/prelude/UnaryOperators.java) and the [tests](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/test/java/nl/wernerdegroot/applicatives/prelude/UnaryOperatorsTest.java).
+Note that a class is already conveniently included for you in the `prelude` module. Check out the [implementation](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/main/java/nl/wernerdegroot/applicatives/prelude/UnaryOperators.java) and the [tests](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/test/java/nl/wernerdegroot/applicatives/prelude/UnaryOperatorsTest.java). You may also want to check out [JSON readers and writers](https://github.com/wernerdegroot/applicatives/blob/main/json/src/main/java/nl/wernerdegroot/applicatives/json/JsonFormats.java) for another example.
 
 ## Contributing
 
