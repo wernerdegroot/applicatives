@@ -1,5 +1,4 @@
 * Make sure we can publish with both Java 8 and 17
-* JSON benchmarks at https://github.com/fabienrenaud/java-json-benchmark/blob/master/src/main/java/com/github/fabienrenaud/jjb/stream/UsersStreamDeserializer.java
 * Add tests for builder with _just_ an intializer, or _just_ a finalizer.
 * Can we generate a lift signature from a combine signature? Should be possible. Definitely for the simplified ones.
 * Support for static methods
@@ -31,3 +30,5 @@
 * Benji Webers decomposition function `<T> T (C source, BiFunction<A, B, T> extractor)` instead of the current Decomposition
 * Alternative, Decidable. Also see https://www.youtube.com/watch?v=IJ_bVVsQhvc and https://en.wikibooks.org/wiki/Haskell/Alternative_and_MonadPlus
 * Implement free applicative functors
+* Improve performance of JSON project by using streaming API.
+* JSON benchmarks at https://github.com/fabienrenaud/java-json-benchmark/blob/master/src/main/java/com/github/fabienrenaud/jjb/stream/UsersStreamDeserializer.java

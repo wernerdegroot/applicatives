@@ -169,18 +169,7 @@ public class ContravariantGenerator extends Generator<ContravariantGenerator> {
 
     @Override
     protected LiftMethod getLiftMethod() {
-        return new LiftMethod() {
-            @Override
-            public List<Parameter> getAdditionalLiftMethodParametersToPassOnToCombineMethod(int arity) {
-                List<TypeArgument> decompositionTypeArguments = new ArrayList<>();
-                decompositionTypeArguments.add(returnTypeConstructorArgument.asType().contravariant());
-                decompositionTypeArguments.addAll(takeParameterTypeConstructorArgumentsAsTypeArguments(arity, Type::covariant));
-
-                return parameters()
-                        .withParameter(Type.concrete(fullyQualifiedNameOfDecomposition(arity), decompositionTypeArguments), decompositionParameterName)
-                        .unwrap();
-            }
-        };
+        return getCombineMethod().asLiftMethod();
     }
 
     @Override

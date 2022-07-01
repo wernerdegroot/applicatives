@@ -142,14 +142,7 @@ public class CovariantGenerator extends Generator<CovariantGenerator> {
 
     @Override
     protected LiftMethod getLiftMethod() {
-        return new LiftMethod() {
-            @Override
-            public List<Parameter> getAdditionalLiftMethodParametersToPassOnToCombineMethod(int arity) {
-                return parameters()
-                        .withParameter(lambdaParameterType(TypeConstructor.placeholder(), TypeConstructor.placeholder(), TypeConstructor.placeholder(), arity), combinatorParameterName)
-                        .unwrap();
-            }
-        };
+        return getCombineMethod().asLiftMethod();
     }
 
     @Override
