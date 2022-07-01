@@ -8,6 +8,7 @@ import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstr
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
@@ -91,7 +92,7 @@ public class CovariantGenerator extends Generator<CovariantGenerator> {
 
             @Override
             public boolean shouldGenerateArityTwo() {
-                return hasInitializer();
+                return hasInitializer() || !Objects.equals(accumulator.getName(), combineMethodToGenerate);
             }
 
             @Override
