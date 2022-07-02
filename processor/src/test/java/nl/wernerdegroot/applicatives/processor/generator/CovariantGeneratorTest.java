@@ -19,7 +19,7 @@ public class CovariantGeneratorTest implements GeneratorTest {
 
     @Test
     public void givenOptional() throws IOException {
-        String expected = getResourceFileAsString("/OptionalsOverloads.java");
+        String expected = getResourceFileAsString("OptionalsOverloads");
         String toVerify = generator()
                 .withPackageName(PackageName.of("nl.wernerdegroot.applicatives"))
                 .withClassNameToGenerate("OptionalsOverloads")
@@ -49,11 +49,13 @@ public class CovariantGeneratorTest implements GeneratorTest {
                 .generate();
 
         assertEquals(expected, toVerify);
+
+        ensureResourceFileCompiles("OptionalsOverloads");
     }
 
     @Test
     public void givenCompletableFutures() throws IOException {
-        String expected = getResourceFileAsString("/CompletableFuturesOverloads.java");
+        String expected = getResourceFileAsString("CompletableFuturesOverloads");
         String toVerify = generator()
                 .withPackageName(PackageName.of("nl.wernerdegroot.applicatives"))
                 .withClassNameToGenerate("CompletableFuturesOverloads")
@@ -83,13 +85,15 @@ public class CovariantGeneratorTest implements GeneratorTest {
                 .generate();
 
         assertEquals(expected, toVerify);
+
+        ensureResourceFileCompiles("CompletableFuturesOverloads");
     }
 
     @Test
     public void givenMap() throws IOException {
         TypeParameterName K = TypeParameterName.of("K");
 
-        String expected = getResourceFileAsString("/MapsOverloads.java");
+        String expected = getResourceFileAsString("MapsOverloads");
         String toVerify = generator()
                 .withPackageName(PackageName.of("nl.wernerdegroot.applicatives"))
                 .withClassNameToGenerate("MapsOverloads")
@@ -99,7 +103,7 @@ public class CovariantGeneratorTest implements GeneratorTest {
                                 Initializer.of(
                                         "initialize",
                                         MAP.with(K.asTypeConstructor().contravariant(), placeholder().covariant()),
-                                        TREE_MAP.with(K.asTypeConstructor().contravariant(), placeholder().contravariant())
+                                        TREE_MAP.with(K.asTypeConstructor().contravariant(), placeholder().invariant())
                                 )
                         )
                 )
@@ -127,11 +131,13 @@ public class CovariantGeneratorTest implements GeneratorTest {
                 .generate();
 
         assertEquals(expected, toVerify);
+
+        ensureResourceFileCompiles("MapsOverloads");
     }
 
     @Test
     public void givenList() throws IOException {
-        String expected = getResourceFileAsString("/ListsOverloads.java");
+        String expected = getResourceFileAsString("ListsOverloads");
         String toVerify = generator()
                 .withPackageName(PackageName.of("nl.wernerdegroot.applicatives"))
                 .withClassNameToGenerate("ListsOverloads")
@@ -169,13 +175,15 @@ public class CovariantGeneratorTest implements GeneratorTest {
                 .generate();
 
         assertEquals(expected, toVerify);
+
+        ensureResourceFileCompiles("ListsOverloads");
     }
 
     @Test
     public void givenFunction() throws IOException {
         TypeParameterName P = TypeParameterName.of("P");
 
-        String expected = getResourceFileAsString("/ResultsOverloads.java");
+        String expected = getResourceFileAsString("ResultsOverloads");
         String toVerify = generator()
                 .withPackageName(PackageName.of("nl.wernerdegroot.applicatives"))
                 .withClassNameToGenerate("ResultsOverloads")
@@ -205,5 +213,7 @@ public class CovariantGeneratorTest implements GeneratorTest {
                 .generate();
 
         assertEquals(expected, toVerify);
+
+        ensureResourceFileCompiles("ResultsOverloads");
     }
 }

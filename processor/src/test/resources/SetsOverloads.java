@@ -63,7 +63,7 @@ public interface SetsOverloads {
     class Tuples {
 
         public static <P1, P2> java.util.BitSet tuple(nl.wernerdegroot.applicatives.SetsOverloads self, java.util.BitSet first, java.util.Set<P2> second, int maxSize) {
-            return self.combineImpl(first, second, nl.wernerdegroot.applicatives.runtime.FastTuple.withMaxSize(maxSize), java.util.function.Function.identity(), nl.wernerdegroot.applicatives.runtime.Tuple2::getFirst, nl.wernerdegroot.applicatives.runtime.Tuple2::getSecond);
+            return self.<P1, P2, nl.wernerdegroot.applicatives.runtime.Tuple2<? extends P1, ? extends P2>, nl.wernerdegroot.applicatives.runtime.Tuple2<? extends P1, ? extends P2>>combineImpl(first, second, nl.wernerdegroot.applicatives.runtime.FastTuple.withMaxSize(maxSize), java.util.function.Function.identity(), nl.wernerdegroot.applicatives.runtime.Tuple2::getFirst, nl.wernerdegroot.applicatives.runtime.Tuple2::getSecond);
         }
 
         public static <P1, P2, P3> java.util.BitSet tuple(nl.wernerdegroot.applicatives.SetsOverloads self, java.util.BitSet first, java.util.Set<P2> second, java.util.Set<P3> third, int maxSize) {

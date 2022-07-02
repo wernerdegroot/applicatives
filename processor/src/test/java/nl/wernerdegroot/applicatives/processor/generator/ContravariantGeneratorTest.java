@@ -18,7 +18,7 @@ public class ContravariantGeneratorTest implements GeneratorTest {
 
     @Test
     public void givenComparator() throws IOException {
-        String expected = getResourceFileAsString("/ComparatorsOverloads.java");
+        String expected = getResourceFileAsString("ComparatorsOverloads");
         String toVerify = generator()
                 .withPackageName(PackageName.of("nl.wernerdegroot.applicatives"))
                 .withClassNameToGenerate("ComparatorsOverloads")
@@ -49,17 +49,19 @@ public class ContravariantGeneratorTest implements GeneratorTest {
                 .generate();
 
         assertEquals(expected, toVerify);
+
+        ensureResourceFileCompiles("ComparatorsOverloads");
     }
 
     @Test
     public void givenFunction() throws IOException {
-        TypeParameterName R = TypeParameterName.of("R");
+        TypeParameterName C1 = TypeParameterName.of("C1");
 
-        String expected = getResourceFileAsString("/ParametersOverloads.java");
+        String expected = getResourceFileAsString("ParametersOverloads");
         String toVerify = generator()
                 .withPackageName(PackageName.of("nl.wernerdegroot.applicatives"))
                 .withClassNameToGenerate("ParametersOverloads")
-                .withClassTypeParameters(singletonList(R.asTypeParameter()))
+                .withClassTypeParameters(singletonList(C1.asTypeParameter()))
                 .withOptionalInitializer(
                         Optional.of(
                                 Initializer.of(
@@ -94,11 +96,13 @@ public class ContravariantGeneratorTest implements GeneratorTest {
                 .generate();
 
         assertEquals(expected, toVerify);
+
+        ensureResourceFileCompiles("ParametersOverloads");
     }
 
     @Test
     public void givenPredicate() throws IOException {
-        String expected = getResourceFileAsString("/PredicatesOverloads.java");
+        String expected = getResourceFileAsString("PredicatesOverloads");
         String toVerify = generator()
                 .withPackageName(PackageName.of("nl.wernerdegroot.applicatives"))
                 .withClassNameToGenerate("PredicatesOverloads")
@@ -137,5 +141,7 @@ public class ContravariantGeneratorTest implements GeneratorTest {
                 .generate();
 
         assertEquals(expected, toVerify);
+
+        ensureResourceFileCompiles("PredicatesOverloads");
     }
 }

@@ -20,7 +20,7 @@ public class InvariantGeneratorTest implements GeneratorTest {
 
     @Test
     public void givenUnaryOperator() throws IOException {
-        String expected = getResourceFileAsString("/UnaryOperatorsOverloads.java");
+        String expected = getResourceFileAsString("UnaryOperatorsOverloads");
         String toVerify = generator()
                 .withPackageName(PackageName.of("nl.wernerdegroot.applicatives"))
                 .withClassNameToGenerate("UnaryOperatorsOverloads")
@@ -55,11 +55,13 @@ public class InvariantGeneratorTest implements GeneratorTest {
                 .generate();
 
         assertEquals(expected, toVerify);
+
+        ensureResourceFileCompiles("UnaryOperatorsOverloads");
     }
 
     @Test
     public void givenBinaryOperator() throws IOException {
-        String expected = getResourceFileAsString("/BinaryOperatorsOverloads.java");
+        String expected = getResourceFileAsString("BinaryOperatorsOverloads");
         String toVerify = generator()
                 .withPackageName(PackageName.of("nl.wernerdegroot.applicatives"))
                 .withClassNameToGenerate("BinaryOperatorsOverloads")
@@ -102,11 +104,13 @@ public class InvariantGeneratorTest implements GeneratorTest {
                 .generate();
 
         assertEquals(expected, toVerify);
+
+        ensureResourceFileCompiles("BinaryOperatorsOverloads");
     }
 
     @Test
     public void givenInvariantSets() throws IOException {
-        String expected = getResourceFileAsString("/SetsOverloads.java");
+        String expected = getResourceFileAsString("SetsOverloads");
         String toVerify = generator()
                 .withPackageName(PackageName.of("nl.wernerdegroot.applicatives"))
                 .withClassNameToGenerate("SetsOverloads")
@@ -149,5 +153,7 @@ public class InvariantGeneratorTest implements GeneratorTest {
                 .generate();
 
         assertEquals(expected, toVerify);
+
+        ensureResourceFileCompiles("SetsOverloads");
     }
 }

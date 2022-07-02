@@ -482,6 +482,7 @@ public abstract class Generator<This> {
                     arity,
                     methodCall()
                             .withObjectPath(selfParameterName)
+                            .withTypeArguments(getTypeArgumentsToPassOnToAccumulatorMethodForTupleMethod(arity))
                             .withMethodName(accumulator.getName())
                             .withArguments(
                                     initializeIfHasInitializer(selfParameterName, firstInputParameterName),
