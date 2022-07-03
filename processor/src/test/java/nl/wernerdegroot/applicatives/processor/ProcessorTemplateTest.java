@@ -8,7 +8,7 @@ import nl.wernerdegroot.applicatives.processor.logging.StringBuilderLoggingBacke
 import nl.wernerdegroot.applicatives.processor.validation.CovariantParametersAndTypeParametersValidator;
 import nl.wernerdegroot.applicatives.processor.validation.Validated;
 import nl.wernerdegroot.applicatives.processor.validation.Validator;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.tools.Diagnostic;
 import java.io.IOException;
@@ -198,7 +198,7 @@ public class ProcessorTemplateTest implements VarianceProcessorTemplateTest {
                         singleton(PUBLIC),
                         asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
                         Optional.of(OPTIONAL.with(V)),
-                        "combineImpl",
+                        "combine",
                         asList(
                                 Parameter.of(OPTIONAL.with(T.covariant()), "left"),
                                 Parameter.of(OPTIONAL.with(U.covariant()), "right"),
