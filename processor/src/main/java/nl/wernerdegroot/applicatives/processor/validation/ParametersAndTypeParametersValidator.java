@@ -6,10 +6,9 @@ import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 public interface ParametersAndTypeParametersValidator {
-    Result validateTypeParametersAndParameters(List<TypeParameter> typeParameters, List<Parameter> parameters, Set<String> errorMessages);
+    Result validateTypeParametersAndParameters(List<TypeParameter> typeParameters, List<Parameter> parameters, List<String> errorMessages);
 
     class Result {
         private final TypeParameter leftInputTypeConstructorArgument;

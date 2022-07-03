@@ -6,16 +6,16 @@ import nl.wernerdegroot.applicatives.processor.domain.TypeParameter;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor;
 
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 import static nl.wernerdegroot.applicatives.processor.validation.Common.*;
 
 public class InitializerOrFinalizerValidator {
 
     public static Validated<String, Result> validate(Method method) {
-        Set<String> errorMessages = new HashSet<>();
+        List<String> errorMessages = new ArrayList<>();
 
         verifyCanImplementAbstractMethod(method, errorMessages);
         verifyParameterCount(method.getParameters(), 1, errorMessages);

@@ -72,8 +72,8 @@ public interface BuilderProcessorTemplate<Annotation extends java.lang.annotatio
     }
 
     @Override
-    default void noteConversionToDomainFailed(TypeElement typeElement) {
-        Log.of("Failure transforming from objects from 'javax.lang.model' to objects from 'nl.wernerdegroot.applicatives.processor.domain' for class '%s'", typeElement.getQualifiedName()).append(asError());
+    default void errorConversionToDomainFailed(TypeElement typeElement, Throwable throwable) {
+        Log.of("Failure transforming from objects from 'javax.lang.model' to objects from 'nl.wernerdegroot.applicatives.processor.domain' for class '%s': %s", typeElement.getQualifiedName(), throwable.getMessage()).append(asError());
     }
 
     @Override
@@ -85,7 +85,7 @@ public interface BuilderProcessorTemplate<Annotation extends java.lang.annotatio
     }
 
     @Override
-    default void errorValidationFailed(ContainingClass containingClass, List<Method> methods, Set<Log> errorMessages) {
+    default void errorValidationFailed(ContainingClass containingClass, List<Method> methods, List<Log> errorMessages) {
         Log.of("Class '%s' does not meet all criteria for code generation", containingClass.getFullyQualifiedName().raw())
                 .withLogs(errorMessages)
                 .append(asError());

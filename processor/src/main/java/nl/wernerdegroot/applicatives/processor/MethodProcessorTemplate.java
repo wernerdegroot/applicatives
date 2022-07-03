@@ -9,7 +9,7 @@ import nl.wernerdegroot.applicatives.processor.logging.Log;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
-import java.util.Set;
+import java.util.List;
 
 public interface MethodProcessorTemplate<Annotation extends java.lang.annotation.Annotation> extends ProcessorTemplate<Annotation, Element, Element, Method> {
 
@@ -57,8 +57,8 @@ public interface MethodProcessorTemplate<Annotation extends java.lang.annotation
     }
 
     @Override
-    default void noteConversionToDomainFailed(Element element) {
-        Log.of("Failure transforming from objects from 'javax.lang.model' to objects from 'nl.wernerdegroot.applicatives.processor.domain' for method with signature '%s'", element).append(asError());
+    default void errorConversionToDomainFailed(Element element, Throwable throwable) {
+        Log.of("Failure transforming from objects from 'javax.lang.model' to objects from 'nl.wernerdegroot.applicatives.processor.domain' for method with signature '%s': %s", element, throwable.getMessage()).append(asError());
     }
 
     @Override
@@ -67,7 +67,7 @@ public interface MethodProcessorTemplate<Annotation extends java.lang.annotation
     }
 
     @Override
-    default void errorValidationFailed(ContainingClass containingClass, Method method, Set<Log> errorMessages) {
+    default void errorValidationFailed(ContainingClass containingClass, Method method, List<Log> errorMessages) {
         Log.of("Method '%s' in class '%s' does not meet all criteria for code generation", method.getName(), containingClass.getFullyQualifiedName().raw())
                 .withLogs(errorMessages)
                 .append(asError());

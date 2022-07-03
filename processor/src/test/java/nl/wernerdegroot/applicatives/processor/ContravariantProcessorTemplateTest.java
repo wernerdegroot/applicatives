@@ -21,7 +21,7 @@ public class ContravariantProcessorTemplateTest implements VarianceProcessorTemp
 
     @Test
     public void givenComparator() throws IOException {
-        String expected = getResourceFileAsString("ComparatorsOverloads");
+        String expected = getResourceClassFileAsString("ComparatorsOverloads");
         String toVerify = contravariantProcessorTemplate.generate(
                 ContainingClass.of(
                         PackageName.of("nl.wernerdegroot.applicatives"),
@@ -53,7 +53,7 @@ public class ContravariantProcessorTemplateTest implements VarianceProcessorTemp
     public void givenFunction() throws IOException {
         TypeParameterName C1 = TypeParameterName.of("C1");
 
-        String expected = getResourceFileAsString("ParametersOverloads");
+        String expected = getResourceClassFileAsString("ParametersOverloads");
         String toVerify = contravariantProcessorTemplate.generate(
                 ContainingClass.of(
                         PackageName.of("nl.wernerdegroot.applicatives"),
@@ -89,7 +89,7 @@ public class ContravariantProcessorTemplateTest implements VarianceProcessorTemp
 
     @Test
     public void givenPredicate() throws IOException {
-        String expected = getResourceFileAsString("PredicatesOverloads");
+        String expected = getResourceClassFileAsString("PredicatesOverloads");
         String toVerify = contravariantProcessorTemplate.generate(
                 ContainingClass.of(
                         PackageName.of("nl.wernerdegroot.applicatives"),

@@ -19,9 +19,9 @@ import javax.tools.Diagnostic;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 import static nl.wernerdegroot.applicatives.processor.conflicts.ConflictFinder.findClassTypeParameterNameReplacements;
 
@@ -46,8 +46,9 @@ public interface ProcessorTemplate<Annotation, AnnotatedElement, ElementToProces
                 // If we have issues transforming to `nl.wernerdegroot.applicatives.processor.domain`
                 // (which makes it a lot easier to log where the annotation was found) make sure we
                 // log the raw signature of the method or class so the client can troubleshoot.
-                noteConversionToDomainFailed(elementToProcess);
-                throw e;
+                errorConversionToDomainFailed(elementToProcess, e);
+                printStackTraceToMessengerAsNote(e);
+                return;
             }
             noteContainingClassAndMethodOrMethods(containingClass, methodOrMethods);
             String resolvedClassNameToGenerate = resolveClassNameToGenerate(classNameToGenerate, containingClass);
@@ -72,9 +73,6 @@ public interface ProcessorTemplate<Annotation, AnnotatedElement, ElementToProces
         } catch (Throwable t) {
             Log.of("Error occurred while processing annotation of type '%s': %s", getAnnotationType(), t.getMessage()).append(asError());
             printStackTraceToMessengerAsNote(t);
-            if (!shouldLogNotes()) {
-                Log.of("Enable verbose logging to see a stack trace.").append(asError());
-            }
         }
     }
 
@@ -102,7 +100,7 @@ public interface ProcessorTemplate<Annotation, AnnotatedElement, ElementToProces
         Log.of("Successfully transformed objects from 'javax.lang.model' to objects from 'nl.wernerdegroot.applicatives.processor.domain'").append(asNote());
     }
 
-    void noteConversionToDomainFailed(ElementToProcess elementToProcess);
+    void errorConversionToDomainFailed(ElementToProcess elementToProcess, Throwable throwable);
 
     void noteContainingClassAndMethodOrMethods(ContainingClass containingClass, MethodOrMethods methodOrMethods);
 
@@ -122,7 +120,7 @@ public interface ProcessorTemplate<Annotation, AnnotatedElement, ElementToProces
 
     Validated<Log, Validator.Result> validate(ContainingClass containingClass, MethodOrMethods methodOrMethods);
 
-    void errorValidationFailed(ContainingClass containingClass, MethodOrMethods methodOrMethods, Set<Log> errorMessages);
+    void errorValidationFailed(ContainingClass containingClass, MethodOrMethods methodOrMethods, List<Log> errorMessages);
 
     default void noteValidationSuccess(Validator.Result result) {
         Log.of("All criteria for code generation satisfied")
@@ -153,7 +151,7 @@ public interface ProcessorTemplate<Annotation, AnnotatedElement, ElementToProces
         return ConfigValidator.validate(resolvedClassNameToGenerate, resolvedCombineMethodName, liftMethodNameToGenerate, maxArity);
     }
 
-    default void errorConfigNotValid(Set<String> errorMessages) {
+    default void errorConfigNotValid(List<String> errorMessages) {
         Log.of("Configuration of '%s' not valid", getAnnotationType().getCanonicalName())
                 .withDetails(errorMessages)
                 .append(asError());
@@ -187,7 +185,8 @@ public interface ProcessorTemplate<Annotation, AnnotatedElement, ElementToProces
                 Log.of("Saved generated code to .java-file on disk (%s)", fullyQualifiedNameOfGeneratedClass.raw()).append(asNote());
             }
         } catch (IOException e) {
-            Log.of("Error saving generated code to .java-file on disk (%s)", fullyQualifiedNameOfGeneratedClass.raw()).append(asError());
+            Log.of("Error saving generated code to .java-file on disk (%s): %s", fullyQualifiedNameOfGeneratedClass.raw(), e.getMessage()).append(asError());
+            printStackTraceToMessengerAsNote(e);
         }
     }
 
@@ -204,10 +203,14 @@ public interface ProcessorTemplate<Annotation, AnnotatedElement, ElementToProces
     Map<String, String> getConfiguration();
 
     default void printStackTraceToMessengerAsNote(Throwable e) {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        e.printStackTrace(pw);
-        asNote().log(sw.toString());
+        if (shouldLogNotes()) {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            asNote().log(sw.toString());
+        } else {
+            Log.of("Enable verbose logging to see a stack trace.").append(asError());
+        }
     }
 
     LoggingBackend getMessengerLoggingBackend(Diagnostic.Kind diagnosticKind);

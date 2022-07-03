@@ -20,7 +20,7 @@ public class InvariantProcessorTemplateTest implements VarianceProcessorTemplate
 
     @Test
     public void givenUnaryOperator() throws IOException {
-        String expected = getResourceFileAsString("UnaryOperatorsOverloads");
+        String expected = getResourceClassFileAsString("UnaryOperatorsOverloads");
         String toVerify = invariantProcessorTemplate.generate(
                 ContainingClass.of(
                         PackageName.of("nl.wernerdegroot.applicatives"),
@@ -50,7 +50,7 @@ public class InvariantProcessorTemplateTest implements VarianceProcessorTemplate
 
     @Test
     public void givenBinaryOperator() throws IOException {
-        String expected = getResourceFileAsString("BinaryOperatorsOverloads");
+        String expected = getResourceClassFileAsString("BinaryOperatorsOverloads");
         String toVerify = invariantProcessorTemplate.generate(
                 ContainingClass.of(
                         PackageName.of("nl.wernerdegroot.applicatives"),
@@ -86,7 +86,7 @@ public class InvariantProcessorTemplateTest implements VarianceProcessorTemplate
 
     @Test
     public void givenSet() throws IOException {
-        String expected = getResourceFileAsString("SetsOverloads");
+        String expected = getResourceClassFileAsString("SetsOverloads");
         String toVerify = invariantProcessorTemplate.generate(
                 ContainingClass.of(
                         PackageName.of("nl.wernerdegroot.applicatives"),

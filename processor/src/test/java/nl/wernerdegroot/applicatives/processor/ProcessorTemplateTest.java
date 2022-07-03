@@ -19,9 +19,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
@@ -30,6 +30,7 @@ import static nl.wernerdegroot.applicatives.processor.domain.Modifier.PUBLIC;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.BI_FUNCTION;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.OPTIONAL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ProcessorTemplateTest implements VarianceProcessorTemplateTest {
 
@@ -128,8 +129,8 @@ public class ProcessorTemplateTest implements VarianceProcessorTemplateTest {
         }
 
         @Override
-        public void noteConversionToDomainFailed(MockElement mockElement) {
-            Log.of("Failure transforming from objects from 'javax.lang.model' to objects from 'nl.wernerdegroot.applicatives.processor.domain' for mock element '%s'", mockElement.description).append(asError());
+        public void errorConversionToDomainFailed(MockElement mockElement, Throwable throwable) {
+            Log.of("Failure transforming from objects from 'javax.lang.model' to objects from 'nl.wernerdegroot.applicatives.processor.domain' for mock element '%s': %s", mockElement.description, throwable.getMessage()).append(asError());
         }
 
         @Override
@@ -143,7 +144,7 @@ public class ProcessorTemplateTest implements VarianceProcessorTemplateTest {
         }
 
         @Override
-        public void errorValidationFailed(ContainingClass containingClass, Method method, Set<Log> errorMessages) {
+        public void errorValidationFailed(ContainingClass containingClass, Method method, List<Log> errorMessages) {
             Log.of("Method '%s' in class '%s' does not meet all criteria for code generation", method.getName(), containingClass.getFullyQualifiedName().raw())
                     .withLogs(errorMessages)
                     .append(asError());
@@ -166,7 +167,9 @@ public class ProcessorTemplateTest implements VarianceProcessorTemplateTest {
         }
 
         public String getWritten(FullyQualifiedName fullyQualifiedName) {
-            return writers.get(fullyQualifiedName).toString();
+            return Optional.ofNullable(writers.get(fullyQualifiedName))
+                    .map(StringWriter::toString)
+                    .orElse("");
         }
 
         public String getLogged(Diagnostic.Kind diagnosticKind) {
@@ -208,7 +211,7 @@ public class ProcessorTemplateTest implements VarianceProcessorTemplateTest {
         );
         processor.process(mockElement);
 
-        String expectedContents = getResourceFileAsString("OptionalsOverloads");
+        String expectedContents = getResourceClassFileAsString("OptionalsOverloads");
         String toVerifyContents = processor.getWritten(FullyQualifiedName.of("nl.wernerdegroot.applicatives.OptionalsOverloads"));
         assertEquals(expectedContents, toVerifyContents);
 
@@ -218,6 +221,330 @@ public class ProcessorTemplateTest implements VarianceProcessorTemplateTest {
 
         String expectedInfo = "";
         String toVerifyInfo = processor.getLogged(Diagnostic.Kind.NOTE);
-        assertEquals(expectedInfo, toVerifyInfo);
+        assertEquals(expectedInfo.trim(), toVerifyInfo.trim());
+    }
+
+    @Test
+    @MockAnnotation(maxArity = 2)
+    public void givenValidMethodWithVerboseLogging() throws NoSuchMethodException, IOException {
+        java.lang.reflect.Method self = ProcessorTemplateTest.class.getMethod("givenValidMethodWithVerboseLogging");
+
+        Map<String, String> configuration = new HashMap<>();
+        configuration.put("applicatives.verbose", "true");
+        TestProcessor processor = new TestProcessor(configuration);
+        MockElement mockElement = new MockElement(
+                self.getName(),
+                self.getAnnotation(MockAnnotation.class),
+                PackageName.of("nl.wernerdegroot.applicatives")
+                        .asPackage()
+                        .containingClass(emptySet(), ClassName.of("Optionals")),
+                Method.of(
+                        singleton(MOCK_ANNOTATION_NAME),
+                        singleton(PUBLIC),
+                        asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
+                        Optional.of(OPTIONAL.with(V)),
+                        "combine",
+                        asList(
+                                Parameter.of(OPTIONAL.with(T.covariant()), "left"),
+                                Parameter.of(OPTIONAL.with(U.covariant()), "right"),
+                                Parameter.of(BI_FUNCTION.with(T.contravariant(), U.contravariant(), V.covariant()), "compose")
+                        )
+                )
+        );
+        processor.process(mockElement);
+
+        String expectedContents = getResourceClassFileAsString("OptionalsOverloads");
+        String toVerifyContents = processor.getWritten(FullyQualifiedName.of("nl.wernerdegroot.applicatives.OptionalsOverloads"));
+        assertEquals(expectedContents, toVerifyContents);
+
+        String expectedErrors = "";
+        String toVerifyErrors = processor.getLogged(Diagnostic.Kind.ERROR);
+        assertEquals(expectedErrors, toVerifyErrors);
+
+        String expectedInfo = getResourceFileAsString("/" + self.getName() + ".log");
+        String toVerifyInfo = processor.getLogged(Diagnostic.Kind.NOTE);
+        assertEquals(expectedInfo.trim(), toVerifyInfo.trim());
+    }
+
+    @Test
+    @MockAnnotation(maxArity = 2)
+    public void givenErrorWhileTransformingToDomain() throws NoSuchMethodException {
+        java.lang.reflect.Method self = ProcessorTemplateTest.class.getMethod("givenErrorWhileTransformingToDomain");
+
+        Map<String, String> configuration = new HashMap<>();
+        TestProcessor processor = new TestProcessor(configuration) {
+            @Override
+            public Method toMethodOrMethods(MockElement mockElement) {
+                throw new IllegalArgumentException("There was a problem!");
+            }
+        };
+        MockElement mockElement = new MockElement(
+                self.getName(),
+                self.getAnnotation(MockAnnotation.class),
+                PackageName.of("nl.wernerdegroot.applicatives")
+                        .asPackage()
+                        .containingClass(emptySet(), ClassName.of("Optionals")),
+                Method.of(
+                        singleton(MOCK_ANNOTATION_NAME),
+                        singleton(PUBLIC),
+                        asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
+                        Optional.of(OPTIONAL.with(V)),
+                        "combine",
+                        asList(
+                                Parameter.of(OPTIONAL.with(T.covariant()), "left"),
+                                Parameter.of(OPTIONAL.with(U.covariant()), "right"),
+                                Parameter.of(BI_FUNCTION.with(T.contravariant(), U.contravariant(), V.covariant()), "compose")
+                        )
+                )
+        );
+        processor.process(mockElement);
+
+        String expectedContents = "";
+        String toVerifyContents = processor.getWritten(FullyQualifiedName.of("nl.wernerdegroot.applicatives.OptionalsOverloads"));
+        assertEquals(expectedContents, toVerifyContents);
+
+        String expectedErrors = "Failure transforming from objects from 'javax.lang.model' to objects from 'nl.wernerdegroot.applicatives.processor.domain' for mock element 'givenErrorWhileTransformingToDomain': There was a problem!\nEnable verbose logging to see a stack trace.\n";
+        String toVerifyErrors = processor.getLogged(Diagnostic.Kind.ERROR);
+        assertEquals(expectedErrors, toVerifyErrors);
+
+        String expectedInfo = "";
+        String toVerifyInfo = processor.getLogged(Diagnostic.Kind.NOTE);
+        assertTrue(toVerifyInfo.startsWith(expectedInfo));
+    }
+
+    @Test
+    @MockAnnotation(maxArity = 2)
+    public void givenErrorWhileTransformingToDomainWithVerboseLogging() throws NoSuchMethodException {
+        java.lang.reflect.Method self = ProcessorTemplateTest.class.getMethod("givenErrorWhileTransformingToDomainWithVerboseLogging");
+
+        Map<String, String> configuration = new HashMap<>();
+        configuration.put("applicatives.verbose", "true");
+        TestProcessor processor = new TestProcessor(configuration) {
+            @Override
+            public Method toMethodOrMethods(MockElement mockElement) {
+                throw new IllegalArgumentException("There was a problem!");
+            }
+        };
+        MockElement mockElement = new MockElement(
+                self.getName(),
+                self.getAnnotation(MockAnnotation.class),
+                PackageName.of("nl.wernerdegroot.applicatives")
+                        .asPackage()
+                        .containingClass(emptySet(), ClassName.of("Optionals")),
+                Method.of(
+                        singleton(MOCK_ANNOTATION_NAME),
+                        singleton(PUBLIC),
+                        asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
+                        Optional.of(OPTIONAL.with(V)),
+                        "combine",
+                        asList(
+                                Parameter.of(OPTIONAL.with(T.covariant()), "left"),
+                                Parameter.of(OPTIONAL.with(U.covariant()), "right"),
+                                Parameter.of(BI_FUNCTION.with(T.contravariant(), U.contravariant(), V.covariant()), "compose")
+                        )
+                )
+        );
+        processor.process(mockElement);
+
+        String expectedContents = "";
+        String toVerifyContents = processor.getWritten(FullyQualifiedName.of("nl.wernerdegroot.applicatives.OptionalsOverloads"));
+        assertEquals(expectedContents, toVerifyContents);
+
+        String expectedErrors = "Failure transforming from objects from 'javax.lang.model' to objects from 'nl.wernerdegroot.applicatives.processor.domain' for mock element 'givenErrorWhileTransformingToDomainWithVerboseLogging': There was a problem!\n";
+        String toVerifyErrors = processor.getLogged(Diagnostic.Kind.ERROR);
+        assertEquals(expectedErrors, toVerifyErrors);
+
+        String expectedInfo = "Found annotation of type 'nl.wernerdegroot.applicatives.processor.ProcessorTemplateTest.MockAnnotation' on  mock element 'givenErrorWhileTransformingToDomainWithVerboseLogging'\n" +
+                " - Class name: *Overloads\n" +
+                " - Method name for `combine`: *\n" +
+                " - Method name for `lift`: lift\n" +
+                " - Maximum arity: 2\n" +
+                "java.lang.IllegalArgumentException: There was a problem!\n" +
+                "\tat nl.wernerdegroot.applicatives.processor.ProcessorTemplateTest";
+        String toVerifyInfo = processor.getLogged(Diagnostic.Kind.NOTE);
+        assertTrue(toVerifyInfo.startsWith(expectedInfo));
+    }
+
+    @Test
+    @MockAnnotation(maxArity = 2)
+    public void givenValidationError() throws NoSuchMethodException {
+        java.lang.reflect.Method self = ProcessorTemplateTest.class.getMethod("givenValidationError");
+
+        Map<String, String> configuration = new HashMap<>();
+        TestProcessor processor = new TestProcessor(configuration) {
+            @Override
+            public Validated<Log, Validator.Result> validate(ContainingClass containingClass, Method method) {
+                return Validated.invalid(
+                        Log.of("Pretty bad"),
+                        Log.of("Not good at all"),
+                        Log.of("Problematic")
+                );
+            }
+        };
+        MockElement mockElement = new MockElement(
+                self.getName(),
+                self.getAnnotation(MockAnnotation.class),
+                PackageName.of("nl.wernerdegroot.applicatives")
+                        .asPackage()
+                        .containingClass(emptySet(), ClassName.of("Optionals")),
+                Method.of(
+                        singleton(MOCK_ANNOTATION_NAME),
+                        singleton(PUBLIC),
+                        asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
+                        Optional.of(OPTIONAL.with(V)),
+                        "combine",
+                        asList(
+                                Parameter.of(OPTIONAL.with(T.covariant()), "left"),
+                                Parameter.of(OPTIONAL.with(U.covariant()), "right"),
+                                Parameter.of(BI_FUNCTION.with(T.contravariant(), U.contravariant(), V.covariant()), "compose")
+                        )
+                )
+        );
+        processor.process(mockElement);
+
+        String expectedContents = "";
+        String toVerifyContents = processor.getWritten(FullyQualifiedName.of("nl.wernerdegroot.applicatives.OptionalsOverloads"));
+        assertEquals(expectedContents, toVerifyContents);
+
+        String expectedErrors = "Method 'combine' in class 'nl.wernerdegroot.applicatives.Optionals' does not meet all criteria for code generation\n - Pretty bad\n - Not good at all\n - Problematic\n";
+        String toVerifyErrors = processor.getLogged(Diagnostic.Kind.ERROR);
+        assertEquals(expectedErrors, toVerifyErrors);
+
+        String expectedInfo = "";
+        String toVerifyInfo = processor.getLogged(Diagnostic.Kind.NOTE);
+        assertTrue(toVerifyInfo.startsWith(expectedInfo));
+    }
+
+    @Test
+    @MockAnnotation(maxArity = -1)
+    public void givenConfigValidationError() throws NoSuchMethodException {
+        java.lang.reflect.Method self = ProcessorTemplateTest.class.getMethod("givenConfigValidationError");
+
+        Map<String, String> configuration = new HashMap<>();
+        TestProcessor processor = new TestProcessor(configuration);
+        MockElement mockElement = new MockElement(
+                self.getName(),
+                self.getAnnotation(MockAnnotation.class),
+                PackageName.of("nl.wernerdegroot.applicatives")
+                        .asPackage()
+                        .containingClass(emptySet(), ClassName.of("Optionals")),
+                Method.of(
+                        singleton(MOCK_ANNOTATION_NAME),
+                        singleton(PUBLIC),
+                        asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
+                        Optional.of(OPTIONAL.with(V)),
+                        "combine",
+                        asList(
+                                Parameter.of(OPTIONAL.with(T.covariant()), "left"),
+                                Parameter.of(OPTIONAL.with(U.covariant()), "right"),
+                                Parameter.of(BI_FUNCTION.with(T.contravariant(), U.contravariant(), V.covariant()), "compose")
+                        )
+                )
+        );
+        processor.process(mockElement);
+
+        String expectedContents = "";
+        String toVerifyContents = processor.getWritten(FullyQualifiedName.of("nl.wernerdegroot.applicatives.OptionalsOverloads"));
+        assertEquals(expectedContents, toVerifyContents);
+
+        String expectedErrors = "Configuration of 'nl.wernerdegroot.applicatives.processor.ProcessorTemplateTest.MockAnnotation' not valid\n - Maximum arity should be between 2 and 26 (but was -1)\n";
+        String toVerifyErrors = processor.getLogged(Diagnostic.Kind.ERROR);
+        assertEquals(expectedErrors, toVerifyErrors);
+
+        String expectedInfo = "";
+        String toVerifyInfo = processor.getLogged(Diagnostic.Kind.NOTE);
+        assertTrue(toVerifyInfo.startsWith(expectedInfo));
+    }
+
+    @Test
+    @MockAnnotation(maxArity = 2)
+    public void givenErrorWhileWritingToFile() throws NoSuchMethodException {
+        java.lang.reflect.Method self = ProcessorTemplateTest.class.getMethod("givenErrorWhileTransformingToDomainWithVerboseLogging");
+
+        Map<String, String> configuration = new HashMap<>();
+        TestProcessor processor = new TestProcessor(configuration) {
+            @Override
+            public PrintWriter getPrintWriterForFile(FullyQualifiedName fullyQualifiedName) throws IOException {
+                throw new IOException("There was a problem!");
+            }
+        };
+        MockElement mockElement = new MockElement(
+                self.getName(),
+                self.getAnnotation(MockAnnotation.class),
+                PackageName.of("nl.wernerdegroot.applicatives")
+                        .asPackage()
+                        .containingClass(emptySet(), ClassName.of("Optionals")),
+                Method.of(
+                        singleton(MOCK_ANNOTATION_NAME),
+                        singleton(PUBLIC),
+                        asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
+                        Optional.of(OPTIONAL.with(V)),
+                        "combine",
+                        asList(
+                                Parameter.of(OPTIONAL.with(T.covariant()), "left"),
+                                Parameter.of(OPTIONAL.with(U.covariant()), "right"),
+                                Parameter.of(BI_FUNCTION.with(T.contravariant(), U.contravariant(), V.covariant()), "compose")
+                        )
+                )
+        );
+        processor.process(mockElement);
+
+        String expectedContents = "";
+        String toVerifyContents = processor.getWritten(FullyQualifiedName.of("nl.wernerdegroot.applicatives.OptionalsOverloads"));
+        assertEquals(expectedContents, toVerifyContents);
+
+        String expectedErrors = "Error saving generated code to .java-file on disk (nl.wernerdegroot.applicatives.OptionalsOverloads): There was a problem!\nEnable verbose logging to see a stack trace.\n";
+        String toVerifyErrors = processor.getLogged(Diagnostic.Kind.ERROR);
+        assertEquals(expectedErrors, toVerifyErrors);
+
+        String expectedInfo = "";
+        String toVerifyInfo = processor.getLogged(Diagnostic.Kind.NOTE);
+        assertTrue(toVerifyInfo.startsWith(expectedInfo));
+    }
+
+    @Test
+    @MockAnnotation(maxArity = 2)
+    public void givenErrorWhileValidating() throws NoSuchMethodException {
+        java.lang.reflect.Method self = ProcessorTemplateTest.class.getMethod("givenErrorWhileTransformingToDomainWithVerboseLogging");
+
+        Map<String, String> configuration = new HashMap<>();
+        TestProcessor processor = new TestProcessor(configuration) {
+            @Override
+            public Validated<Log, Validator.Result> validate(ContainingClass containingClass, Method method) {
+                throw new IllegalArgumentException("There was a problem!");
+            }
+        };
+        MockElement mockElement = new MockElement(
+                self.getName(),
+                self.getAnnotation(MockAnnotation.class),
+                PackageName.of("nl.wernerdegroot.applicatives")
+                        .asPackage()
+                        .containingClass(emptySet(), ClassName.of("Optionals")),
+                Method.of(
+                        singleton(MOCK_ANNOTATION_NAME),
+                        singleton(PUBLIC),
+                        asList(T.asTypeParameter(), U.asTypeParameter(), V.asTypeParameter()),
+                        Optional.of(OPTIONAL.with(V)),
+                        "combine",
+                        asList(
+                                Parameter.of(OPTIONAL.with(T.covariant()), "left"),
+                                Parameter.of(OPTIONAL.with(U.covariant()), "right"),
+                                Parameter.of(BI_FUNCTION.with(T.contravariant(), U.contravariant(), V.covariant()), "compose")
+                        )
+                )
+        );
+        processor.process(mockElement);
+
+        String expectedContents = "";
+        String toVerifyContents = processor.getWritten(FullyQualifiedName.of("nl.wernerdegroot.applicatives.OptionalsOverloads"));
+        assertEquals(expectedContents, toVerifyContents);
+
+        String expectedErrors = "Error occurred while processing annotation of type 'interface nl.wernerdegroot.applicatives.processor.ProcessorTemplateTest$MockAnnotation': There was a problem!\nEnable verbose logging to see a stack trace.\n";
+        String toVerifyErrors = processor.getLogged(Diagnostic.Kind.ERROR);
+        assertEquals(expectedErrors, toVerifyErrors);
+
+        String expectedInfo = "";
+        String toVerifyInfo = processor.getLogged(Diagnostic.Kind.NOTE);
+        assertTrue(toVerifyInfo.startsWith(expectedInfo));
     }
 }

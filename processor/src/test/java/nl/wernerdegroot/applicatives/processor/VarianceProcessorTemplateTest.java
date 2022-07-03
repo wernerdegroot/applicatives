@@ -15,8 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public interface VarianceProcessorTemplateTest {
 
-    default String getResourceFileAsString(String className) throws IOException {
-        String fileName = "/" + className + ".java";
+    default String getResourceFileAsString(String fileName) throws IOException {
         try (InputStream is = VarianceProcessorTemplateTest.class.getResourceAsStream(fileName)) {
             if (is == null) {
                 throw new NullPointerException();
@@ -28,8 +27,13 @@ public interface VarianceProcessorTemplateTest {
         }
     }
 
+    default String getResourceClassFileAsString(String className) throws IOException {
+        String fileName = "/" + className + ".java";
+        return getResourceFileAsString(fileName);
+    }
+
     default void ensureResourceFileCompiles(String className) throws IOException {
-        JavaFileObject javaFileObject = JavaFileObjects.forSourceString(className, getResourceFileAsString(className));
+        JavaFileObject javaFileObject = JavaFileObjects.forSourceString(className, getResourceClassFileAsString(className));
         Compilation result = Compiler.javac().compile(javaFileObject);
         boolean compiles = result.status() == Compilation.Status.SUCCESS;
         assertTrue(compiles);

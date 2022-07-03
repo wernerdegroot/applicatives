@@ -28,7 +28,7 @@ public class Validator {
                 validateAccumulator(methods, parametersAndTypeParametersValidator),
                 validateFinalizer(methods),
                 (templateClass, optionalInitializer, accumulator, optionalFinalizer) -> {
-                    Set<Log> messages = new HashSet<>();
+                    List<Log> messages = new ArrayList<>();
                     if (optionalInitializer.isPresent()) {
                         InitializerOrFinalizerValidator.Result initializer = optionalInitializer.get();
 
@@ -214,7 +214,7 @@ public class Validator {
         return Validated::valid;
     }
 
-    private static <T> Function<Set<String>, Validated<Log, T>> invalidFor(String description, Object... arguments) {
+    private static <T> Function<List<String>, Validated<Log, T>> invalidFor(String description, Object... arguments) {
         return messages -> Validated.invalid(Log.of(String.format(description, arguments)).withDetails(messages));
     }
 }

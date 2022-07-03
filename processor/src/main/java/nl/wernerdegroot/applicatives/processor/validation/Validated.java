@@ -1,26 +1,24 @@
 package nl.wernerdegroot.applicatives.processor.validation;
 
 import nl.wernerdegroot.applicatives.runtime.FastTuple;
-import nl.wernerdegroot.applicatives.runtime.Function3;
 import nl.wernerdegroot.applicatives.runtime.Function4;
 
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toSet;
+import static java.util.Arrays.asList;
 
 public final class Validated<E, T> {
 
-    private final Set<E> errorMessages;
+    private final List<E> errorMessages;
     private final T value;
     private final boolean isValid;
 
-    private Validated(Set<E> errorMessages, T value, boolean isValid) {
+    private Validated(List<E> errorMessages, T value, boolean isValid) {
         this.errorMessages = errorMessages;
         this.value = value;
         this.isValid = isValid;
@@ -30,20 +28,20 @@ public final class Validated<E, T> {
         return new Validated<>(null, value, true);
     }
 
-    public static <E, T> Validated<E, T> invalid(Set<E> errorMessages) {
+    public static <E, T> Validated<E, T> invalid(List<E> errorMessages) {
         return new Validated<>(errorMessages, null, false);
     }
 
     @SafeVarargs
     public static <E, T> Validated<E, T> invalid(E... errorMessages) {
-        return invalid(Stream.of(errorMessages).collect(toSet()));
+        return invalid(asList(errorMessages));
     }
 
     public static <A, B, C, E> Validated<E, C> combine(Validated<E, A> left, Validated<E, B> right, BiFunction<? super A, ? super B, ? extends C> fn) {
         if (left.isValid() && right.isValid()) {
             return Validated.valid(fn.apply(left.getValue(), right.getValue()));
         } else {
-            Set<E> errorMessages = new HashSet<>();
+            List<E> errorMessages = new ArrayList<>();
 
             if (!left.isValid()) {
                 errorMessages.addAll(left.getErrorMessages());
@@ -85,7 +83,7 @@ public final class Validated<E, T> {
         }
     }
 
-    public <R> R fold(Function<Set<E>, R> invalid, Function<T, R> valid) {
+    public <R> R fold(Function<List<E>, R> invalid, Function<T, R> valid) {
         if (isValid()) {
             return valid.apply(getValue());
         } else {
@@ -93,7 +91,7 @@ public final class Validated<E, T> {
         }
     }
 
-    public Set<E> getErrorMessages() {
+    public List<E> getErrorMessages() {
         if (isValid) {
             throw new NoSuchElementException();
         }

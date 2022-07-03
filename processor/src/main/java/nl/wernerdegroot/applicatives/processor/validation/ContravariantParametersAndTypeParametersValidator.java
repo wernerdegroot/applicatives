@@ -4,12 +4,10 @@ import nl.wernerdegroot.applicatives.processor.domain.Parameter;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameter;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
-import static nl.wernerdegroot.applicatives.processor.domain.type.Type.BI_FUNCTION;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.FUNCTION;
 import static nl.wernerdegroot.applicatives.processor.generator.TypeGenerator.generateFrom;
 import static nl.wernerdegroot.applicatives.processor.validation.Common.verifyParameterCount;
@@ -18,9 +16,9 @@ import static nl.wernerdegroot.applicatives.processor.validation.Common.verifyTy
 public class ContravariantParametersAndTypeParametersValidator implements ParametersAndTypeParametersValidator {
 
     @Override
-    public Result validateTypeParametersAndParameters(List<TypeParameter> typeParameters, List<Parameter> parameters, Set<String> errorMessages) {
+    public Result validateTypeParametersAndParameters(List<TypeParameter> typeParameters, List<Parameter> parameters, List<String> errorMessages) {
 
-        Set<String> additionalErrorMessages = new HashSet<>();
+        List<String> additionalErrorMessages = new ArrayList<>();
 
         verifyParameterCount(parameters, 5, additionalErrorMessages);
         verifyTypeParameterCount(typeParameters, 4, additionalErrorMessages);

@@ -1,7 +1,7 @@
 package nl.wernerdegroot.applicatives.processor.validation;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 public class ConfigValidator {
@@ -9,7 +9,8 @@ public class ConfigValidator {
     private static final Pattern VALID_IDENTIFIER = Pattern.compile("^([a-zA-Z_$][a-zA-Z\\d_$]*)$");
 
     public static Validated<String, Void> validate(String classNameToGenerate, String combineMethodName, String liftMethodName, int maxArity) {
-        Set<String> errorMessages = new HashSet<>();
+        List<String> errorMessages = new ArrayList<>();
+
         errorMessages.addAll(isClassNameToGenerateValid(classNameToGenerate));
         errorMessages.addAll(isMethodNameValid(combineMethodName));
         errorMessages.addAll(isMethodNameValid(liftMethodName));
@@ -22,8 +23,8 @@ public class ConfigValidator {
         }
     }
 
-    private static Set<String> isClassNameToGenerateValid(String classNameToGenerate) {
-        Set<String> errorMessages = new HashSet<>();
+    private static List<String> isClassNameToGenerateValid(String classNameToGenerate) {
+        List<String> errorMessages = new ArrayList<>();
 
         boolean isValid = VALID_IDENTIFIER.matcher(classNameToGenerate).matches();
         if (!isValid) {
@@ -33,8 +34,8 @@ public class ConfigValidator {
         return errorMessages;
     }
 
-    private static Set<String> isMethodNameValid(String methodName) {
-        Set<String> errorMessages = new HashSet<>();
+    private static List<String> isMethodNameValid(String methodName) {
+        List<String> errorMessages = new ArrayList<>();
 
         boolean isValid = VALID_IDENTIFIER.matcher(methodName).matches();
         if (!isValid) {
@@ -44,8 +45,8 @@ public class ConfigValidator {
         return errorMessages;
     }
 
-    private static Set<String> isMaxArityValid(int maxArity) {
-        Set<String> errorMessages = new HashSet<>();
+    private static List<String> isMaxArityValid(int maxArity) {
+        List<String> errorMessages = new ArrayList<>();
 
         boolean isValid = 2 <= maxArity && maxArity <= 26;
         if (!isValid) {

@@ -5,10 +5,9 @@ import nl.wernerdegroot.applicatives.processor.domain.TypeParameter;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 import static nl.wernerdegroot.applicatives.processor.generator.TypeGenerator.generateFrom;
 import static nl.wernerdegroot.applicatives.processor.validation.Common.*;
@@ -16,7 +15,7 @@ import static nl.wernerdegroot.applicatives.processor.validation.Common.*;
 public class AccumulatorValidator {
 
     public static Validated<String, Result> validate(Method method, ParametersAndTypeParametersValidator parametersAndTypeParametersValidator) {
-        Set<String> errorMessages = new HashSet<>();
+        List<String> errorMessages = new ArrayList<>();
 
         verifyCanImplementAbstractMethod(method, errorMessages);
         verifyTypeParametersAreUnbounded(method, errorMessages);
@@ -73,11 +72,11 @@ public class AccumulatorValidator {
         );
     }
 
-    private static ParametersAndTypeParametersValidator.Result verifyParametersAndTypeParameters(Method method, ParametersAndTypeParametersValidator parametersAndTypeParametersValidator, Set<String> errorMessages) {
+    private static ParametersAndTypeParametersValidator.Result verifyParametersAndTypeParameters(Method method, ParametersAndTypeParametersValidator parametersAndTypeParametersValidator, List<String> errorMessages) {
         return parametersAndTypeParametersValidator.validateTypeParametersAndParameters(method.getTypeParameters(), method.getParameters(), errorMessages);
     }
 
-    private static void verifyNoCrossReferences(List<TypeParameter> typeParameters, Type type, TypeConstructor typeConstructor, String descriptionOfType, Set<String> errorMessages) {
+    private static void verifyNoCrossReferences(List<TypeParameter> typeParameters, Type type, TypeConstructor typeConstructor, String descriptionOfType, List<String> errorMessages) {
         typeParameters
                 .stream()
                 .map(TypeParameter::getName)

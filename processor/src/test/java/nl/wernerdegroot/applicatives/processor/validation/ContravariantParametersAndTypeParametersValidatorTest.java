@@ -5,13 +5,10 @@ import nl.wernerdegroot.applicatives.processor.domain.TypeParameter;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.toSet;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -25,7 +22,7 @@ public class ContravariantParametersAndTypeParametersValidatorTest {
 
     @Test
     public void givenValidParametersAndTypeParameters() {
-        Set<String> errorMessages = new HashSet<>();
+        List<String> errorMessages = new ArrayList<>();
 
         List<Parameter> parameters = asList(
                 Parameter.of(COMPARATOR.with(T), "left"),
@@ -57,7 +54,7 @@ public class ContravariantParametersAndTypeParametersValidatorTest {
 
     @Test
     public void validateGivenLessThanFourTypeParameters() {
-        Set<String> errorMessages = new HashSet<>();
+        List<String> errorMessages = new ArrayList<>();
 
         List<Parameter> parameters = asList(
                 Parameter.of(COMPARATOR.with(T), "left"),
@@ -75,7 +72,7 @@ public class ContravariantParametersAndTypeParametersValidatorTest {
                 errorMessages
         );
 
-        Set<String> expectedErrorMessages = Stream.of("Method requires exactly 4 type parameters, but found 3").collect(toSet());
+        List<String> expectedErrorMessages = asList("Method requires exactly 4 type parameters, but found 3");
 
         assertNull(result);
         assertEquals(expectedErrorMessages, errorMessages);
@@ -83,7 +80,7 @@ public class ContravariantParametersAndTypeParametersValidatorTest {
 
     @Test
     public void validateGivenMoreThanFourTypeParameters() {
-        Set<String> errorMessages = new HashSet<>();
+        List<String> errorMessages = new ArrayList<>();
 
         List<Parameter> parameters = asList(
                 Parameter.of(FUNCTION.with(T, R), "left"),
@@ -101,7 +98,7 @@ public class ContravariantParametersAndTypeParametersValidatorTest {
                 errorMessages
         );
 
-        Set<String> expectedErrorMessages = Stream.of("Method requires exactly 4 type parameters, but found 5").collect(toSet());
+        List<String> expectedErrorMessages = asList("Method requires exactly 4 type parameters, but found 5");
 
         assertNull(result);
         assertEquals(expectedErrorMessages, errorMessages);
@@ -109,7 +106,7 @@ public class ContravariantParametersAndTypeParametersValidatorTest {
 
     @Test
     public void validateGivenLessThanFiveParameters() {
-        Set<String> errorMessages = new HashSet<>();
+        List<String> errorMessages = new ArrayList<>();
 
         List<Parameter> parameters = asList(
                 Parameter.of(COMPARATOR.with(T), "left"),
@@ -126,7 +123,7 @@ public class ContravariantParametersAndTypeParametersValidatorTest {
                 errorMessages
         );
 
-        Set<String> expectedErrorMessages = Stream.of("Method requires exactly 5 parameters, but found 4").collect(toSet());
+        List<String> expectedErrorMessages = asList("Method requires exactly 5 parameters, but found 4");
 
         assertNull(result);
         assertEquals(expectedErrorMessages, errorMessages);
@@ -134,7 +131,7 @@ public class ContravariantParametersAndTypeParametersValidatorTest {
 
     @Test
     public void validateGivenMoreThanFiveParameters() {
-        Set<String> errorMessages = new HashSet<>();
+        List<String> errorMessages = new ArrayList<>();
 
         List<Parameter> parameters = asList(
                 Parameter.of(FUNCTION.with(T, R), "left"),
@@ -153,7 +150,7 @@ public class ContravariantParametersAndTypeParametersValidatorTest {
                 errorMessages
         );
 
-        Set<String> expectedErrorMessages = Stream.of("Method requires exactly 5 parameters, but found 6").collect(toSet());
+        List<String> expectedErrorMessages = asList("Method requires exactly 5 parameters, but found 6");
 
         assertNull(result);
         assertEquals(expectedErrorMessages, errorMessages);
@@ -161,7 +158,7 @@ public class ContravariantParametersAndTypeParametersValidatorTest {
 
     @Test
     public void validateGivenThirdParameterThatIsNotAFunction() {
-        Set<String> errorMessages = new HashSet<>();
+        List<String> errorMessages = new ArrayList<>();
 
         List<Parameter> parameters = asList(
                 Parameter.of(COMPARATOR.with(T), "left"),
@@ -179,7 +176,7 @@ public class ContravariantParametersAndTypeParametersValidatorTest {
                 errorMessages
         );
 
-        Set<String> expectedErrorMessages = Stream.of("Expected third argument to be a java.util.function.Function<? super V, ? extends I> but was java.lang.Object").collect(toSet());
+        List<String> expectedErrorMessages = asList("Expected third argument to be a java.util.function.Function<? super V, ? extends I> but was java.lang.Object");
 
         assertNull(result);
         assertEquals(expectedErrorMessages, errorMessages);
@@ -187,7 +184,7 @@ public class ContravariantParametersAndTypeParametersValidatorTest {
 
     @Test
     public void validateGivenFourthParameterThatIsNotAFunction() {
-        Set<String> errorMessages = new HashSet<>();
+        List<String> errorMessages = new ArrayList<>();
 
         List<Parameter> parameters = asList(
                 Parameter.of(COMPARATOR.with(T), "left"),
@@ -205,7 +202,7 @@ public class ContravariantParametersAndTypeParametersValidatorTest {
                 errorMessages
         );
 
-        Set<String> expectedErrorMessages = Stream.of("Expected fourth argument to be a java.util.function.Function<? super I, ? extends T> but was java.lang.Object").collect(toSet());
+        List<String> expectedErrorMessages = asList("Expected fourth argument to be a java.util.function.Function<? super I, ? extends T> but was java.lang.Object");
 
         assertNull(result);
         assertEquals(expectedErrorMessages, errorMessages);
@@ -213,7 +210,7 @@ public class ContravariantParametersAndTypeParametersValidatorTest {
 
     @Test
     public void validateGivenFifthParameterThatIsNotAFunction() {
-        Set<String> errorMessages = new HashSet<>();
+        List<String> errorMessages = new ArrayList<>();
 
         List<Parameter> parameters = asList(
                 Parameter.of(COMPARATOR.with(T), "left"),
@@ -231,7 +228,7 @@ public class ContravariantParametersAndTypeParametersValidatorTest {
                 errorMessages
         );
 
-        Set<String> expectedErrorMessages = Stream.of("Expected fifth argument to be a java.util.function.Function<? super I, ? extends U> but was java.lang.Object").collect(toSet());
+        List<String> expectedErrorMessages = asList("Expected fifth argument to be a java.util.function.Function<? super I, ? extends U> but was java.lang.Object");
 
         assertNull(result);
         assertEquals(expectedErrorMessages, errorMessages);
@@ -239,7 +236,7 @@ public class ContravariantParametersAndTypeParametersValidatorTest {
 
     @Test
     public void validateGivenMethodWithThirdParameterThatIsFunctionWithWrongTypeArguments() {
-        Set<String> errorMessages = new HashSet<>();
+        List<String> errorMessages = new ArrayList<>();
 
         List<Parameter> parameters = asList(
                 Parameter.of(COMPARATOR.with(T), "left"),
@@ -257,7 +254,7 @@ public class ContravariantParametersAndTypeParametersValidatorTest {
                 errorMessages
         );
 
-        Set<String> expectedErrorMessages = Stream.of("Expected third argument to be a java.util.function.Function<? super V, ? extends I> but was java.util.function.Function<? super V, ? extends V>").collect(toSet());
+        List<String> expectedErrorMessages = asList("Expected third argument to be a java.util.function.Function<? super V, ? extends I> but was java.util.function.Function<? super V, ? extends V>");
 
         assertNull(result);
         assertEquals(expectedErrorMessages, errorMessages);
@@ -265,7 +262,7 @@ public class ContravariantParametersAndTypeParametersValidatorTest {
 
     @Test
     public void validateGivenMethodWithFourthParameterThatIsFunctionWithWrongTypeArguments() {
-        Set<String> errorMessages = new HashSet<>();
+        List<String> errorMessages = new ArrayList<>();
 
         List<Parameter> parameters = asList(
                 Parameter.of(COMPARATOR.with(T), "left"),
@@ -283,7 +280,7 @@ public class ContravariantParametersAndTypeParametersValidatorTest {
                 errorMessages
         );
 
-        Set<String> expectedErrorMessages = Stream.of("Expected fourth argument to be a java.util.function.Function<? super I, ? extends T> but was java.util.function.Function<? super V, ? extends T>").collect(toSet());
+        List<String> expectedErrorMessages = asList("Expected fourth argument to be a java.util.function.Function<? super I, ? extends T> but was java.util.function.Function<? super V, ? extends T>");
 
         assertNull(result);
         assertEquals(expectedErrorMessages, errorMessages);
@@ -291,7 +288,7 @@ public class ContravariantParametersAndTypeParametersValidatorTest {
 
     @Test
     public void validateGivenMethodWithFifthParameterThatIsFunctionWithWrongTypeArguments() {
-        Set<String> errorMessages = new HashSet<>();
+        List<String> errorMessages = new ArrayList<>();
 
         List<Parameter> parameters = asList(
                 Parameter.of(COMPARATOR.with(T), "left"),
@@ -309,7 +306,7 @@ public class ContravariantParametersAndTypeParametersValidatorTest {
                 errorMessages
         );
 
-        Set<String> expectedErrorMessages = Stream.of("Expected fifth argument to be a java.util.function.Function<? super I, ? extends U> but was java.util.function.Function<? super V, ? extends U>").collect(toSet());
+        List<String> expectedErrorMessages = asList("Expected fifth argument to be a java.util.function.Function<? super I, ? extends U> but was java.util.function.Function<? super V, ? extends U>");
 
         assertNull(result);
         assertEquals(expectedErrorMessages, errorMessages);

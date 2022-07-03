@@ -21,7 +21,7 @@ public class CovariantProcessorTemplateTest implements VarianceProcessorTemplate
 
     @Test
     public void givenOptional() throws IOException {
-        String expected = getResourceFileAsString("OptionalsOverloads");
+        String expected = getResourceClassFileAsString("OptionalsOverloads");
         String toVerify = covariantProcessorTemplate.generate(
                 ContainingClass.of(
                         PackageName.of("nl.wernerdegroot.applicatives"),
@@ -51,7 +51,7 @@ public class CovariantProcessorTemplateTest implements VarianceProcessorTemplate
 
     @Test
     public void givenCompletableFutures() throws IOException {
-        String expected = getResourceFileAsString("CompletableFuturesOverloads");
+        String expected = getResourceClassFileAsString("CompletableFuturesOverloads");
         String toVerify = covariantProcessorTemplate.generate(
                 ContainingClass.of(
                         PackageName.of("nl.wernerdegroot.applicatives"),
@@ -83,7 +83,7 @@ public class CovariantProcessorTemplateTest implements VarianceProcessorTemplate
     public void givenMap() throws IOException {
         TypeParameterName K = TypeParameterName.of("K");
 
-        String expected = getResourceFileAsString("MapsOverloads");
+        String expected = getResourceClassFileAsString("MapsOverloads");
         String toVerify = covariantProcessorTemplate.generate(
                 ContainingClass.of(
                         PackageName.of("nl.wernerdegroot.applicatives"),
@@ -119,7 +119,7 @@ public class CovariantProcessorTemplateTest implements VarianceProcessorTemplate
 
     @Test
     public void givenList() throws IOException {
-        String expected = getResourceFileAsString("ListsOverloads");
+        String expected = getResourceClassFileAsString("ListsOverloads");
         String toVerify = covariantProcessorTemplate.generate(
                 ContainingClass.of(
                         PackageName.of("nl.wernerdegroot.applicatives"),
@@ -157,7 +157,7 @@ public class CovariantProcessorTemplateTest implements VarianceProcessorTemplate
     public void givenFunction() throws IOException {
         TypeParameterName P = TypeParameterName.of("P");
 
-        String expected = getResourceFileAsString("ResultsOverloads");
+        String expected = getResourceClassFileAsString("ResultsOverloads");
         String toVerify = covariantProcessorTemplate.generate(
                 ContainingClass.of(
                         PackageName.of("nl.wernerdegroot.applicatives"),
