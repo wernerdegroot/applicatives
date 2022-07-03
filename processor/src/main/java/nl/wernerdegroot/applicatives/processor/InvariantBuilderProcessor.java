@@ -24,7 +24,7 @@ import static nl.wernerdegroot.applicatives.processor.Classes.INVARIANT_BUILDER_
 @SupportedAnnotationTypes(INVARIANT_BUILDER_CANONICAL_NAME)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @AutoService(Processor.class)
-public class InvariantBuilderProcessor extends AbstractProcessor<Invariant.Builder, TypeElement, List<Method>> implements InvariantProcessorTemplate<Invariant.Builder, TypeElement, List<Method>>, BuilderProcessorTemplate<Invariant.Builder> {
+public class InvariantBuilderProcessor extends AbstractProcessor<Invariant.Builder, TypeElement, List<Method>> implements InvariantProcessorTemplate, BuilderProcessorTemplate<Invariant.Builder> {
 
     @Override
     public Class<Invariant.Builder> getAnnotationType() {

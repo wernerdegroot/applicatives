@@ -24,7 +24,7 @@ import static nl.wernerdegroot.applicatives.processor.Classes.CONTRAVARIANT_BUIL
 @SupportedAnnotationTypes(CONTRAVARIANT_BUILDER_CANONICAL_NAME)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @AutoService(Processor.class)
-public class ContravariantBuilderProcessor extends AbstractProcessor<Contravariant.Builder, TypeElement, List<Method>> implements ContravariantProcessorTemplate<Contravariant.Builder, TypeElement, List<Method>>, BuilderProcessorTemplate<Contravariant.Builder> {
+public class ContravariantBuilderProcessor extends AbstractProcessor<Contravariant.Builder, TypeElement, List<Method>> implements ContravariantProcessorTemplate, BuilderProcessorTemplate<Contravariant.Builder> {
 
     @Override
     public Class<Contravariant.Builder> getAnnotationType() {

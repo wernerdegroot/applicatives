@@ -1,4 +1,4 @@
-package nl.wernerdegroot.applicatives.processor.generator;
+package nl.wernerdegroot.applicatives.processor;
 
 import com.google.testing.compile.Compilation;
 import com.google.testing.compile.Compiler;
@@ -13,11 +13,11 @@ import java.io.InputStreamReader;
 import static java.util.stream.Collectors.joining;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public interface GeneratorTest {
+public interface VarianceProcessorTemplateTest {
 
     default String getResourceFileAsString(String className) throws IOException {
         String fileName = "/" + className + ".java";
-        try (InputStream is = CovariantGeneratorTest.class.getResourceAsStream(fileName)) {
+        try (InputStream is = VarianceProcessorTemplateTest.class.getResourceAsStream(fileName)) {
             if (is == null) {
                 throw new NullPointerException();
             }

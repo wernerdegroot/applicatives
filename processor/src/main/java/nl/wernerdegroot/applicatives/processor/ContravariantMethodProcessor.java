@@ -23,7 +23,7 @@ import static nl.wernerdegroot.applicatives.processor.Classes.CONTRAVARIANT_CLAS
 @SupportedAnnotationTypes(CONTRAVARIANT_CLASS_NAME)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @AutoService(Processor.class)
-public class ContravariantMethodProcessor extends AbstractProcessor<Contravariant, Element, Method> implements ContravariantProcessorTemplate<Contravariant, Element, Method>, MethodProcessorTemplate<Contravariant> {
+public class ContravariantMethodProcessor extends AbstractProcessor<Contravariant, Element, Method> implements ContravariantProcessorTemplate, MethodProcessorTemplate<Contravariant> {
 
     @Override
     public Class<Contravariant> getAnnotationType() {

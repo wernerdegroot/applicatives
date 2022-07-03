@@ -7,6 +7,7 @@ import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstr
 import nl.wernerdegroot.applicatives.processor.generator.ParameterGenerator;
 import nl.wernerdegroot.applicatives.processor.generator.TypeGenerator;
 import nl.wernerdegroot.applicatives.processor.generator.TypeParameterGenerator;
+import nl.wernerdegroot.applicatives.processor.generator.VarianceProcessorTemplate;
 import nl.wernerdegroot.applicatives.processor.logging.Log;
 import nl.wernerdegroot.applicatives.processor.logging.LoggingBackend;
 import nl.wernerdegroot.applicatives.processor.logging.MessagerLoggingBackend;
@@ -28,7 +29,7 @@ import java.util.Set;
 
 import static nl.wernerdegroot.applicatives.processor.conflicts.ConflictFinder.findClassTypeParameterNameReplacements;
 
-public interface ProcessorTemplate<Annotation, ElementToProcess, MethodOrMethods> {
+public interface ProcessorTemplate<Annotation, ElementToProcess, MethodOrMethods> extends VarianceProcessorTemplate {
 
     default void process(Element element) {
         try {
@@ -183,8 +184,6 @@ public interface ProcessorTemplate<Annotation, ElementToProcess, MethodOrMethods
                 .withDetail("Finalized type constructor", result.getOptionalFinalizer().map(Finalizer::getFinalizedTypeConstructor), this::typeConstructorToString)
                 .append(asNote());
     }
-
-    String generate(ContainingClass containingClass, String classNameToGenerate, String combineMethodName, String liftMethodName, int maxArity, Validator.Result conflictFree);
 
     default void writeGeneratedFile(ContainingClass containingClass, String classNameToGenerate, String generated) {
         FullyQualifiedName fullyQualifiedNameOfGeneratedClass = containingClass.getPackageName().withClassName(ClassName.of(classNameToGenerate));

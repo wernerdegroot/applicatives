@@ -24,7 +24,7 @@ import static nl.wernerdegroot.applicatives.processor.Classes.COVARIANT_BUILDER_
 @SupportedAnnotationTypes(COVARIANT_BUILDER_CANONICAL_NAME)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @AutoService(Processor.class)
-public class CovariantBuilderProcessor extends AbstractProcessor<Covariant.Builder, TypeElement, List<Method>> implements CovariantProcessorTemplate<Covariant.Builder, TypeElement, List<Method>>, BuilderProcessorTemplate<Covariant.Builder> {
+public class CovariantBuilderProcessor extends AbstractProcessor<Covariant.Builder, TypeElement, List<Method>> implements CovariantProcessorTemplate, BuilderProcessorTemplate<Covariant.Builder> {
 
     @Override
     public Class<Covariant.Builder> getAnnotationType() {
