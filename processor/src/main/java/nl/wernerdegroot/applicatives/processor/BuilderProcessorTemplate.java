@@ -21,7 +21,7 @@ import static javax.lang.model.element.ElementKind.METHOD;
 import static nl.wernerdegroot.applicatives.processor.Classes.*;
 import static nl.wernerdegroot.applicatives.processor.Classes.FINALIZER_FULLY_QUALIFIED_NAME;
 
-public interface BuilderProcessorTemplate<Annotation extends java.lang.annotation.Annotation> extends ProcessorTemplate<Annotation, TypeElement, List<Method>> {
+public interface BuilderProcessorTemplate<Annotation extends java.lang.annotation.Annotation> extends ProcessorTemplate<Annotation, Element, TypeElement, List<Method>> {
 
     Set<FullyQualifiedName> SUPPORTED_ANNOTATIONS = Stream.of(
             INITIALIZER_FULLY_QUALIFIED_NAME,
@@ -35,14 +35,14 @@ public interface BuilderProcessorTemplate<Annotation extends java.lang.annotatio
     }
 
     @Override
-    default TypeElement getElementToProcess(Element element) {
-        if (element.getKind() != ElementKind.CLASS) {
+    default TypeElement getElementToProcess(Element annotatedElement) {
+        if (annotatedElement.getKind() != ElementKind.CLASS) {
             // Very unlikely to happen, since the annotations
             // should have the right @Target (ElementType.TYPE)
-            String message = String.format("Element %s of type %s is not a class", element.getSimpleName(), element.getKind());
+            String message = String.format("Element %s of type %s is not a class", annotatedElement.getSimpleName(), annotatedElement.getKind());
             throw new IllegalArgumentException(message);
         }
-        return (TypeElement) element;
+        return (TypeElement) annotatedElement;
     }
 
     @Override

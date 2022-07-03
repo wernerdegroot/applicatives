@@ -10,16 +10,12 @@ import nl.wernerdegroot.applicatives.processor.generator.TypeParameterGenerator;
 import nl.wernerdegroot.applicatives.processor.generator.VarianceProcessorTemplate;
 import nl.wernerdegroot.applicatives.processor.logging.Log;
 import nl.wernerdegroot.applicatives.processor.logging.LoggingBackend;
-import nl.wernerdegroot.applicatives.processor.logging.MessagerLoggingBackend;
 import nl.wernerdegroot.applicatives.processor.logging.NoLoggingBackend;
 import nl.wernerdegroot.applicatives.processor.validation.ConfigValidator;
 import nl.wernerdegroot.applicatives.processor.validation.Validated;
 import nl.wernerdegroot.applicatives.processor.validation.Validator;
 
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.Element;
 import javax.tools.Diagnostic;
-import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -29,11 +25,11 @@ import java.util.Set;
 
 import static nl.wernerdegroot.applicatives.processor.conflicts.ConflictFinder.findClassTypeParameterNameReplacements;
 
-public interface ProcessorTemplate<Annotation, ElementToProcess, MethodOrMethods> extends VarianceProcessorTemplate {
+public interface ProcessorTemplate<Annotation, AnnotatedElement, ElementToProcess, MethodOrMethods> extends VarianceProcessorTemplate {
 
-    default void process(Element element) {
+    default void process(AnnotatedElement annotatedElement) {
         try {
-            ElementToProcess elementToProcess = getElementToProcess(element);
+            ElementToProcess elementToProcess = getElementToProcess(annotatedElement);
             Annotation annotation = getAnnotation(elementToProcess);
             String classNameToGenerate = getClassNameToGenerate(annotation);
             String combineMethodNameToGenerate = getCombineMethodNameToGenerate(annotation);
@@ -75,20 +71,18 @@ public interface ProcessorTemplate<Annotation, ElementToProcess, MethodOrMethods
             logDoneGenerating();
         } catch (Throwable t) {
             Log.of("Error occurred while processing annotation of type '%s': %s", getAnnotationType(), t.getMessage()).append(asError());
-            printStackTraceToMessagerAsNote(t);
+            printStackTraceToMessengerAsNote(t);
             if (!shouldLogNotes()) {
                 Log.of("Enable verbose logging to see a stack trace.").append(asError());
             }
         }
     }
 
-    ProcessingEnvironment getProcessingEnvironment();
-
     Class<Annotation> getAnnotationType();
 
     Annotation getAnnotation(ElementToProcess element);
 
-    ElementToProcess getElementToProcess(Element element);
+    ElementToProcess getElementToProcess(AnnotatedElement annotatedElement);
 
     String getClassNameToGenerate(Annotation annotation);
 
@@ -188,9 +182,8 @@ public interface ProcessorTemplate<Annotation, ElementToProcess, MethodOrMethods
     default void writeGeneratedFile(ContainingClass containingClass, String classNameToGenerate, String generated) {
         FullyQualifiedName fullyQualifiedNameOfGeneratedClass = containingClass.getPackageName().withClassName(ClassName.of(classNameToGenerate));
         try {
-            JavaFileObject builderFile = getProcessingEnvironment().getFiler().createSourceFile(fullyQualifiedNameOfGeneratedClass.raw());
-            try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
-                out.print(generated);
+            try (PrintWriter printWriter = getPrintWriterForFile(fullyQualifiedNameOfGeneratedClass)) {
+                printWriter.print(generated);
                 Log.of("Saved generated code to .java-file on disk (%s)", fullyQualifiedNameOfGeneratedClass.raw()).append(asNote());
             }
         } catch (IOException e) {
@@ -198,30 +191,32 @@ public interface ProcessorTemplate<Annotation, ElementToProcess, MethodOrMethods
         }
     }
 
+    PrintWriter getPrintWriterForFile(FullyQualifiedName fullyQualifiedName) throws IOException;
+
     default void logDoneGenerating() {
         Log.of("Done generating code").append(asNote());
     }
 
     default boolean shouldLogNotes() {
-        return Objects.equals(getProcessingEnvironment().getOptions().getOrDefault(Options.VERBOSE_ARGUMENT, "false"), "true");
+        return Objects.equals(getConfiguration().getOrDefault(Options.VERBOSE_ARGUMENT, "false"), "true");
     }
 
-    default void printStackTraceToMessagerAsNote(Throwable e) {
+    Map<String, String> getConfiguration();
+
+    default void printStackTraceToMessengerAsNote(Throwable e) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         e.printStackTrace(pw);
         asNote().log(sw.toString());
     }
 
-    default LoggingBackend getMessagerLoggingBackend(Diagnostic.Kind diagnosticKind) {
-        return MessagerLoggingBackend.of(getProcessingEnvironment(), diagnosticKind);
-    }
+    LoggingBackend getMessengerLoggingBackend(Diagnostic.Kind diagnosticKind);
 
     default LoggingBackend asNote() {
-        return shouldLogNotes() ? getMessagerLoggingBackend(Diagnostic.Kind.NOTE) : NoLoggingBackend.INSTANCE;
+        return shouldLogNotes() ? getMessengerLoggingBackend(Diagnostic.Kind.NOTE) : NoLoggingBackend.INSTANCE;
     }
 
     default LoggingBackend asError() {
-        return getMessagerLoggingBackend(Diagnostic.Kind.ERROR);
+        return getMessengerLoggingBackend(Diagnostic.Kind.ERROR);
     }
 }
