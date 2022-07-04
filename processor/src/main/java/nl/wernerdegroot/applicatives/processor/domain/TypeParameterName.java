@@ -24,10 +24,6 @@ public final class TypeParameterName {
         return Type.generic(this);
     }
 
-    public ArrayType array() {
-        return asType().array();
-    }
-
     public TypeParameter extending(Type... types) {
         return TypeParameter.of(this, types);
     }
@@ -46,10 +42,6 @@ public final class TypeParameterName {
 
     public TypeArgument contravariant() {
         return asType().contravariant();
-    }
-
-    public TypeArgument invariant() {
-        return asType().invariant();
     }
 
     public String raw() {

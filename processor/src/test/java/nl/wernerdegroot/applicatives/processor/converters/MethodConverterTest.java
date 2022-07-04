@@ -18,9 +18,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 // This class also indirectly tests all the other converters.
 public class MethodConverterTest {
 
-    private final TypeParameterName A = TypeParameterName.of("A");
-    private final TypeParameterName B = TypeParameterName.of("B");
-    private final TypeParameterName C = TypeParameterName.of("C");
     private final TypeParameterName D = TypeParameterName.of("D");
     private final TypeParameterName E = TypeParameterName.of("E");
 

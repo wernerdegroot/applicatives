@@ -1,5 +1,6 @@
 package nl.wernerdegroot.applicatives.processor.validation;
 
+import com.jparams.verifier.tostring.ToStringVerifier;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.wernerdegroot.applicatives.processor.domain.Method;
 import nl.wernerdegroot.applicatives.processor.domain.Parameter;
@@ -298,8 +299,9 @@ public class AccumulatorValidatorTest {
     }
 
     @Test
-    public void resultEquals() {
+    public void resultEqualsHashCodeToString() {
         EqualsVerifier.forClass(AccumulatorValidator.Result.class).verify();
+        ToStringVerifier.forClass(AccumulatorValidator.Result.class).verify();
     }
 
     @SafeVarargs

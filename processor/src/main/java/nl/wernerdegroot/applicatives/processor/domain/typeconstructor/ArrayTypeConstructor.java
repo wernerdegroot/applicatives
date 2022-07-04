@@ -7,7 +7,7 @@ import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import java.util.Map;
 import java.util.Objects;
 
-public class ArrayTypeConstructor implements TypeConstructor {
+public final class ArrayTypeConstructor implements TypeConstructor {
 
     private final TypeConstructor type;
 
@@ -53,7 +53,7 @@ public class ArrayTypeConstructor implements TypeConstructor {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ArrayTypeConstructor that = (ArrayTypeConstructor) o;
-        return getType().equals(that.getType());
+        return Objects.equals(getType(), that.getType());
     }
 
     @Override

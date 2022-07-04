@@ -12,7 +12,7 @@ import java.util.function.Function;
 
 import static java.util.stream.Collectors.toList;
 
-public class ConcreteType implements Type {
+public final class ConcreteType implements Type {
 
     private final FullyQualifiedName fullyQualifiedName;
     private final List<TypeArgument> typeArguments;
@@ -70,7 +70,7 @@ public class ConcreteType implements Type {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ConcreteType that = (ConcreteType) o;
-        return getFullyQualifiedName().equals(that.getFullyQualifiedName()) && getTypeArguments().equals(that.getTypeArguments());
+        return Objects.equals(getFullyQualifiedName(), that.getFullyQualifiedName()) && Objects.equals(getTypeArguments(), that.getTypeArguments());
     }
 
     @Override

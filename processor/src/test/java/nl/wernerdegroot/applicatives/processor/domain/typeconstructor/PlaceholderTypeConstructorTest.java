@@ -1,5 +1,7 @@
 package nl.wernerdegroot.applicatives.processor.domain.typeconstructor;
 
+import com.jparams.verifier.tostring.ToStringVerifier;
+import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
 import nl.wernerdegroot.applicatives.processor.domain.type.ConcreteType;
@@ -56,5 +58,11 @@ public class PlaceholderTypeConstructorTest {
         Type toVerify = new PlaceholderTypeConstructor().apply(STRING_TYPE);
 
         assertEquals(expected, toVerify);
+    }
+
+    @Test
+    public void equalsHashCodeToString() {
+        EqualsVerifier.forClass(PlaceholderTypeConstructor.class).verify();
+        ToStringVerifier.forClass(PlaceholderTypeConstructor.class).verify();
     }
 }

@@ -7,7 +7,7 @@ import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import java.util.Map;
 import java.util.Objects;
 
-public class GenericTypeConstructor implements TypeConstructor {
+public final class GenericTypeConstructor implements TypeConstructor {
 
     private final TypeParameterName name;
 
@@ -48,7 +48,7 @@ public class GenericTypeConstructor implements TypeConstructor {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         GenericTypeConstructor that = (GenericTypeConstructor) o;
-        return getName().equals(that.getName());
+        return Objects.equals(getName(), that.getName());
     }
 
     @Override

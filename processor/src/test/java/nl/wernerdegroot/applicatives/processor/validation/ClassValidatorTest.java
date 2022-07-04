@@ -1,5 +1,7 @@
 package nl.wernerdegroot.applicatives.processor.validation;
 
+import com.jparams.verifier.tostring.ToStringVerifier;
+import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.wernerdegroot.applicatives.processor.domain.*;
 import nl.wernerdegroot.applicatives.processor.domain.containing.ContainingClass;
 import org.junit.jupiter.api.Test;
@@ -55,6 +57,12 @@ public class ClassValidatorTest {
         Validated<String, ClassValidator.Result> toVerify = ClassValidator.validate(toValidate);
 
         assertEquals(expected, toVerify);
+    }
+
+    @Test
+    public void resultEqualsHashCodeToString() {
+        EqualsVerifier.forClass(ClassValidator.Result.class).verify();
+        ToStringVerifier.forClass(ClassValidator.Result.class).verify();
     }
 
     @SafeVarargs

@@ -10,6 +10,7 @@
 * combineAndThen
 * Document process to publish
 * Github Actions
+* Badges like https://github.com/jparams/to-string-verifier
 * Code coverage
 * Remove Google auto-registration. Why again?
 * element.getKind == record?

@@ -13,7 +13,7 @@ import java.util.Objects;
 
 import static java.util.stream.Collectors.toList;
 
-public class ConcreteTypeConstructor implements TypeConstructor {
+public final class ConcreteTypeConstructor implements TypeConstructor {
 
     private final FullyQualifiedName fullyQualifiedName;
     private final List<TypeConstructorArgument> typeConstructorArguments;
@@ -97,7 +97,7 @@ public class ConcreteTypeConstructor implements TypeConstructor {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ConcreteTypeConstructor that = (ConcreteTypeConstructor) o;
-        return getFullyQualifiedName().equals(that.getFullyQualifiedName()) && getTypeConstructorArguments().equals(that.getTypeConstructorArguments());
+        return Objects.equals(getFullyQualifiedName(), that.getFullyQualifiedName()) && Objects.equals(getTypeConstructorArguments(), that.getTypeConstructorArguments());
     }
 
     @Override

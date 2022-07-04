@@ -11,7 +11,7 @@ import java.util.Objects;
 
 import static nl.wernerdegroot.applicatives.processor.domain.Variance.INVARIANT;
 
-public class TypeConstructorArgument implements MayContainReferenceToTypeParameter {
+public final class TypeConstructorArgument implements MayContainReferenceToTypeParameter {
 
     private final Variance variance;
     private final TypeConstructor typeConstructor;
@@ -68,7 +68,7 @@ public class TypeConstructorArgument implements MayContainReferenceToTypeParamet
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TypeConstructorArgument that = (TypeConstructorArgument) o;
-        return getVariance() == that.getVariance() && getTypeConstructor().equals(that.getTypeConstructor());
+        return getVariance() == that.getVariance() && Objects.equals(getTypeConstructor(), that.getTypeConstructor());
     }
 
     @Override

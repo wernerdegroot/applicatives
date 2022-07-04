@@ -11,7 +11,7 @@ import java.util.function.Function;
 /**
  * Represent a Java array.
  */
-public class ArrayType implements Type {
+public final class ArrayType implements Type {
 
     // The type of the elements of the array:
     private final Type type;
@@ -53,7 +53,7 @@ public class ArrayType implements Type {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ArrayType arrayType = (ArrayType) o;
-        return getType().equals(arrayType.getType());
+        return Objects.equals(getType(), arrayType.getType());
     }
 
     @Override

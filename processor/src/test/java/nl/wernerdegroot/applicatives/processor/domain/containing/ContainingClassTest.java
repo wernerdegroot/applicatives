@@ -1,5 +1,7 @@
 package nl.wernerdegroot.applicatives.processor.domain.containing;
 
+import com.jparams.verifier.tostring.ToStringVerifier;
+import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.wernerdegroot.applicatives.processor.domain.*;
 import org.junit.jupiter.api.Test;
 
@@ -150,6 +152,12 @@ public class ContainingClassTest {
                         asList(U)
                 ).isStaticInnerClass()
         );
+    }
+
+    @Test
+    public void equalsHashCodeToString() {
+        EqualsVerifier.forClass(ContainingClass.class).verify();
+        ToStringVerifier.forClass(ContainingClass.class).verify();
     }
 
     private Set<Modifier> modifiers(Modifier... modifiers) {

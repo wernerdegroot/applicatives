@@ -1,5 +1,6 @@
 package nl.wernerdegroot.applicatives.processor.validation;
 
+import com.jparams.verifier.tostring.ToStringVerifier;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.wernerdegroot.applicatives.processor.domain.*;
 import nl.wernerdegroot.applicatives.processor.domain.containing.ContainingClass;
@@ -381,8 +382,9 @@ public class ValidatorTest {
     }
 
     @Test
-    public void resultEquals() {
+    public void resultEqualsHashCodeToString() {
         EqualsVerifier.forClass(Validator.Result.class).verify();
+        ToStringVerifier.forClass(Validator.Result.class).verify();
     }
 
     private ContainingClass getValidContainingClass() {

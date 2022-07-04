@@ -1,5 +1,7 @@
 package nl.wernerdegroot.applicatives.processor.domain.typeconstructor;
 
+import com.jparams.verifier.tostring.ToStringVerifier;
+import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
 import nl.wernerdegroot.applicatives.processor.domain.type.ArrayType;
@@ -98,5 +100,11 @@ public class ArrayTypeConstructorTest {
         ArrayType toVerify = new ArrayTypeConstructor(new PlaceholderTypeConstructor()).apply(STRING_TYPE);
 
         assertEquals(expected, toVerify);
+    }
+
+    @Test
+    public void equalsHashCodeToString() {
+        EqualsVerifier.forClass(ArrayTypeConstructor.class).verify();
+        ToStringVerifier.forClass(ArrayTypeConstructor.class).verify();
     }
 }

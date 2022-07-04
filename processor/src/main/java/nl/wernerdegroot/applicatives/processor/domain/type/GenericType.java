@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
-public class GenericType implements Type {
+public final class GenericType implements Type {
 
     private final TypeParameterName name;
 
@@ -53,12 +53,12 @@ public class GenericType implements Type {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         GenericType that = (GenericType) o;
-        return name.equals(that.name);
+        return Objects.equals(getName(), that.getName());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name);
+        return Objects.hash(getName());
     }
 
     @Override

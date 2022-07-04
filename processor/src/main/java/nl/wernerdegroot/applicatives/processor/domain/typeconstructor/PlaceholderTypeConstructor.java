@@ -5,7 +5,7 @@ import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 
 import java.util.Map;
 
-public class PlaceholderTypeConstructor implements TypeConstructor {
+public final class PlaceholderTypeConstructor implements TypeConstructor {
 
     @Override
     public PlaceholderTypeConstructor replaceTypeParameterNames(Map<TypeParameterName, TypeParameterName> replacement) {

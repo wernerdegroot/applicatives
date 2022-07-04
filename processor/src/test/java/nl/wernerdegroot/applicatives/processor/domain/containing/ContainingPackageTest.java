@@ -1,5 +1,7 @@
 package nl.wernerdegroot.applicatives.processor.domain.containing;
 
+import com.jparams.verifier.tostring.ToStringVerifier;
+import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.wernerdegroot.applicatives.processor.domain.PackageName;
 import org.junit.jupiter.api.Test;
 
@@ -45,5 +47,11 @@ public class ContainingPackageTest {
     @Test
     public void isStaticInnerClass() {
         assertFalse(new ContainingPackage(packageName).isStaticInnerClass());
+    }
+
+    @Test
+    public void equalsHashCodeToString() {
+        EqualsVerifier.forClass(ContainingPackage.class).verify();
+        ToStringVerifier.forClass(ContainingPackage.class).verify();
     }
 }

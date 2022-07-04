@@ -1,5 +1,7 @@
 package nl.wernerdegroot.applicatives.processor.domain.type;
 
+import com.jparams.verifier.tostring.ToStringVerifier;
+import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.GenericTypeConstructor;
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.PlaceholderTypeConstructor;
@@ -75,5 +77,11 @@ public class GenericTypeTest {
         GenericType toVerify = new GenericType(V).replaceAllTypeParameterNames(mapping);
 
         assertEquals(expected, toVerify);
+    }
+
+    @Test
+    public void equalsHashCodeToString() {
+        EqualsVerifier.forClass(GenericType.class).verify();
+        ToStringVerifier.forClass(GenericType.class).verify();
     }
 }
