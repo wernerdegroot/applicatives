@@ -42,11 +42,13 @@ Add the required dependencies:
 Example:
 
 ```xml
-<dependency>
-    <groupId>nl.wernerdegroot.applicatives</groupId>
-    <artifactId>runtime</artifactId>
-    <version>1.1.0</version>
-</dependency>
+<dependencies>
+  <dependency>
+      <groupId>nl.wernerdegroot.applicatives</groupId>
+      <artifactId>runtime</artifactId>
+      <version>1.1.0</version>
+  </dependency>
+</dependencies>
 
 ...
 
@@ -136,12 +138,12 @@ CompletableFuture<String> futureLastName =
 CompletableFuture<Person> futurePerson =
         futureFirstName.thenCombine(futureLastName, Person::new);
 
-// Do something useful while we wait for the Person. 
+// Do something useful while we wait for the `Person`. 
 ```
 
 The method [`thenCombine`](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFuture.html#thenCombine-java.util.concurrent.CompletionStage-java.util.function.BiFunction-) is a nifty function that combines the result of two `CompletableFuture`s (by using a `BiFunction` that you provide). In this case, the provided `BiFunction` combines a first name (`String`) and a last name (`String`) into a `Person` object.
 
-The method `thenCombine` is very useful, but if you want to combine more than two `CompletableFuture`s it won't get you very far. Although it is not impossible to combine three or four `CompletableFuture`s using nothing but Java's standard library provides, you will have to accept a lot of boilerplate code. The next section describes the problem of combining four `CompletableFuture`s, and shows how to solve this problem using the Java standard library. The solution should leave you somewhat dissatisfied. The section will continue by showing you how you can use this library to reduce the amount of boilerplate to a minimum.
+The method `thenCombine` is very useful, but if you want to combine more than two `CompletableFuture`s it won't get you very far. Although it is not impossible to combine three or four `CompletableFuture`s using nothing but the things the standard library provides, you will have to accept quite a lot of boilerplate code. The next section describes the problem of combining four `CompletableFuture`s, and shows how to solve this problem using the Java standard library. The solution should leave you somewhat dissatisfied. The section will continue by showing you how you can use this library to reduce the amount of boilerplate to a minimum.
 
 ### Combining more `CompletableFuture`s
 
@@ -191,7 +193,15 @@ If you are willing to go through the hassle, you can still use `thenCombine` to 
 ```java
 CompletableFuture<PokemonCard> futurePokemonCard = 
         futureName.thenCombine(futureHp, NameAndHp::new)
-            .thenCombine(futureEnergyType, NameAndHpAndEnergyType::new)
+            .thenCombine(futureEnergyType, (nameAndHp, energyType) -> {
+                
+                // Unpack intermediate data structure:
+                String name = nameAndHp.getName();
+                int hp = nameAndEnergyType.getHp();
+
+                // Create `NameAndHpAndEnergyType`:
+                return new NameAndHpAndEnergyType(name, hp, energyType);
+            })
             .thenCombine(futureMoves, (nameAndHpAndEnergyType, moves) -> {
                 
                 // Unpack intermediate data structure:
@@ -201,7 +211,7 @@ CompletableFuture<PokemonCard> futurePokemonCard =
                 
                 // Create `PokemonCard`:
                 return new PokemonCard(name, hp, energyType, moves);
-        });
+            });
 
 // Implementation of `NameAndHp` and `NameAndHpAndEnergyType` 
 // not provided for the sake of brevity.
@@ -209,7 +219,7 @@ CompletableFuture<PokemonCard> futurePokemonCard =
 
 This is obviously not a solution for a programmer that demands excellence from their programming language!
 
-The best alternative I found is to abandon `thenCombine` completely, wait until all `CompletableFuture`s are resolved using `CompletableFuture.allOf`. We can then use `thenApply` and `join` to extract the results (which requires some care, as you may accidentally block the thread if the computation did not complete yet):
+The best alternative I found is to abandon `thenCombine` completely and wait until all `CompletableFuture`s are resolved using `CompletableFuture.allOf`. We can then use `thenApply` and `join` to extract the results (which requires some care, as you may accidentally block the thread if the computation did not complete yet):
 
 ```java
 CompletableFuture<PokemonCard> futurePokemonCard = 
@@ -285,7 +295,7 @@ public class CompletableFutures implements CompletableFuturesOverloads {
 }
 ```
 
-Note that the `CompletableFutures` class as described above is already conveniently included for you in the `prelude` module. Check out the [implementation](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/main/java/nl/wernerdegroot/applicatives/prelude/CompletableFutures.java) and the [tests](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/test/java/nl/wernerdegroot/applicatives/prelude/CompletableFuturesTest.java).
+Note that the `CompletableFutures` class as described above is already conveniently included for you in the [Prelude](https://github.com/wernerdegroot/applicatives/tree/main/prelude) module. Check out the [implementation](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/main/java/nl/wernerdegroot/applicatives/prelude/CompletableFutures.java) and the [tests](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/test/java/nl/wernerdegroot/applicatives/prelude/CompletableFuturesTest.java).
 
 ## Another example
 
