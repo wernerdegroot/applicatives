@@ -16,7 +16,6 @@ Include the following dependency:
 </dependency>
 ```
 
-
 ## Example
 
 Using classes:
@@ -55,6 +54,6 @@ Because `Record3` and its siblings rely on reflection and are not completely typ
 Records.verify(Color::new);
 ```
 
-If you made a mistake, the Java compiler will catch it for you.
+You can add these to a unit test or in a static initializer block somewhere. If you made a mistake, the Java compiler will catch it for you. 
 
 Check out the [unit tests](https://github.com/wernerdegroot/applicatives/blob/main/records/src/test/java/nl/wernerdegroot/applicatives/records/Record3Test.java) for an example.

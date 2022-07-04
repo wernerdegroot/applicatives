@@ -1,6 +1,8 @@
 # JSON using Applicatives
 
-Leverages the [Applicatives library](https://github.com/wernerdegroot/applicatives) and the [JSR-374 specification](https://javaee.github.io/jsonp/index.html) to offer marshalling and unmarshalling of JSON without annotations. It moves processing from the annotation-level to regular Java with all the benefits that brings.
+Leverages the [Applicatives library](https://github.com/wernerdegroot/applicatives) and the [JSR-374 specification](https://javaee.github.io/jsonp/index.html) to offer marshalling and unmarshalling of JSON without any annotations or reflection. It moves processing from the annotation-level to regular Java with all the benefits that brings.
+
+This module is inspired by (some would even say a port of) [Play JSON](https://github.com/playframework/play-json).
 
 ## Getting started
 
@@ -42,7 +44,7 @@ public record Resident(String name, int age, Optional<String> role) { }
 public record Place(String name, Location location, List<Resident> residents) { }
 ```
 
-Then we could construct a `JsonReader` for them as follows:
+We construct a `JsonReader` for each of these as follows:
 
 ```java
 JsonReader<Location> locationReader = Json.instance().reader(
@@ -109,14 +111,14 @@ Place place = new Place(
 String json = placeWriter.writeString(place);
 ```
 
-Similar (but opposite) to the `JsonReader`, we have to show Java how deconstruct each `record` (like `Place`) into its constituent parts (like `String`, `Location` and `List<Resident>`) using a "decomposition" (like `Decomposition.of(Place::name, Place::location, Place::residents)`). We use a `Decomposition` for that. Unfortunately, Java [is not smart enough (yet)](https://openjdk.org/projects/amber/design-notes/towards-better-serialization#sidebar-pattern-matching) to figure this out on its own. If you don't mind a little reflection, you could modify these records and implement one of the interfaces provided in [`nl.wernerdegroot.applicatives.records`](https://github.com/wernerdegroot/applicatives/tree/main/records). For example:
+A `JsonReader` requires a constructor to create a record (like `Place`) from its constituent parts (like `String`, `Location` and `List<Resident>`). A `JsonWriter` requires the opposite. We have to provide a way to _decompose_ a record (like `Place`) into its constituent parts (like `String`, `Location` and `List<Resident>`). We use a `Decomposition` for that. Unfortunately, Java [is not smart enough (yet)](https://openjdk.org/projects/amber/design-notes/towards-better-serialization#sidebar-pattern-matching) to figure this out on its own. If you don't mind a little reflection, its likely a good idea to modify these records and implement one of the interfaces provided in [Records for Applicatives](https://github.com/wernerdegroot/applicatives/tree/main/records). For example:
 
 ```java
 public record Place(String name, Location location, List<Resident> residents)
     implements Record3<Place, String, Location, List<Resident>> { }
 ```
 
-This small investment yields great returns:
+This small investment yields great returns. I no longer have to provide a `Decomposition`:
 
 ```java
 JsonWriter<Place> placeWriter = Json.instance().writer(
@@ -130,7 +132,7 @@ In what follows, we will assume that the records `Location`, `Resident` and `Pla
 
 ## `JsonFormat`
 
-Having a separate `JsonReader` and `JsonWriter` that both describe the same properties is a bit of a code smell. In cases such as this, it is often more natural to combine to two into a `JsonFormat`:
+A separate `JsonReader` and `JsonWriter` that both describe the same JSON object is not ideal. In cases such as this, it is often more natural to combine to two into a `JsonFormat`:
 
 ```java
 JsonFormat<Location> locationFormat = Json.instance().format(
@@ -154,7 +156,7 @@ JsonFormat<Place> placeFormat = Json.instance().format(
 );
 ```
 
-A `JsonFormat` supports both `readString` and `writeString`, so we can delete the `JsonReader`s and `JsonWriter`s from before. Viz.
+A `JsonFormat` supports both `readString` and `writeString`:
 
 ```java
 Place place = new Place(
@@ -248,4 +250,4 @@ JsonReader<Location> locationReader = Json.instance().reader(
 );
 ```
 
-The way failures are reported is similar to the way [Hibernate validator works](https://docs.jboss.org/hibernate/validator/5.0/reference/en-US/html/validator-customconstraints.html#validator-customconstraints-validator). When validation for the `latitude` or the `longitude` fails, the reader will return a `Json.Result<Place>` that signals the failure (`Json.Failed<Place>`).
+A `context` (of type `ValidationContext`) is used to signal validation failures. This is similar to the way [Hibernate validator works](https://docs.jboss.org/hibernate/validator/5.0/reference/en-US/html/validator-customconstraints.html#validator-customconstraints-validator). When validation for the `latitude` or the `longitude` fails, the reader will return a `Json.Result<Place>` that signals the failure (`Json.Failed<Place>`).
