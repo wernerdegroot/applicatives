@@ -41,8 +41,7 @@ public class ProcessorTemplateTest implements VarianceProcessorTemplateTest {
     @MockAnnotation(maxArity = 2)
     public void givenValidMethod() throws NoSuchMethodException, IOException {
 
-        Map<String, String> configuration = new HashMap<>();
-        TestProcessor processor = new TestProcessor(configuration);
+        TestProcessor processor = new TestProcessor(false);
         MockElement mockElement = getMockElement("givenValidMethod");
         processor.process(mockElement);
 
@@ -60,9 +59,7 @@ public class ProcessorTemplateTest implements VarianceProcessorTemplateTest {
     @Test
     @MockAnnotation(maxArity = 2)
     public void givenValidMethodWithVerboseLogging() throws NoSuchMethodException, IOException {
-        Map<String, String> configuration = new HashMap<>();
-        configuration.put("applicatives.verbose", "true");
-        TestProcessor processor = new TestProcessor(configuration);
+        TestProcessor processor = new TestProcessor(true);
         MockElement mockElement = getMockElement("givenValidMethodWithVerboseLogging");
         processor.process(mockElement);
 
@@ -116,8 +113,7 @@ public class ProcessorTemplateTest implements VarianceProcessorTemplateTest {
     @Test
     @MockAnnotation(maxArity = 2)
     public void givenErrorWhileTransformingToDomain() throws NoSuchMethodException {
-        Map<String, String> configuration = new HashMap<>();
-        TestProcessor processor = new TestProcessor(configuration) {
+        TestProcessor processor = new TestProcessor(false) {
             @Override
             public Method toMethodOrMethods(MockElement mockElement) {
                 throw new IllegalArgumentException("There was a problem!");
@@ -140,9 +136,7 @@ public class ProcessorTemplateTest implements VarianceProcessorTemplateTest {
     @Test
     @MockAnnotation(maxArity = 2)
     public void givenErrorWhileTransformingToDomainWithVerboseLogging() throws NoSuchMethodException {
-        Map<String, String> configuration = new HashMap<>();
-        configuration.put("applicatives.verbose", "true");
-        TestProcessor processor = new TestProcessor(configuration) {
+        TestProcessor processor = new TestProcessor(true) {
             @Override
             public Method toMethodOrMethods(MockElement mockElement) {
                 throw new IllegalArgumentException("There was a problem!");
@@ -158,6 +152,9 @@ public class ProcessorTemplateTest implements VarianceProcessorTemplateTest {
         String toVerifyErrors = processor.getLogged(Diagnostic.Kind.ERROR);
         assertEquals(expectedErrors, toVerifyErrors);
 
+        // Prefix of error message and stack trace. Because the stack trace is likely different
+        // on different platforms (it is certainly different when running from Maven or from
+        // IntelliJ) and line numbers are subject to change, we only compare prefixes.
         String expectedInfo = "Found annotation of type 'nl.wernerdegroot.applicatives.processor.ProcessorTemplateTest.MockAnnotation' on  mock element 'givenErrorWhileTransformingToDomainWithVerboseLogging'\n" +
                 " - Class name: *Overloads\n" +
                 " - Method name for `combine`: *\n" +
@@ -172,8 +169,7 @@ public class ProcessorTemplateTest implements VarianceProcessorTemplateTest {
     @Test
     @MockAnnotation(maxArity = 2)
     public void givenValidationError() throws NoSuchMethodException {
-        Map<String, String> configuration = new HashMap<>();
-        TestProcessor processor = new TestProcessor(configuration) {
+        TestProcessor processor = new TestProcessor(false) {
             @Override
             public Validated<Log, Validator.Result> validate(ContainingClass containingClass, Method method) {
                 return Validated.invalid(
@@ -200,8 +196,7 @@ public class ProcessorTemplateTest implements VarianceProcessorTemplateTest {
     @Test
     @MockAnnotation(maxArity = -1)
     public void givenConfigValidationError() throws NoSuchMethodException {
-        Map<String, String> configuration = new HashMap<>();
-        TestProcessor processor = new TestProcessor(configuration);
+        TestProcessor processor = new TestProcessor(false);
         MockElement mockElement = getMockElement("givenConfigValidationError");
         processor.process(mockElement);
 
@@ -219,8 +214,7 @@ public class ProcessorTemplateTest implements VarianceProcessorTemplateTest {
     @Test
     @MockAnnotation(maxArity = 2)
     public void givenErrorWhileWritingToFile() throws NoSuchMethodException {
-        Map<String, String> configuration = new HashMap<>();
-        TestProcessor processor = new TestProcessor(configuration) {
+        TestProcessor processor = new TestProcessor(false) {
             @Override
             public PrintWriter getPrintWriterForFile(FullyQualifiedName fullyQualifiedName) throws IOException {
                 throw new IOException("There was a problem!");
@@ -243,8 +237,7 @@ public class ProcessorTemplateTest implements VarianceProcessorTemplateTest {
     @Test
     @MockAnnotation(maxArity = 2)
     public void givenErrorWhileValidating() throws NoSuchMethodException {
-        Map<String, String> configuration = new HashMap<>();
-        TestProcessor processor = new TestProcessor(configuration) {
+        TestProcessor processor = new TestProcessor(false) {
             @Override
             public Validated<Log, Validator.Result> validate(ContainingClass containingClass, Method method) {
                 throw new IllegalArgumentException("There was a problem!");
@@ -325,6 +318,13 @@ public class ProcessorTemplateTest implements VarianceProcessorTemplateTest {
 
         public TestProcessor(Map<String, String> configuration) {
             this.configuration = configuration;
+        }
+
+        public TestProcessor(boolean verbose) {
+            this.configuration = new HashMap<>();
+            if (verbose) {
+                this.configuration.put("applicatives.verbose", "true");
+            }
         }
 
         @Override
