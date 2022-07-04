@@ -40,13 +40,6 @@
         </snapshotRepository>
     </distributionManagement>
 
-    <modules>
-        <module>runtime</module>
-        <module>processor</module>
-        <module>prelude</module>
-        <module>json</module>
-    </modules>
-
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
@@ -55,6 +48,18 @@
     </properties>
 
     <profiles>
+        <profile>
+            <id>except-records</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>runtime</module>
+                <module>processor</module>
+                <module>prelude</module>
+                <module>json</module>
+            </modules>
+        </profile>
         <!-- Trick to exclude the single Java 17 module from "normal" builds, which run on Java 8. -->
         <!-- To skip the `records` module, use the flags `-P !records`. -->
         <!-- See https://stackoverflow.com/questions/5539348/how-to-exclude-a-module-from-a-maven-reactor-build -->

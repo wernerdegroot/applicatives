@@ -1,5 +1,4 @@
-* Make sure we can publish with both Java 8 and 17
-* Find a better name for "type constructor argument"
+* combineAndThen
 * Support for static methods
 * Use processor (perhaps older version, to prevent circular dependencies) to generate `Validated` methods.
 * Test deconstructor (and other things too) when using a constructor or deconstructor of a generic type like Tuple3.
@@ -7,7 +6,6 @@
 * Remove Google testing library because it's all pretty easy to do manually (check TypeConstructor tests)
 * Static -> class, abstract instance method -> abstract class
 * Because builder-methods are not for exposing, perhaps pass reference to builder object instead (make this configurable `style = "inheritance"` or `style = "delegation"`).
-* combineAndThen
 * Document process to publish
 * Github Actions
 * Badges like https://github.com/jparams/to-string-verifier
