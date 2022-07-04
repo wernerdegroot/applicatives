@@ -12,7 +12,7 @@ import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.OBJECT;
 
-public class TypeParameter {
+public final class TypeParameter {
 
     private final TypeParameterName name;
     private final List<Type> upperBounds;
@@ -65,7 +65,7 @@ public class TypeParameter {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TypeParameter that = (TypeParameter) o;
-        return getName().equals(that.getName()) && getUpperBounds().equals(that.getUpperBounds());
+        return Objects.equals(getName(), that.getName()) && Objects.equals(getUpperBounds(), that.getUpperBounds());
     }
 
     @Override

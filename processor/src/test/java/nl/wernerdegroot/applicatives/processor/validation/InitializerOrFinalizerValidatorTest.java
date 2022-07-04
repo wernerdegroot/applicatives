@@ -1,6 +1,8 @@
 package nl.wernerdegroot.applicatives.processor.validation;
 
+import com.jparams.verifier.tostring.ToStringVerifier;
 import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.wernerdegroot.applicatives.processor.domain.Initializer;
 import nl.wernerdegroot.applicatives.processor.domain.Method;
 import nl.wernerdegroot.applicatives.processor.domain.Parameter;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
@@ -176,8 +178,9 @@ public class InitializerOrFinalizerValidatorTest {
     }
 
     @Test
-    public void resultEquals() {
+    public void resultEqualsHashCodeToString() {
         EqualsVerifier.forClass(InitializerOrFinalizerValidator.Result.class).verify();
+        ToStringVerifier.forClass(InitializerOrFinalizerValidator.Result.class).verify();
     }
 
     @SafeVarargs

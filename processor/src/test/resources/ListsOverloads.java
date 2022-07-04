@@ -27,7 +27,7 @@ public interface ListsOverloads {
     class Tuples {
 
         public static <P1, P2> java.util.ArrayList<nl.wernerdegroot.applicatives.runtime.Tuple2<? extends P1, ? extends P2>> tuple(nl.wernerdegroot.applicatives.ListsOverloads self, java.util.ArrayList<? extends P1> first, java.util.List<? extends P2> second, int maxSize) {
-            return self.combineImpl(first, second, nl.wernerdegroot.applicatives.runtime.FastTuple.withMaxSize(maxSize));
+            return self.<P1, P2, nl.wernerdegroot.applicatives.runtime.Tuple2<? extends P1, ? extends P2>>combineImpl(first, second, nl.wernerdegroot.applicatives.runtime.FastTuple.withMaxSize(maxSize));
         }
 
     }

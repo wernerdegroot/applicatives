@@ -6,12 +6,11 @@ import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 public interface ParametersAndTypeParametersValidator {
-    Result validateTypeParametersAndParameters(List<TypeParameter> typeParameters, List<Parameter> parameters, Set<String> errorMessages);
+    Result validateTypeParametersAndParameters(List<TypeParameter> typeParameters, List<Parameter> parameters, List<String> errorMessages);
 
-    class Result {
+    final class Result {
         private final TypeParameter leftInputTypeConstructorArgument;
         private final TypeParameter rightInputTypeConstructorArgument;
         private final TypeParameter returnTypeConstructorArgument;
@@ -60,8 +59,8 @@ public interface ParametersAndTypeParametersValidator {
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            Result that = (Result) o;
-            return Objects.equals(getLeftInputTypeConstructorArgument(), that.getLeftInputTypeConstructorArgument()) && Objects.equals(getRightInputTypeConstructorArgument(), that.getRightInputTypeConstructorArgument()) && Objects.equals(getReturnTypeConstructorArgument(), that.getReturnTypeConstructorArgument()) && Objects.equals(getLeftParameterType(), that.getLeftParameterType()) && Objects.equals(getRightParameterType(), that.getRightParameterType());
+            Result result = (Result) o;
+            return Objects.equals(getLeftInputTypeConstructorArgument(), result.getLeftInputTypeConstructorArgument()) && Objects.equals(getRightInputTypeConstructorArgument(), result.getRightInputTypeConstructorArgument()) && Objects.equals(getReturnTypeConstructorArgument(), result.getReturnTypeConstructorArgument()) && Objects.equals(getLeftParameterType(), result.getLeftParameterType()) && Objects.equals(getRightParameterType(), result.getRightParameterType());
         }
 
         @Override

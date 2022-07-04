@@ -61,7 +61,7 @@ public interface UnaryOperatorsOverloads {
     class Tuples {
 
         public static <P1, P2> java.util.function.UnaryOperator<nl.wernerdegroot.applicatives.runtime.Tuple2<? extends P1, ? extends P2>> tuple(nl.wernerdegroot.applicatives.UnaryOperatorsOverloads self, java.util.function.UnaryOperator<P1> first, java.util.function.UnaryOperator<P2> second, int maxSize) {
-            return self.combineImpl(first, second, nl.wernerdegroot.applicatives.runtime.FastTuple.withMaxSize(maxSize), java.util.function.Function.identity(), nl.wernerdegroot.applicatives.runtime.Tuple2::getFirst, nl.wernerdegroot.applicatives.runtime.Tuple2::getSecond);
+            return self.<P1, P2, nl.wernerdegroot.applicatives.runtime.Tuple2<? extends P1, ? extends P2>, nl.wernerdegroot.applicatives.runtime.Tuple2<? extends P1, ? extends P2>>combineImpl(first, second, nl.wernerdegroot.applicatives.runtime.FastTuple.withMaxSize(maxSize), java.util.function.Function.identity(), nl.wernerdegroot.applicatives.runtime.Tuple2::getFirst, nl.wernerdegroot.applicatives.runtime.Tuple2::getSecond);
         }
 
         public static <P1, P2, P3> java.util.function.UnaryOperator<nl.wernerdegroot.applicatives.runtime.Tuple3<? extends P1, ? extends P2, ? extends P3>> tuple(nl.wernerdegroot.applicatives.UnaryOperatorsOverloads self, java.util.function.UnaryOperator<P1> first, java.util.function.UnaryOperator<P2> second, java.util.function.UnaryOperator<P3> third, int maxSize) {

@@ -23,7 +23,7 @@ import static nl.wernerdegroot.applicatives.processor.Classes.COVARIANT_CLASS_NA
 @SupportedAnnotationTypes(COVARIANT_CLASS_NAME)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @AutoService(Processor.class)
-public class CovariantMethodProcessor extends AbstractProcessor<Covariant, Element, Method> implements CovariantProcessorTemplate<Covariant, Element, Method>, MethodProcessorTemplate<Covariant> {
+public class CovariantMethodProcessor extends AbstractProcessor<Covariant, Element, Method> implements CovariantProcessorTemplate, MethodProcessorTemplate<Covariant> {
 
     @Override
     public Class<Covariant> getAnnotationType() {

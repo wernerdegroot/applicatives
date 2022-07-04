@@ -1,8 +1,11 @@
 package nl.wernerdegroot.applicatives.processor.domain.typeconstructor;
 
+import com.jparams.verifier.tostring.ToStringVerifier;
+import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
 import nl.wernerdegroot.applicatives.processor.domain.type.ConcreteType;
+import nl.wernerdegroot.applicatives.processor.domain.type.ConcreteTypeTest;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 import org.junit.jupiter.api.Test;
 
@@ -269,5 +272,11 @@ public class ConcreteTypeConstructorTest {
         ConcreteType toVerify = TypeConstructor.concrete(ERUDITE, STRING_TYPE_CONSTRUCTOR.invariant(), placeholder().covariant(), INTEGER_TYPE_CONSTRUCTOR.contravariant()).apply(BOOLEAN_TYPE);
 
         assertEquals(expected, toVerify);
+    }
+
+    @Test
+    public void equalsHashCodeToString() {
+        EqualsVerifier.forClass(ConcreteTypeConstructor.class).verify();
+        ToStringVerifier.forClass(ConcreteTypeConstructor.class).verify();
     }
 }

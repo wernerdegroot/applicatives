@@ -4,6 +4,7 @@ import nl.wernerdegroot.applicatives.processor.domain.containing.ContainingClass
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
 
@@ -37,8 +38,8 @@ public final class Method {
         return annotations.contains(annotation);
     }
 
-    public boolean hasAnnotationOf(Collection<FullyQualifiedName> annotations) {
-        return annotations.stream().anyMatch(this::hasAnnotation);
+    public boolean hasAnnotationOf(FullyQualifiedName... annotations) {
+        return Stream.of(annotations).anyMatch(this::hasAnnotation);
     }
 
     public Set<Modifier> getModifiers() {

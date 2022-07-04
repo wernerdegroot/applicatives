@@ -5,7 +5,7 @@ import nl.wernerdegroot.applicatives.processor.domain.PackageName;
 import java.util.Objects;
 import java.util.function.Function;
 
-public class ContainingPackage implements Containing {
+public final class ContainingPackage implements Containing {
 
     private final PackageName packageName;
 
@@ -52,7 +52,7 @@ public class ContainingPackage implements Containing {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ContainingPackage that = (ContainingPackage) o;
-        return getPackageName().equals(that.getPackageName());
+        return Objects.equals(getPackageName(), that.getPackageName());
     }
 
     @Override

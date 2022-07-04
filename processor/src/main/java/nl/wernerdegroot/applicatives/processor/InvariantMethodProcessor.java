@@ -23,7 +23,7 @@ import static nl.wernerdegroot.applicatives.processor.Classes.INVARIANT_CLASS_NA
 @SupportedAnnotationTypes(INVARIANT_CLASS_NAME)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @AutoService(Processor.class)
-public class InvariantMethodProcessor extends AbstractProcessor<Invariant, Element, Method> implements InvariantProcessorTemplate<Invariant, Element, Method>, MethodProcessorTemplate<Invariant> {
+public class InvariantMethodProcessor extends AbstractProcessor<Invariant, Element, Method> implements InvariantProcessorTemplate, MethodProcessorTemplate<Invariant> {
 
     @Override
     public Class<Invariant> getAnnotationType() {

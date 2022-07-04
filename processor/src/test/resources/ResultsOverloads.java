@@ -34,7 +34,7 @@ public interface ResultsOverloads<P> {
     class Tuples {
 
         public static <P1, P2, P> java.util.function.Function<P, nl.wernerdegroot.applicatives.runtime.Tuple2<? extends P1, ? extends P2>> tuple(nl.wernerdegroot.applicatives.ResultsOverloads<P> self, java.util.function.Function<P, P1> first, java.util.function.Function<P, P2> second, int maxSize) {
-            return self.combineImpl(first, second, nl.wernerdegroot.applicatives.runtime.FastTuple.withMaxSize(maxSize));
+            return self.<P1, P2, nl.wernerdegroot.applicatives.runtime.Tuple2<? extends P1, ? extends P2>>combineImpl(first, second, nl.wernerdegroot.applicatives.runtime.FastTuple.withMaxSize(maxSize));
         }
 
         public static <P1, P2, P3, P> java.util.function.Function<P, nl.wernerdegroot.applicatives.runtime.Tuple3<? extends P1, ? extends P2, ? extends P3>> tuple(nl.wernerdegroot.applicatives.ResultsOverloads<P> self, java.util.function.Function<P, P1> first, java.util.function.Function<P, P2> second, java.util.function.Function<P, P3> third, int maxSize) {

@@ -482,6 +482,7 @@ public abstract class Generator<This> {
                     arity,
                     methodCall()
                             .withObjectPath(selfParameterName)
+                            .withTypeArguments(getTypeArgumentsToPassOnToAccumulatorMethodForTupleMethod(arity))
                             .withMethodName(accumulator.getName())
                             .withArguments(
                                     initializeIfHasInitializer(selfParameterName, firstInputParameterName),
@@ -544,16 +545,7 @@ public abstract class Generator<This> {
         }
 
         private TypeConstructor getTupleMethodReturnTypeConstructor(int arity) {
-            // If the arity is equal to zero, we are dealing with a special case. We use the initializer method
-            // to wrap an empty tuple using the `initializedTypeConstructor`. We can pass that as the
-            // input to the accumulator method that the user defined.
-            if (arity == 0) {
-                return optionalInitializer
-                        .map(Initializer::getInitializedTypeConstructor)
-                        .orElseThrow(() -> new IllegalStateException("An initializer method is required for a tuple method of arity zero"));
-            } else {
-                return accumulator.getAccumulatedTypeConstructor();
-            }
+            return accumulator.getAccumulatedTypeConstructor();
         }
     }
 

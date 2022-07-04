@@ -3,8 +3,8 @@ package nl.wernerdegroot.applicatives.processor.domain;
 import nl.wernerdegroot.applicatives.processor.domain.type.ArrayType;
 import nl.wernerdegroot.applicatives.processor.domain.type.GenericType;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
+import nl.wernerdegroot.applicatives.processor.domain.type.TypeArgument;
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructor;
-import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.TypeConstructorArgument;
 
 import java.util.Objects;
 
@@ -24,10 +24,6 @@ public final class TypeParameterName {
         return Type.generic(this);
     }
 
-    public ArrayType array() {
-        return asType().array();
-    }
-
     public TypeParameter extending(Type... types) {
         return TypeParameter.of(this, types);
     }
@@ -38,6 +34,14 @@ public final class TypeParameterName {
 
     public TypeConstructor asTypeConstructor() {
         return TypeConstructor.generic(this);
+    }
+
+    public TypeArgument covariant() {
+        return asType().covariant();
+    }
+
+    public TypeArgument contravariant() {
+        return asType().contravariant();
     }
 
     public String raw() {

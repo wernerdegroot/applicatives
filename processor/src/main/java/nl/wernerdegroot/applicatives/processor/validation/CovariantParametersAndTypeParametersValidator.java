@@ -4,10 +4,9 @@ import nl.wernerdegroot.applicatives.processor.domain.Parameter;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameter;
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.BI_FUNCTION;
 import static nl.wernerdegroot.applicatives.processor.generator.TypeGenerator.generateFrom;
@@ -17,8 +16,8 @@ import static nl.wernerdegroot.applicatives.processor.validation.Common.verifyTy
 public class CovariantParametersAndTypeParametersValidator implements ParametersAndTypeParametersValidator {
 
     @Override
-    public Result validateTypeParametersAndParameters(List<TypeParameter> typeParameters, List<Parameter> parameters, Set<String> errorMessages) {
-        Set<String> additionalErrorMessages = new HashSet<>();
+    public Result validateTypeParametersAndParameters(List<TypeParameter> typeParameters, List<Parameter> parameters, List<String> errorMessages) {
+        List<String> additionalErrorMessages = new ArrayList<>();
 
         verifyParameterCount(parameters, 3, additionalErrorMessages);
         verifyTypeParameterCount(typeParameters, 3, additionalErrorMessages);

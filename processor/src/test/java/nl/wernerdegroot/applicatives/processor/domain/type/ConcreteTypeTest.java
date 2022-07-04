@@ -1,5 +1,7 @@
 package nl.wernerdegroot.applicatives.processor.domain.type;
 
+import com.jparams.verifier.tostring.ToStringVerifier;
+import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.wernerdegroot.applicatives.processor.domain.FullyQualifiedName;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
 import nl.wernerdegroot.applicatives.processor.domain.typeconstructor.ConcreteTypeConstructor;
@@ -90,5 +92,11 @@ public class ConcreteTypeTest {
         ConcreteType toVerify = Type.concrete(ERUDITE, STRING_TYPE.invariant(), V_TYPE.covariant(), INTEGER_TYPE.contravariant()).replaceAllTypeParameterNames(mapping);
 
         assertEquals(expected, toVerify);
+    }
+
+    @Test
+    public void equalsHashCodeToString() {
+        EqualsVerifier.forClass(ConcreteType.class).verify();
+        ToStringVerifier.forClass(ConcreteType.class).verify();
     }
 }

@@ -10,7 +10,7 @@ import java.util.Objects;
 import static nl.wernerdegroot.applicatives.processor.domain.Variance.COVARIANT;
 import static nl.wernerdegroot.applicatives.processor.domain.type.Type.OBJECT;
 
-public class TypeArgument {
+public final class TypeArgument {
 
     private final Variance variance;
     private final Type type;
@@ -53,7 +53,7 @@ public class TypeArgument {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TypeArgument that = (TypeArgument) o;
-        return getVariance() == that.getVariance() && getType().equals(that.getType());
+        return getVariance() == that.getVariance() && Objects.equals(getType(), that.getType());
     }
 
     @Override

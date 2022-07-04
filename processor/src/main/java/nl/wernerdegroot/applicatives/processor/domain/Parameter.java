@@ -2,10 +2,9 @@ package nl.wernerdegroot.applicatives.processor.domain;
 
 import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 
-import java.util.Map;
 import java.util.Objects;
 
-public class Parameter {
+public final class Parameter {
 
     private final Type type;
     private final String name;
@@ -17,20 +16,6 @@ public class Parameter {
 
     public static Parameter of(Type type, String name) {
         return new Parameter(type, name);
-    }
-
-    public Parameter replaceAllTypeParameterNames(Map<TypeParameterName, TypeParameterName> replacement) {
-        return Parameter.of(
-                type.replaceAllTypeParameterNames(replacement),
-                name
-        );
-    }
-
-    public Parameter replaceParameterName(Map<String, String> replacement) {
-        return Parameter.of(
-                type,
-                replacement.getOrDefault(name, name)
-        );
     }
 
     public Type getType() {
@@ -46,7 +31,7 @@ public class Parameter {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Parameter parameter = (Parameter) o;
-        return getType().equals(parameter.getType()) && getName().equals(parameter.getName());
+        return Objects.equals(getType(), parameter.getType()) && Objects.equals(getName(), parameter.getName());
     }
 
     @Override

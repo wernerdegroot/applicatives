@@ -7,8 +7,6 @@ import nl.wernerdegroot.applicatives.processor.domain.type.Type;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.function.Predicate;
 
 import static nl.wernerdegroot.applicatives.processor.domain.Modifier.PUBLIC;
 import static nl.wernerdegroot.applicatives.processor.domain.Modifier.STATIC;
@@ -16,19 +14,19 @@ import static nl.wernerdegroot.applicatives.processor.domain.type.Type.OBJECT;
 
 public class Common {
 
-    public static void verifyParameterCount(List<Parameter> parameters, int expected, Set<String> errorMessages) {
+    public static void verifyParameterCount(List<Parameter> parameters, int expected, List<String> errorMessages) {
         if (parameters.size() != expected) {
             errorMessages.add("Method requires exactly " + expected + " parameters, but found " + parameters.size());
         }
     }
 
-    public static void verifyTypeParameterCount(List<TypeParameter> typeParameters, int expected, Set<String> errorMessages) {
+    public static void verifyTypeParameterCount(List<TypeParameter> typeParameters, int expected, List<String> errorMessages) {
         if (typeParameters.size() != expected) {
             errorMessages.add("Method requires exactly " + expected + " type parameters, but found " + typeParameters.size());
         }
     }
 
-    public static Type verifyHasReturnType(Method method, Set<String> errorMessages) {
+    public static Type verifyHasReturnType(Method method, List<String> errorMessages) {
         Optional<Type> optionalReturnType = method.getReturnType();
         if (optionalReturnType.isPresent()) {
             return optionalReturnType.get();
@@ -38,7 +36,7 @@ public class Common {
         }
     }
 
-    public static void verifyTypeParametersAreUnbounded(Method method, Set<String> errorMessages) {
+    public static void verifyTypeParametersAreUnbounded(Method method, List<String> errorMessages) {
         boolean typeParametersHaveUpperBound = method.getTypeParameters()
                 .stream()
                 .map(TypeParameter::getUpperBounds)
@@ -50,7 +48,7 @@ public class Common {
         }
     }
 
-    public static void verifyCanImplementAbstractMethod(Method method, Set<String> errorMessages) {
+    public static void verifyCanImplementAbstractMethod(Method method, List<String> errorMessages) {
         if (method.getModifiers().contains(STATIC)) {
             errorMessages.add("Method is static and cannot implement an abstract method");
         }

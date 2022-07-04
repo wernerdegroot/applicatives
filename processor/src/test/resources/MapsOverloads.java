@@ -2,7 +2,7 @@ package nl.wernerdegroot.applicatives;
 
 public interface MapsOverloads<K extends java.lang.Comparable<? super K>> {
 
-    <R> java.util.TreeMap<? super K, ? super R> initialize(java.util.Map<? super K, ? extends R> value);
+    <R> java.util.TreeMap<? super K, R> initialize(java.util.Map<? super K, ? extends R> value);
 
     <P1, P2, R> java.util.TreeMap<? super K, R> combineImpl(java.util.TreeMap<? super K, ? extends P1> first, java.util.Map<? super K, ? extends P2> second, java.util.function.BiFunction<? super P1, ? super P2, ? extends R> fn);
 
@@ -27,7 +27,7 @@ public interface MapsOverloads<K extends java.lang.Comparable<? super K>> {
     class Tuples {
 
         public static <P1, P2, K extends java.lang.Comparable<? super K>> java.util.TreeMap<? super K, nl.wernerdegroot.applicatives.runtime.Tuple2<? extends P1, ? extends P2>> tuple(nl.wernerdegroot.applicatives.MapsOverloads<K> self, java.util.Map<? super K, ? extends P1> first, java.util.Map<? super K, ? extends P2> second, int maxSize) {
-            return self.combineImpl(self.initialize(first), second, nl.wernerdegroot.applicatives.runtime.FastTuple.withMaxSize(maxSize));
+            return self.<P1, P2, nl.wernerdegroot.applicatives.runtime.Tuple2<? extends P1, ? extends P2>>combineImpl(self.initialize(first), second, nl.wernerdegroot.applicatives.runtime.FastTuple.withMaxSize(maxSize));
         }
 
     }

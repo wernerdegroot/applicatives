@@ -5,7 +5,7 @@ import nl.wernerdegroot.applicatives.processor.domain.TypeParameter;
 import nl.wernerdegroot.applicatives.processor.domain.TypeParameterName;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -25,7 +25,7 @@ public class CovariantParametersAndTypeParametersValidatorTest {
 
     @Test
     public void givenValidParametersAndTypeParameters() {
-        Set<String> errorMessages = new HashSet<>();
+        List<String> errorMessages = new ArrayList<>();
 
         List<Parameter> parameters = asList(
                 Parameter.of(OPTIONAL.with(T), "left"),
@@ -55,7 +55,7 @@ public class CovariantParametersAndTypeParametersValidatorTest {
 
     @Test
     public void validateGivenLessThanThreeTypeParameters() {
-        Set<String> errorMessages = new HashSet<>();
+        List<String> errorMessages = new ArrayList<>();
 
         List<Parameter> parameters = asList(
                 Parameter.of(OPTIONAL.with(T), "left"),
@@ -71,7 +71,7 @@ public class CovariantParametersAndTypeParametersValidatorTest {
                 errorMessages
         );
 
-        Set<String> expectedErrorMessages = Stream.of("Method requires exactly 3 type parameters, but found 1").collect(toSet());
+        List<String> expectedErrorMessages = asList("Method requires exactly 3 type parameters, but found 1");
 
         assertNull(result);
         assertEquals(expectedErrorMessages, errorMessages);
@@ -79,7 +79,7 @@ public class CovariantParametersAndTypeParametersValidatorTest {
 
     @Test
     public void validateGivenMoreThanThreeTypeParameters() {
-        Set<String> errorMessages = new HashSet<>();
+        List<String> errorMessages = new ArrayList<>();
 
         List<Parameter> parameters = asList(
                 Parameter.of(FUNCTION.with(P, T), "left"),
@@ -95,7 +95,7 @@ public class CovariantParametersAndTypeParametersValidatorTest {
                 errorMessages
         );
 
-        Set<String> expectedErrorMessages = Stream.of("Method requires exactly 3 type parameters, but found 4").collect(toSet());
+        List<String> expectedErrorMessages = asList("Method requires exactly 3 type parameters, but found 4");
 
         assertNull(result);
         assertEquals(expectedErrorMessages, errorMessages);
@@ -103,7 +103,7 @@ public class CovariantParametersAndTypeParametersValidatorTest {
 
     @Test
     public void validateGivenLessThanThreeParameters() {
-        Set<String> errorMessages = new HashSet<>();
+        List<String> errorMessages = new ArrayList<>();
 
         List<Parameter> parameters = asList(
                 Parameter.of(OPTIONAL.with(T), "left"),
@@ -118,7 +118,7 @@ public class CovariantParametersAndTypeParametersValidatorTest {
                 errorMessages
         );
 
-        Set<String> expectedErrorMessages = Stream.of("Method requires exactly 3 parameters, but found 2").collect(toSet());
+        List<String> expectedErrorMessages = asList("Method requires exactly 3 parameters, but found 2");
 
         assertNull(result);
         assertEquals(expectedErrorMessages, errorMessages);
@@ -126,7 +126,7 @@ public class CovariantParametersAndTypeParametersValidatorTest {
 
     @Test
     public void validateGivenMoreThanThreeParameters() {
-        Set<String> errorMessages = new HashSet<>();
+        List<String> errorMessages = new ArrayList<>();
 
         List<Parameter> parameters = asList(
                 Parameter.of(COMPLETABLE_FUTURE.with(T), "left"),
@@ -143,7 +143,7 @@ public class CovariantParametersAndTypeParametersValidatorTest {
                 errorMessages
         );
 
-        Set<String> expectedErrorMessages = Stream.of("Method requires exactly 3 parameters, but found 4").collect(toSet());
+        List<String> expectedErrorMessages = asList("Method requires exactly 3 parameters, but found 4");
 
         assertNull(result);
         assertEquals(expectedErrorMessages, errorMessages);
@@ -151,7 +151,7 @@ public class CovariantParametersAndTypeParametersValidatorTest {
 
     @Test
     public void validateGivenThirdParameterThatIsNotABiFunction() {
-        Set<String> errorMessages = new HashSet<>();
+        List<String> errorMessages = new ArrayList<>();
 
         List<Parameter> parameters = asList(
                 Parameter.of(OPTIONAL.with(T), "left"),
@@ -167,7 +167,7 @@ public class CovariantParametersAndTypeParametersValidatorTest {
                 errorMessages
         );
 
-        Set<String> expectedErrorMessages = Stream.of("Expected third argument to be a java.util.function.BiFunction<? super T, ? super U, ? extends V> but was java.lang.Object").collect(toSet());
+        List<String> expectedErrorMessages = asList("Expected third argument to be a java.util.function.BiFunction<? super T, ? super U, ? extends V> but was java.lang.Object");
 
         assertNull(result);
         assertEquals(expectedErrorMessages, errorMessages);
@@ -175,7 +175,7 @@ public class CovariantParametersAndTypeParametersValidatorTest {
 
     @Test
     public void validateGivenMethodWithThirdParameterThatIsBiFunctionWithWrongTypeArguments() {
-        Set<String> errorMessages = new HashSet<>();
+        List<String> errorMessages = new ArrayList<>();
 
         List<Parameter> parameters = asList(
                 Parameter.of(OPTIONAL.with(T), "left"),
@@ -191,7 +191,7 @@ public class CovariantParametersAndTypeParametersValidatorTest {
                 errorMessages
         );
 
-        Set<String> expectedErrorMessages = Stream.of("Expected third argument to be a java.util.function.BiFunction<? super T, ? super U, ? extends V> but was java.util.function.BiFunction<W, W, W>").collect(toSet());
+        List<String> expectedErrorMessages = asList("Expected third argument to be a java.util.function.BiFunction<? super T, ? super U, ? extends V> but was java.util.function.BiFunction<W, W, W>");
 
         assertNull(result);
         assertEquals(expectedErrorMessages, errorMessages);

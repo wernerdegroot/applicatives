@@ -36,7 +36,7 @@ public class ClassValidator {
         return Validated.valid(Result.of(typeParameters));
     }
 
-    public static class Result {
+    public final static class Result {
         private final List<TypeParameter> typeParameters;
 
         public Result(List<TypeParameter> typeParameters) {
@@ -55,8 +55,8 @@ public class ClassValidator {
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            Result that = (Result) o;
-            return getTypeParameters().equals(that.getTypeParameters());
+            Result result = (Result) o;
+            return Objects.equals(getTypeParameters(), result.getTypeParameters());
         }
 
         @Override

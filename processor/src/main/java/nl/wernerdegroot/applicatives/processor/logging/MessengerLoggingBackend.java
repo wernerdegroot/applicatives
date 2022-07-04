@@ -3,18 +3,18 @@ package nl.wernerdegroot.applicatives.processor.logging;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.tools.Diagnostic;
 
-public class MessagerLoggingBackend implements LoggingBackend {
+public class MessengerLoggingBackend implements LoggingBackend {
 
     private final ProcessingEnvironment processingEnvironment;
     private final Diagnostic.Kind diagnosticKind;
 
-    public MessagerLoggingBackend(ProcessingEnvironment processingEnvironment, Diagnostic.Kind diagnosticKind) {
+    public MessengerLoggingBackend(ProcessingEnvironment processingEnvironment, Diagnostic.Kind diagnosticKind) {
         this.processingEnvironment = processingEnvironment;
         this.diagnosticKind = diagnosticKind;
     }
 
-    public static MessagerLoggingBackend of(ProcessingEnvironment processingEnvironment, Diagnostic.Kind diagnosticKind) {
-        return new MessagerLoggingBackend(processingEnvironment, diagnosticKind);
+    public static MessengerLoggingBackend of(ProcessingEnvironment processingEnvironment, Diagnostic.Kind diagnosticKind) {
+        return new MessengerLoggingBackend(processingEnvironment, diagnosticKind);
     }
 
     @Override

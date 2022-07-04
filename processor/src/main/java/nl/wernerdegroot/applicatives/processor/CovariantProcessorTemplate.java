@@ -1,12 +1,13 @@
 package nl.wernerdegroot.applicatives.processor;
 
 import nl.wernerdegroot.applicatives.processor.domain.containing.ContainingClass;
+import nl.wernerdegroot.applicatives.processor.generator.VarianceProcessorTemplate;
 import nl.wernerdegroot.applicatives.processor.validation.Validator;
 
 import static nl.wernerdegroot.applicatives.processor.conflicts.Conflicts.*;
 import static nl.wernerdegroot.applicatives.processor.generator.CovariantGenerator.generator;
 
-public interface CovariantProcessorTemplate<Annotation, ElementToProcess, MethodOrMethods> extends ProcessorTemplate<Annotation, ElementToProcess, MethodOrMethods> {
+public interface CovariantProcessorTemplate extends VarianceProcessorTemplate {
 
     @Override
     default String generate(ContainingClass containingClass, String classNameToGenerate, String combineMethodNameToGenerate, String liftMethodNameToGenerate, int maxArity, Validator.Result conflictFree) {

@@ -12,7 +12,7 @@ import static java.util.Collections.singleton;
 import static nl.wernerdegroot.applicatives.processor.domain.Modifier.PUBLIC;
 import static nl.wernerdegroot.applicatives.processor.domain.Modifier.STATIC;
 
-public class ContainingClass implements Containing {
+public final class ContainingClass implements Containing {
 
     private final Containing parent;
     private final Set<Modifier> modifiers;
@@ -28,10 +28,6 @@ public class ContainingClass implements Containing {
 
     public static ContainingClass of(Containing parent, Set<Modifier> modifiers, ClassName className, List<TypeParameter> typeParameters) {
         return new ContainingClass(parent, modifiers, className, typeParameters);
-    }
-
-    public static ContainingClass of(PackageName packageName, Set<Modifier> modifiers, ClassName className, List<TypeParameter> typeParameters) {
-        return ContainingClass.of(ContainingPackage.of(packageName), modifiers, className, typeParameters);
     }
 
     public static ContainingClass of(PackageName packageName, ClassName className, List<TypeParameter> typeParameters) {
@@ -100,7 +96,7 @@ public class ContainingClass implements Containing {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ContainingClass that = (ContainingClass) o;
-        return getParent().equals(that.getParent()) && getModifiers().equals(that.getModifiers()) && getClassName().equals(that.getClassName()) && getTypeParameters().equals(that.getTypeParameters());
+        return Objects.equals(getParent(), that.getParent()) && Objects.equals(getModifiers(), that.getModifiers()) && Objects.equals(getClassName(), that.getClassName()) && Objects.equals(getTypeParameters(), that.getTypeParameters());
     }
 
     @Override
