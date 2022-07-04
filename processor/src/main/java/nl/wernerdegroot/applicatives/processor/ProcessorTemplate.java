@@ -35,7 +35,7 @@ public interface ProcessorTemplate<Annotation, AnnotatedElement, ElementToProces
             String combineMethodNameToGenerate = getCombineMethodNameToGenerate(annotation);
             String liftMethodNameToGenerate = getLiftMethodNameToGenerate(annotation);
             int maxArity = getMaxArity(annotation);
-            noteAnnotationFound(elementToProcess, classNameToGenerate, combineMethodNameToGenerate, liftMethodNameToGenerate, maxArity);
+            noteAnnotationFound(describeElementToProcess(elementToProcess), classNameToGenerate, combineMethodNameToGenerate, liftMethodNameToGenerate, maxArity);
             ContainingClass containingClass;
             MethodOrMethods methodOrMethods;
             try {
@@ -46,7 +46,7 @@ public interface ProcessorTemplate<Annotation, AnnotatedElement, ElementToProces
                 // If we have issues transforming to `nl.wernerdegroot.applicatives.processor.domain`
                 // (which makes it a lot easier to log where the annotation was found) make sure we
                 // log the raw signature of the method or class so the client can troubleshoot.
-                errorConversionToDomainFailed(elementToProcess, e);
+                errorConversionToDomainFailed(describeElementToProcess(elementToProcess), e);
                 printStackTraceToMessengerAsNote(e);
                 return;
             }
@@ -90,7 +90,16 @@ public interface ProcessorTemplate<Annotation, AnnotatedElement, ElementToProces
 
     int getMaxArity(Annotation annotation);
 
-    void noteAnnotationFound(ElementToProcess elementToProcess, String classNameToGenerate, String combineMethodNameToGenerate, String liftMethodNameToGenerate, int maxArity);
+    String describeElementToProcess(ElementToProcess elementToProcess);
+
+    default void noteAnnotationFound(String elementToProcessDescription, String classNameToGenerate, String combineMethodNameToGenerate, String liftMethodNameToGenerate, int maxArity) {
+        Log.of("Found annotation of type '%s' on %s", getAnnotationType().getCanonicalName(), elementToProcessDescription)
+                .withDetail("Class name", classNameToGenerate)
+                .withDetail("Method name for 'combine'", combineMethodNameToGenerate)
+                .withDetail("Method name for 'lift'", liftMethodNameToGenerate)
+                .withDetail("Maximum arity", maxArity, i -> Integer.toString(i))
+                .append(asNote());
+    }
 
     ContainingClass toContainingClass(ElementToProcess elementToProcess);
 
@@ -100,7 +109,9 @@ public interface ProcessorTemplate<Annotation, AnnotatedElement, ElementToProces
         Log.of("Successfully transformed objects from 'javax.lang.model' to objects from 'nl.wernerdegroot.applicatives.processor.domain'").append(asNote());
     }
 
-    void errorConversionToDomainFailed(ElementToProcess elementToProcess, Throwable throwable);
+    default void errorConversionToDomainFailed(String elementToProcessDescription, Throwable throwable) {
+        Log.of("Failure transforming from objects from 'javax.lang.model' to objects from 'nl.wernerdegroot.applicatives.processor.domain' for %s: %s", elementToProcessDescription, throwable.getMessage()).append(asError());
+    }
 
     void noteContainingClassAndMethodOrMethods(ContainingClass containingClass, MethodOrMethods methodOrMethods);
 

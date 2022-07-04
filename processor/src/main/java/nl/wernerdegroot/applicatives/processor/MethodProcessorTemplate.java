@@ -30,20 +30,14 @@ public interface MethodProcessorTemplate<Annotation extends java.lang.annotation
     }
 
     @Override
-    default void noteAnnotationFound(Element element, String classNameToGenerate, String combineMethodNameToGenerate, String liftMethodNameToGenerate, int maxArity) {
+    default String describeElementToProcess(Element element) {
         Element enclosingElement = element.getEnclosingElement();
         String enclosingElementDescription = "???";
         if (enclosingElement != null && enclosingElement instanceof TypeElement) {
             TypeElement enclosingElementAsTypeElement = (TypeElement) enclosingElement;
             enclosingElementDescription = "class '" + enclosingElementAsTypeElement.getQualifiedName() + "'";
         }
-
-        Log.of("Found annotation of type '%s' on method '%s' in %s", getAnnotationType().getCanonicalName(), element.getSimpleName(), enclosingElementDescription)
-                .withDetail("Class name", classNameToGenerate)
-                .withDetail("Method name for `combine`", combineMethodNameToGenerate)
-                .withDetail("Method name for `lift`", liftMethodNameToGenerate)
-                .withDetail("Maximum arity", maxArity, i -> Integer.toString(i))
-                .append(asNote());
+        return String.format("method '%s' in %s", element.getSimpleName(), enclosingElementDescription);
     }
 
     @Override
@@ -54,11 +48,6 @@ public interface MethodProcessorTemplate<Annotation extends java.lang.annotation
     @Override
     default Method toMethodOrMethods(Element element) {
         return MethodConverter.toDomain(element);
-    }
-
-    @Override
-    default void errorConversionToDomainFailed(Element element, Throwable throwable) {
-        Log.of("Failure transforming from objects from 'javax.lang.model' to objects from 'nl.wernerdegroot.applicatives.processor.domain' for method with signature '%s': %s", element, throwable.getMessage()).append(asError());
     }
 
     @Override

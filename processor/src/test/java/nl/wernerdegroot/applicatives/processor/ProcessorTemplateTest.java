@@ -70,10 +70,10 @@ public class ProcessorTemplateTest implements VarianceProcessorTemplateTest {
         String toVerifyErrors = processor.getLogged(Diagnostic.Kind.ERROR);
         assertNull(toVerifyErrors);
 
-        String expectedInfo = "Found annotation of type 'nl.wernerdegroot.applicatives.processor.ProcessorTemplateTest.MockAnnotation' on  mock element 'givenValidMethodWithVerboseLogging'\n" +
+        String expectedInfo = "Found annotation of type 'nl.wernerdegroot.applicatives.processor.ProcessorTemplateTest.MockAnnotation' on mock element 'givenValidMethodWithVerboseLogging'\n" +
                 " - Class name: *Overloads\n" +
-                " - Method name for `combine`: *\n" +
-                " - Method name for `lift`: lift\n" +
+                " - Method name for 'combine': *\n" +
+                " - Method name for 'lift': lift\n" +
                 " - Maximum arity: 2\n" +
                 "Successfully transformed objects from 'javax.lang.model' to objects from 'nl.wernerdegroot.applicatives.processor.domain'\n" +
                 "Found method 'combine' in class 'nl.wernerdegroot.applicatives.Optionals'\n" +
@@ -155,10 +155,10 @@ public class ProcessorTemplateTest implements VarianceProcessorTemplateTest {
         // Prefix of error message and stack trace. Because the stack trace is likely different
         // on different platforms (it is certainly different when running from Maven or from
         // IntelliJ) and line numbers are subject to change, we only compare prefixes.
-        String expectedInfo = "Found annotation of type 'nl.wernerdegroot.applicatives.processor.ProcessorTemplateTest.MockAnnotation' on  mock element 'givenErrorWhileTransformingToDomainWithVerboseLogging'\n" +
+        String expectedInfo = "Found annotation of type 'nl.wernerdegroot.applicatives.processor.ProcessorTemplateTest.MockAnnotation' on mock element 'givenErrorWhileTransformingToDomainWithVerboseLogging'\n" +
                 " - Class name: *Overloads\n" +
-                " - Method name for `combine`: *\n" +
-                " - Method name for `lift`: lift\n" +
+                " - Method name for 'combine': *\n" +
+                " - Method name for 'lift': lift\n" +
                 " - Maximum arity: 2\n" +
                 "java.lang.IllegalArgumentException: There was a problem!\n" +
                 "\tat nl.wernerdegroot.applicatives.processor.ProcessorTemplateTest";
@@ -363,13 +363,8 @@ public class ProcessorTemplateTest implements VarianceProcessorTemplateTest {
         }
 
         @Override
-        public void noteAnnotationFound(MockElement mockElement, String classNameToGenerate, String combineMethodNameToGenerate, String liftMethodNameToGenerate, int maxArity) {
-            Log.of("Found annotation of type '%s' on  mock element '%s'", getAnnotationType().getCanonicalName(), mockElement.description)
-                    .withDetail("Class name", classNameToGenerate)
-                    .withDetail("Method name for `combine`", combineMethodNameToGenerate)
-                    .withDetail("Method name for `lift`", liftMethodNameToGenerate)
-                    .withDetail("Maximum arity", maxArity, i -> Integer.toString(i))
-                    .append(asNote());
+        public String describeElementToProcess(MockElement mockElement) {
+            return String.format("mock element '%s'", mockElement.description);
         }
 
         @Override
@@ -380,11 +375,6 @@ public class ProcessorTemplateTest implements VarianceProcessorTemplateTest {
         @Override
         public Method toMethodOrMethods(MockElement mockElement) {
             return mockElement.method;
-        }
-
-        @Override
-        public void errorConversionToDomainFailed(MockElement mockElement, Throwable throwable) {
-            Log.of("Failure transforming from objects from 'javax.lang.model' to objects from 'nl.wernerdegroot.applicatives.processor.domain' for mock element '%s': %s", mockElement.description, throwable.getMessage()).append(asError());
         }
 
         @Override
