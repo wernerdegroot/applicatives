@@ -6,7 +6,7 @@
 
     <groupId>nl.wernerdegroot.applicatives</groupId>
     <artifactId>parent</artifactId>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
     <packaging>pom</packaging>
 
     <name>Applicatives | parent</name>
@@ -20,7 +20,7 @@
     <licenses>
         <license>
             <name>MIT License</name>
-            <url>https://github.com/wernerdegroot/applicatives/blob/v1.1.0/LICENSE</url>
+            <url>https://github.com/wernerdegroot/applicatives/blob/v1.2.0/LICENSE</url>
         </license>
     </licenses>
 
