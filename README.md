@@ -32,11 +32,11 @@ Java 8 or higher is required.
 
 Add the required dependencies:
 
-* [nl.wernerdegroot.applicatives.processor:1.2.0](https://mvnrepository.com/artifact/nl.wernerdegroot.applicatives/processor/1.2.0)  
+* [nl.wernerdegroot.applicatives.processor:1.2.1](https://mvnrepository.com/artifact/nl.wernerdegroot.applicatives/processor/1.2.1)  
 
     Annotation processor. Only needed during compilation. Hook it into `maven-compiler-plugin` or include it as dependency with scope `provided`.
  
-* [nl.wernerdegroot.applicatives.runtime:1.2.0](https://mvnrepository.com/artifact/nl.wernerdegroot.applicatives/runtime/1.2.0)
+* [nl.wernerdegroot.applicatives.runtime:1.2.1](https://mvnrepository.com/artifact/nl.wernerdegroot.applicatives/runtime/1.2.1)
 
     Required runtime dependencies. Only a handful of classes, and no transitive dependencies.
 
@@ -47,7 +47,7 @@ Example:
   <dependency>
       <groupId>nl.wernerdegroot.applicatives</groupId>
       <artifactId>runtime</artifactId>
-      <version>1.2.0</version>
+      <version>1.2.1</version>
   </dependency>
 </dependencies>
 
@@ -66,7 +66,7 @@ Example:
                     <path>
                         <groupId>nl.wernerdegroot.applicatives</groupId>
                         <artifactId>processor</artifactId>
-                        <version>1.2.0</version>
+                        <version>1.2.1</version>
                     </path>
                 </annotationProcessorPaths>
             </configuration>
@@ -81,7 +81,7 @@ You may also want to include `prelude`, for applicative instances for some commo
 <dependency>
     <groupId>nl.wernerdegroot.applicatives</groupId>
     <artifactId>prelude</artifactId>
-    <version>1.2.0</version>
+    <version>1.2.1</version>
 </dependency>
 ```
 
@@ -286,7 +286,7 @@ CompletableFuture<PokemonCard> futurePokemonCard =
         );
 ```
 
-Note that the `CompletableFutures` class as described above is already conveniently included for you in the [Prelude](https://mvnrepository.com/artifact/nl.wernerdegroot.applicatives/prelude/1.2.0) module. Check out the [implementation](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/main/java/nl/wernerdegroot/applicatives/prelude/CompletableFutures.java) and the [tests](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/test/java/nl/wernerdegroot/applicatives/prelude/CompletableFuturesTest.java).
+Note that the `CompletableFutures` class as described above is already conveniently included for you in the [Prelude](https://mvnrepository.com/artifact/nl.wernerdegroot.applicatives/prelude/1.2.1) module. Check out the [implementation](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/main/java/nl/wernerdegroot/applicatives/prelude/CompletableFutures.java) and the [tests](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/test/java/nl/wernerdegroot/applicatives/prelude/CompletableFuturesTest.java).
 
 ## Another example
 
@@ -360,7 +360,7 @@ Function<Random, PokemonCard> randomPokemonCard =
         );
 ```
 
-Note that a class much like the class `RandomGeneratorFunctions` described above is already conveniently included for you in the [Prelude](https://mvnrepository.com/artifact/nl.wernerdegroot.applicatives/prelude/1.2.0) module. Check out the [implementation](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/main/java/nl/wernerdegroot/applicatives/prelude/Functions.java) and the [tests](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/test/java/nl/wernerdegroot/applicatives/prelude/FunctionsTest.java).
+Note that a class much like the class `RandomGeneratorFunctions` described above is already conveniently included for you in the [Prelude](https://mvnrepository.com/artifact/nl.wernerdegroot.applicatives/prelude/1.2.1) module. Check out the [implementation](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/main/java/nl/wernerdegroot/applicatives/prelude/Functions.java) and the [tests](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/test/java/nl/wernerdegroot/applicatives/prelude/FunctionsTest.java).
 
 ## The rules for `@Covariant`
 
@@ -695,7 +695,7 @@ public class PokemonCard implements Decomposable4<String, Integer, EnergyType, L
 
 It's a neat trick that I learned over at [Benji Weber's blog](https://benjiweber.co.uk/blog/2020/09/19/fun-with-java-records/). By implementing `Decomposable4` or one of its siblings you can decompose objects into basically any other object with similar attributes. If your class implements such an interface, the `combine` method is able to take advantage of it by splitting it up into its constituent parts.
 
-If you are using records (and you don't mind a little reflection), you may also want to check out [`records`](https://mvnrepository.com/artifact/nl.wernerdegroot.applicatives/records/1.2.0). For example:
+If you are using records (and you don't mind a little reflection), you may also want to check out [`records`](https://mvnrepository.com/artifact/nl.wernerdegroot.applicatives/records/1.2.1). For example:
 
 ```java
 public record PokemonCard(String name, int hp, EnergyType energyType, List<Move> moves)
@@ -733,7 +733,7 @@ You can use `@Contravariant` for any data structure for which you can write a cl
 * `java.util.function.Function`
 * `java.util.function.BiFunction`
 
-Many of these are included in the [`prelude`](https://mvnrepository.com/artifact/nl.wernerdegroot.applicatives/prelude/1.2.0) module.
+Many of these are included in the [`prelude`](https://mvnrepository.com/artifact/nl.wernerdegroot.applicatives/prelude/1.2.1) module.
 
 Other examples of contravariant data types that can be combined include [Hamcrest's matchers](http://hamcrest.org/JavaHamcrest/tutorial), validators, [JSON writers](https://github.com/wernerdegroot/applicatives/blob/main/json/src/main/java/nl/wernerdegroot/applicatives/json/JsonWriters.java), etc.
 
@@ -770,7 +770,7 @@ public class UnaryOperators implements UnaryOperatorsOverloads {
 }
 ```
 
-Note that a class is already conveniently included for you in the [`prelude`](https://mvnrepository.com/artifact/nl.wernerdegroot.applicatives/prelude/1.2.0) module. Check out the [implementation](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/main/java/nl/wernerdegroot/applicatives/prelude/UnaryOperators.java) and the [tests](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/test/java/nl/wernerdegroot/applicatives/prelude/UnaryOperatorsTest.java). You may also want to check out [JSON readers and writers](https://github.com/wernerdegroot/applicatives/blob/main/json/src/main/java/nl/wernerdegroot/applicatives/json/JsonFormats.java) for another example.
+Note that a class is already conveniently included for you in the [`prelude`](https://mvnrepository.com/artifact/nl.wernerdegroot.applicatives/prelude/1.2.1) module. Check out the [implementation](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/main/java/nl/wernerdegroot/applicatives/prelude/UnaryOperators.java) and the [tests](https://github.com/wernerdegroot/applicatives/blob/main/prelude/src/test/java/nl/wernerdegroot/applicatives/prelude/UnaryOperatorsTest.java). You may also want to check out [JSON readers and writers](https://github.com/wernerdegroot/applicatives/blob/main/json/src/main/java/nl/wernerdegroot/applicatives/json/JsonFormats.java) for another example.
 
 ## Contributing
 
@@ -780,4 +780,4 @@ Please make sure to update tests as appropriate.
 
 ## License
 
-[MIT](https://github.com/wernerdegroot/applicatives/blob/v1.2.0/LICENSE)
+[MIT](https://github.com/wernerdegroot/applicatives/blob/v1.2.1/LICENSE)

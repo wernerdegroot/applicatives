@@ -42,9 +42,25 @@ Commit name should be something like `Release v1.0.3`.
 
 ## Push to Artifactory
 
+Using Java 8:
+
 ```
-mvn clean deploy -Pdeploy
+export GPG_TTY=$(tty)
+mvn clean deploy -Pdeploy,\!records
 ```
+
+Using Java 17:
+
+```
+export GPG_TTY=$(tty)
+mvn clean deploy -pl records -Pdeploy,records
+```
+
+## Check if pushing succeeded
+
+At [https://s01.oss.sonatype.org/#nexus-search;quick~wernerdegroot](https://s01.oss.sonatype.org/#nexus-search;quick~wernerdegroot)
+
+## Common issues
 
 **If you get an error about `ioctl`**
 

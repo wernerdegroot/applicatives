@@ -14,7 +14,7 @@ Include the following dependency:
 <dependency>
     <groupId>nl.wernerdegroot.applicatives</groupId>
     <artifactId>json</artifactId>
-    <version>1.2.0</version>
+    <version>1.2.1</version>
 </dependency>
 ```
 
