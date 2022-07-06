@@ -171,6 +171,32 @@ Place place = new Place(
 Json.Result<Place> backAndForth = placeFormat.readString(placeFormat.writeString(place));
 ```
 
+## All together
+
+If you are so inclined, you can even condense the whole `JsonFormat` into a single expression:
+
+```java
+JsonFormat<Place> placeFormat = Json.instance().format(
+    key("name").using(stringFormat),
+    key("location").using(
+        Json.instance().format(
+            key("latitude").using(doubleFormat),
+            key("longitude").using(doubleFormat),
+            Location::new
+        )
+    ),
+    key("residents").using(
+        Json.instance().format(
+            key("name").using(stringFormat),
+            key("age").using(intFormat),
+            key("role").using(stringFormat.optional()),
+            Resident::new
+        ).list()
+    ),
+    Resident::new
+);
+```
+
 ## Type hierarchies
 
 Until now we have written `JsonReader`s and `JsonWriter`s that deal exclusively with one type of data. What do we do when we need to serialize a set of possible types? Consider the following type hierarchy:
