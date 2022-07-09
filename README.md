@@ -225,7 +225,7 @@ public class CompletableFutures {
     public <A, B, C> CompletableFuture<C> combine(
             CompletableFuture<A> left,
             CompletableFuture<B> right,
-            BiFunction<? extends A, ? extends B, ? super C> fn) {
+            BiFunction<? super A, ? super B, ? extends C> fn) {
 
         // Implementation already conveniently provided 
         // by the authors of the Java standard library:
@@ -246,7 +246,7 @@ public class CompletableFutures implements CompletableFuturesOverloads {
     public <A, B, C> CompletableFuture<C> combine(
             CompletableFuture<A> left,
             CompletableFuture<B> right,
-            BiFunction<? extends A, ? extends B, ? super C> fn) {
+            BiFunction<? super A, ? super B, ? extends C> fn) {
 
         // Implementation already conveniently provided 
         // by the authors of the Java standard library:
