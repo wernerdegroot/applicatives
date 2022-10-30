@@ -1,3 +1,5 @@
+* Traversables
+* Free monad, where you generate a natural transformation
 * combineAndThen
 * Support for static methods
 * Use processor (perhaps older version, to prevent circular dependencies) to generate `Validated` methods.
