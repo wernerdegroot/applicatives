@@ -1,3 +1,4 @@
+* Add Collector to prelude
 * Traversables
 * Free monad, where you generate a natural transformation
 * combineAndThen
