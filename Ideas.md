@@ -1,3 +1,4 @@
+* Add ResultSet extractor to own project
 * Add Kotlin interface too
 * Add Collector to prelude
 * Traversables
