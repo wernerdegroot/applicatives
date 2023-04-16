@@ -1,6 +1,6 @@
 * Add ResultSet extractor to own project
 * Add Kotlin interface too
-* Add Collector to prelude
+* Add Collector to prelude, might need support for T1 and T2 type parameters that each appear in the same place in the two parameters, like Collector<P, T1, A> and Collector<P, T2, B>
 * Traversables
 * Free monad, where you generate a natural transformation
 * combineAndThen
